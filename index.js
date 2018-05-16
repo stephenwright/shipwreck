@@ -148,7 +148,7 @@ class Shipwreck {
 
       <h2>Raw</h2>
       <div class="raw-response">
-        <pre><code class="language-json">${JSON.stringify(entity.raw)}</code><pre>
+        <pre><code class="language-json">${JSON.stringify(entity.raw, null, 2)}</code><pre>
       </div>
     `;
   }
