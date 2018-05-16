@@ -4,6 +4,14 @@
  * A simple client for working with Siren Hypermedia APIs
  */
 
+const _html = (str) => {
+  const template = document.createElement('template');
+  template.innerHTML = str.trim();
+  return template.content.firstChild;
+}
+
+/**
+ */
 class SirenLink {
   constructor(json) {
     this.rel = json['rel'] || [];
@@ -19,6 +27,8 @@ class SirenLink {
   }
 }
 
+/**
+ */
 class SirenField {
   constructor(json) {
     this.name = json['name'] || '';
@@ -31,14 +41,16 @@ class SirenField {
 
   get form() {
     return `
-      <div class='form-field'>
+      <div class="form-field">
         <label>${this.name}</label>
-        <input type='${this.type}' value='${this.value}'>
+        <input type="${this.type}" value="${this.value}" name="${this.name}">
       </div>
     `;
   }
 }
 
+/**
+ */
 class SirenAction {
   constructor(json) {
     this.name = json['name'] || '';
@@ -47,15 +59,15 @@ class SirenAction {
     this.class = json['class'] || [];
     this.method = json['method'] || 'GET';
     this.title = json['title'] || '';
-    this.type = json['type'] || 'application/x-www-form-urlencoded';
+    this.type = json['type'] || 'application/x-www-form-urlencoded;charset=UTF-8';
     this.fields = (json['fields'] || []).map(f => new SirenField(f))
   }
 
   get form() {
     return `
-      <h3>${this.name}</h3>
-      <p>${this.method} ${this.href}</p>
       <form action='${this.href}' method='${this.method}' type='${this.type}' onsubmit='return false;'>
+        <h3>${this.name}</h3>
+        <p>${this.method} ${this.href}</p>
         <div class='form-fields'>
           ${this.fields.map(f => f.form).join('\n')}
         </div>
@@ -65,6 +77,8 @@ class SirenAction {
   }
 }
 
+/**
+ */
 class SirenEntity {
   constructor(json) {
     this.raw = json;
@@ -87,36 +101,45 @@ class SirenEntity {
   }
 }
 
+/**
+ */
 class Shipwreck {
   constructor() {
     this.token = '';
   }
 
-  async submitAction(action) {
+  async submitAction(action, data) {
     const options = {
       cache: 'no-cache',
       headers: {
-        'content-type': action.type || 'application/json',
         'user-agent': 'shipwreck',
+        'content-type': action.type || 'application/json',
       },
       method: action.method || 'GET',
       mode: 'cors',
     };
 
+    if (action.method === 'POST' && data) {
+      options.headers['content-type'] = action.type;
+      options.body = data;
+    }
+
     // append the auth token if it's available
-    if (this.token)
+    if (this.token) {
       options.headers['Authentication'] = `Bearer ${this.token}`;
+    }
 
     return await fetch(action.href, options);
   }
 
   async queryApi(href) {
-    console.info('querying', href);
+    //console.info('querying', href);
     try {
       const response = await this.submitAction({ href });
+      //console.info(response);
       const json = await response.json();
       const entity = new SirenEntity(json);
-      console.info(entity);
+      //console.info(entity);
       this.render(entity);
     }
     catch(err) {
@@ -126,22 +149,63 @@ class Shipwreck {
 
   render(entity) {
     const output = document.getElementById('output');
-    output.innerHTML = `
-      <h2>Links</h2>
-      <ul class='entity-links'>
-        ${entity.links.map(l => `<li>${l.anchor}</li>`).join('\n')}
-      </ul>
+    output.innerHTML = '';
 
-      <h2>Actions</h2>
-      <div class='entity-actions'>
-        ${entity.actions.map(a => `<div class='card'>${a.form}</div>`).join('\n')}
+    // Display the properties
+    output.appendChild(_html(`
+      <div class="entity-properties">
+        <h2>Properties</h2>
+        <pre><code>${JSON.stringify(entity.properties, null, 2)}</code></pre>
       </div>
+    `));
 
-      <h2>Raw</h2>
+    // Display all the links
+    output.appendChild(_html(`
+      <div class="entity-links">
+        <h2>Links</h2>
+        <ul>
+          ${entity.links.map(l => `<li>${l.anchor}</li>`).join('\n')}
+        </ul>
+      </div>
+    `));
+
+    // Display a form for each action
+    const actions = _html(`
+      <div class="entity-actions">
+        <h2>Actions</h2>
+      </div>
+    `);
+
+    entity.actions.forEach(a => {
+      const card = _html(`<div class="card"></div>`);
+      const form = _html(a.form);
+      form.onsubmit = () => {
+        // get the form data
+        const data = [];
+        for (let i = 0; i < form.elements.length; ++i) {
+          const el = form.elements[i];
+          if (!el.name) continue;
+          data.push(`${el.name}=${el.value}`);
+        }
+        // submit the action
+        this.submitAction(a, data.join('&'))
+          .then(response => response.json())
+          .then(json => this.render(new SirenEntity(json)));
+        return false;
+      };
+      card.appendChild(form);
+      actions.appendChild(card);
+    });
+
+    output.appendChild(actions);
+
+    // Display the raw JSON received from the API request
+    output.appendChild(_html(`
       <div class="entity-raw">
+        <h2>Raw</h2>
         <pre><code>${JSON.stringify(entity.raw, null, 2)}</code><pre>
       </div>
-    `;
+    `));
   }
 }
 
@@ -151,12 +215,6 @@ const ship = new Shipwreck();
 
 const shipHref = document.getElementById('ship-href');
 const shipToken = document.getElementById('ship-token');
-
-const _submitAction = () => {
-  //const data = form.elements.map(({name, value}) => ({ name: value}));
-  console.info();
-  return false;
-}
 
 const _submit = async () => {
   location.hash = shipHref.value;
