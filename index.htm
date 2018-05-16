@@ -7,8 +7,16 @@
 <body>
 
   <form method="post" onsubmit="_submit(); return false;">
-    <label>API:</label>
-    <input type="text" id="api-href">
+    <div class="form-fields">
+      <div class="form-field">
+        <label>HREF</label>
+        <input type="text" id="ship-href">
+      </div>
+      <div class="form-field">
+        <label>Auth Token</label>
+        <input type="text" id="ship-token">
+      </div>
+    </div>
 
     <input type="submit" value="Go">
   </form>

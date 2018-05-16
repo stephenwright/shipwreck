@@ -56,6 +56,7 @@ class SirenAction {
 
 class SirenEntity {
   constructor(json) {
+    this.raw = json;
     // optional
     this.actions = (json['actions'] || []).map(a => new SirenAction(a));
     this.links = (json['links'] || []).map(l => new SirenLink(l));
@@ -86,7 +87,7 @@ class Shipwreck {
 
   async submitAction(action) {
     //const data = form.elements.map(e => ({e.name : e.value}));
-    const response = await fetch(action.href, {
+    const options = {
       //body: data,
       cache: 'no-cache',
       headers: {
@@ -95,8 +96,13 @@ class Shipwreck {
       },
       method: action.method,
       mode: 'cors',
-    });
-    return response;
+    };
+
+    if (this.token)
+      options.headers['Authentication'] = `Bearer ${this.token}`;
+
+    const response = await fetch(action.href, options);
+    return await response.json();
   }
 
   async queryApi(href) {
@@ -107,50 +113,52 @@ class Shipwreck {
         method: 'GET',
         type: 'application/json',
       });
-      const json = await response.json();
-      const entity = new SirenEntity(json);
+      const entity = new SirenEntity(response);
       console.info(entity);
-
-      const output = document.getElementById('output');
-      output.innerHTML = `
-        <h2>Links</h2>
-        <ul class='entity-links'>
-          ${entity.links.map(l => `<li><a onclick="_update('${l.href}');">${l.href}</a></li>`).join('\n')}
-        </ul>
-
-        <h2>Actions</h2>
-        <div class='entity-actions'>
-          ${entity.actions.map(a => `<div class='card'>${a.form}</div>`).join('\n')}
-        </div>
-
-        <h2>Raw</h2>
-        <div class="raw-response">
-          <code><pre>${JSON.stringify(json)}</pre></code>
-        </div>
-      `;
+      this.render(entity);
     }
     catch(err) {
       console.error('something went wrong', err);
     }
   }
+
+  render(entity) {
+    const output = document.getElementById('output');
+    output.innerHTML = `
+      <h2>Links</h2>
+      <ul class='entity-links'>
+        ${entity.links.map(l => `<li><a onclick="_update('${l.href}');">${l.href}</a></li>`).join('\n')}
+      </ul>
+
+      <h2>Actions</h2>
+      <div class='entity-actions'>
+        ${entity.actions.map(a => `<div class='card'>${a.form}</div>`).join('\n')}
+      </div>
+
+      <h2>Raw</h2>
+      <div class="raw-response">
+        <pre><code class="language-json">${JSON.stringify(entity.raw)}<</code><pre>
+      </div>
+    `;
+  }
 }
 
 const ship = new Shipwreck();
-const apiHref = document.getElementById('api-href');
+const shipHref = document.getElementById('ship-href');
 
 const _submit = async () => {
-  location.hash = apiHref.value;
-  await ship.queryApi(apiHref.value);
+  location.hash = shipHref.value;
+  await ship.queryApi(shipHref.value);
 }
 
 const _update = async (href) => {
-  apiHref.value = href;
+  shipHref.value = href;
   _submit();
 }
 
 _checkHash = () => {
-  if (apiHref.value === location.hash) return;
-  apiHref.value = location.hash.slice(1);
+  if (shipHref.value === location.hash) return;
+  shipHref.value = location.hash.slice(1);
   _submit();
 }
 
