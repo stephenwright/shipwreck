@@ -1,12 +1,22 @@
+/**
+ * Shipwreck : Heed the Sirens' call
+ *
+ * A simple client for working with Siren Hypermedia APIs
+ */
+
 class SirenLink {
-    constructor(json) {
-      this.rel = json['rel'] = [];
-      this.href = json['href'] || '';
-      // optional
-      this.class = json['class'] = [];
-      this.type = json['type'] = '';
-      this.title = json['title'] = '';
-    }
+  constructor(json) {
+    this.rel = json['rel'] || [];
+    this.href = json['href'] || '';
+    // optional
+    this.class = json['class'] = [];
+    this.type = json['type'] = '';
+    this.title = json['title'] = '';
+  }
+
+  get anchor() {
+    return `[${this.rel.join(',')}] <a href="#${this.href}">${this.href}</a>`;
+  }
 }
 
 class SirenField {
@@ -43,8 +53,9 @@ class SirenAction {
 
   get form() {
     return `
-    <form action='${this.href}' method='${this.method}' type='${this.type}'>
+    <form action='${this.href}' method='${this.method}' type='${this.type}' onsubmit='return false;'>
       <h3>${this.name}</h3>
+      <p>${this.method} ${this.href}</p>
       <div class='form-fields'>
         ${this.fields.map(f => f.form).join('\n')}
       </div>
@@ -101,8 +112,7 @@ class Shipwreck {
     if (this.token)
       options.headers['Authentication'] = `Bearer ${this.token}`;
 
-    const response = await fetch(action.href, options);
-    return await response.json();
+    return await fetch(action.href, options);
   }
 
   async queryApi(href) {
@@ -113,7 +123,8 @@ class Shipwreck {
         method: 'GET',
         type: 'application/json',
       });
-      const entity = new SirenEntity(response);
+      const json = await response.json();
+      const entity = new SirenEntity(json);
       console.info(entity);
       this.render(entity);
     }
@@ -127,7 +138,7 @@ class Shipwreck {
     output.innerHTML = `
       <h2>Links</h2>
       <ul class='entity-links'>
-        ${entity.links.map(l => `<li><a onclick="_update('${l.href}');">${l.href}</a></li>`).join('\n')}
+        ${entity.links.map(l => `<li>${l.anchor}</li>`).join('\n')}
       </ul>
 
       <h2>Actions</h2>
@@ -137,11 +148,13 @@ class Shipwreck {
 
       <h2>Raw</h2>
       <div class="raw-response">
-        <pre><code class="language-json">${JSON.stringify(entity.raw)}<</code><pre>
+        <pre><code class="language-json">${JSON.stringify(entity.raw)}</code><pre>
       </div>
     `;
   }
 }
+
+// Fun with globals!
 
 const ship = new Shipwreck();
 const shipHref = document.getElementById('ship-href');

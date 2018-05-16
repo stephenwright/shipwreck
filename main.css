@@ -4,9 +4,15 @@ input[type=password] {
   width: 100%;
 }
 
+body {
+  background-color: #eee;
+}
+
 .card {
+  background-color: #fff;
   width: 400px;
   margin: 10px;
   padding: 10px;
-  border: 1px solid #eee;
+  border: 1px solid #ddd;
+  box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
 }
