@@ -53,14 +53,14 @@ class SirenAction {
 
   get form() {
     return `
-    <form action='${this.href}' method='${this.method}' type='${this.type}' onsubmit='return false;'>
       <h3>${this.name}</h3>
       <p>${this.method} ${this.href}</p>
-      <div class='form-fields'>
-        ${this.fields.map(f => f.form).join('\n')}
-      </div>
-      <input type='submit' value='submit'>
-    </form>
+      <form action='${this.href}' method='${this.method}' type='${this.type}' onsubmit='return false;'>
+        <div class='form-fields'>
+          ${this.fields.map(f => f.form).join('\n')}
+        </div>
+        <input type='submit' value='submit'>
+      </form>
     `;
   }
 }
@@ -85,10 +85,6 @@ class SirenEntity {
   action(name) {
     return actions.find(a => a.name === name);
   }
-
-  get toString() {
-
-  }
 }
 
 class Shipwreck {
@@ -97,18 +93,17 @@ class Shipwreck {
   }
 
   async submitAction(action) {
-    //const data = form.elements.map(e => ({e.name : e.value}));
     const options = {
-      //body: data,
       cache: 'no-cache',
       headers: {
-        'content-type': 'application/json',
+        'content-type': action.type || 'application/json',
         'user-agent': 'shipwreck',
       },
-      method: action.method,
+      method: action.method || 'GET',
       mode: 'cors',
     };
 
+    // append the auth token if it's available
     if (this.token)
       options.headers['Authentication'] = `Bearer ${this.token}`;
 
@@ -118,11 +113,7 @@ class Shipwreck {
   async queryApi(href) {
     console.info('querying', href);
     try {
-      const response = await this.submitAction({
-        href,
-        method: 'GET',
-        type: 'application/json',
-      });
+      const response = await this.submitAction({ href });
       const json = await response.json();
       const entity = new SirenEntity(json);
       console.info(entity);
@@ -147,8 +138,8 @@ class Shipwreck {
       </div>
 
       <h2>Raw</h2>
-      <div class="raw-response">
-        <pre><code class="language-json">${JSON.stringify(entity.raw, null, 2)}</code><pre>
+      <div class="entity-raw">
+        <pre><code>${JSON.stringify(entity.raw, null, 2)}</code><pre>
       </div>
     `;
   }
@@ -157,10 +148,19 @@ class Shipwreck {
 // Fun with globals!
 
 const ship = new Shipwreck();
+
 const shipHref = document.getElementById('ship-href');
+const shipToken = document.getElementById('ship-token');
+
+const _submitAction = () => {
+  //const data = form.elements.map(({name, value}) => ({ name: value}));
+  console.info();
+  return false;
+}
 
 const _submit = async () => {
   location.hash = shipHref.value;
+  ship.token = shipToken.value;
   await ship.queryApi(shipHref.value);
 }
 
@@ -169,11 +169,11 @@ const _update = async (href) => {
   _submit();
 }
 
+// sync the location hash with the api href
 _checkHash = () => {
   if (shipHref.value === location.hash) return;
   shipHref.value = location.hash.slice(1);
   _submit();
 }
-
 window.onhashchange = _checkHash;
 window.onload = _checkHash;
