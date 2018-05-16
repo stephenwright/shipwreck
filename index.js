@@ -4,11 +4,13 @@
  * A simple client for working with Siren Hypermedia APIs
  */
 
-const _html = (str) => {
+const _html = str => {
   const template = document.createElement('template');
   template.innerHTML = str.trim();
   return template.content.firstChild;
 }
+
+const _code = json => `<pre><code>${JSON.stringify(json, null, 2)}</code></pre>`;
 
 /**
  */
@@ -40,7 +42,9 @@ class SirenField {
   }
 
   get form() {
-    return `
+    return this.type === 'hidden'
+    ? `<input type="${this.type}" value="${this.value}" name="${this.name}">`
+    : `
       <div class="form-field">
         <label>${this.name}</label>
         <input type="${this.type}" value="${this.value}" name="${this.name}">
@@ -89,15 +93,20 @@ class SirenEntity {
     this.class = json['classes'] || [];
     this.entities = json['entities'] || [];
     this.title = json['title'] || '';
-    this.rel = json['rel'] || []
-  }
-
-  link(rel) {
-    return links.find(l => l.rel.includes(rel));
+    // for sub-entities
+    this.rel = json['rel'] || [];
   }
 
   action(name) {
-    return actions.find(a => a.name === name);
+    return this.actions.find(a => a.name === name);
+  }
+
+  entity(rel) {
+    return this.entities.find(e => e.rel.includes(rel));
+  }
+
+  link(rel) {
+    return this.links.find(l => l.rel.includes(rel));
   }
 }
 
@@ -117,10 +126,8 @@ class Shipwreck {
 
   async submitAction(action, data) {
     const headers = new Headers();
-    headers.set('content-type', action.type || 'application/json');
-    headers.set('user-agent', 'shipwreck');
-    // append the auth token if it's available
-    this.token && headers.set('authentication', `Bearer ${this.token}`);
+    action.type && headers.set('content-type', action.type);
+    this.token && headers.set('authorization', `Bearer ${this.token}`);
 
     let body;
     let url = action.href;
@@ -145,49 +152,69 @@ class Shipwreck {
       mode: 'cors',
     };
 
-    //console.info('submit action:', action.href, options);
     return await fetch(url, options);
   }
 
   async fetch(action, data) {
     try {
       const response = await this.submitAction(action, data);
+      if (!response.ok)
+        throw new Error(`Request failed, status: ${response.status} (${response.statusText})`);
       const json = await response.json();
       const entity = new SirenEntity(json);
-      this.render(entity);
+      this.render(entity, document.getElementById('output'));
     }
     catch(err) {
-      console.error('something went wrong', err);
+      console.error(err);
     }
   }
 
-  render(entity) {
-    const output = document.getElementById('output');
-    output.innerHTML = '';
+  render(entity, target) {
+    // clear the content of the target output element before refilling it
+    target.innerHTML = '';
 
-    // Display the properties
+    // Display the Properties
     const rows = Object
       .keys(entity.properties)
       .map(k => `<tr>
         <td class="key">${k}:</td>
         <td class="value">${entity.properties[k]}</td></tr>`)
       .join('\n');
-    output.appendChild(_html(`
+
+    target.appendChild(_html(`
       <div class="entity-properties">
         <h2>Properties</h2>
         <table><tbody>${rows}</tbody></<table>
       </div>
     `));
 
-    // Display all the links
-    output.appendChild(_html(`
+    // Display all the Links
+    target.appendChild(_html(`
       <div class="entity-links">
         <h2>Links</h2>
         <ul>${entity.links.map(l => `<li>${l.anchor}</li>`).join('\n')}</ul>
       </div>
     `));
 
-    // Display a form for each action
+    // Display Entites
+    target.appendChild(_html(`
+      <div class="entity-entities">
+        <h2>Entities</h2>
+        ${entity.entities.map(e => {
+          const link = new SirenEntity(e).link('self');
+          return `
+          <div class="card">
+            <h3>
+              [${e.class.join(',')}]
+              <a href="#${link.href}">${e.properties.name || e.properties.title}</a>
+            </h3>
+            <div class="entity-raw">${_code(e.properties)}</div>
+          </div>
+        `;}).join('\n')}
+      </div>
+    `));
+
+    // Display a form for each Action
     const actions = _html(`
       <div class="entity-actions">
         <h2>Actions</h2>
@@ -207,32 +234,38 @@ class Shipwreck {
       actions.appendChild(card);
     });
 
-    output.appendChild(actions);
+    target.appendChild(actions);
 
     // Display the raw JSON received from the API request
-    output.appendChild(_html(`
+    target.appendChild(_html(`
       <div class="entity-raw">
         <h2>Raw</h2>
-        <pre><code>${JSON.stringify(entity.raw, null, 2)}</code><pre>
+        ${_code(entity.raw)}
       </div>
     `));
   }
 }
 
-// Fun with globals!
+/**
+ * Application Entry Point
+ */
 
+// create shipwreck instance
 const ship = new Shipwreck();
 
+// get handle to form inputs
 const shipHref = document.getElementById('ship-href');
 const shipToken = document.getElementById('ship-token');
 
-shipToken.value = sessionStorage.getItem('auth-token');
+// keep auth token in session storage
+shipToken.value = sessionStorage.getItem('auth-token') || '';
 
 const _clearStorage = async () => {
   shipToken.value = '';
   sessionStorage.clear();
 }
 
+// submit API reqest
 const _submit = async () => {
   location.hash = shipHref.value;
   ship.token = shipToken.value;
@@ -240,16 +273,12 @@ const _submit = async () => {
   await ship.fetch({ href: shipHref.value });
 }
 
-const _update = async (href) => {
-  shipHref.value = href;
-  _submit();
-}
-
-// sync the location hash with the api href
-_checkHash = () => {
+// sync the location hash with the api href input field
+const _checkHash = () => {
   if (shipHref.value === location.hash) return;
   shipHref.value = location.hash.slice(1);
   _submit();
 }
+
 window.onhashchange = _checkHash;
 window.onload = _checkHash;

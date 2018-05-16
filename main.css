@@ -1,6 +1,9 @@
 
 input[type=text],
-input[type=password] {
+input[type=datetime],
+input[type=datetime-local],
+input[type=password],
+input[type=number] {
   width: 100%;
 }
 
@@ -12,8 +15,7 @@ body {
   background-color: #fff;
   margin: 10px;
   padding: 10px;
-  border: 1px solid #ddd;
-  box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.2);
 }
 
 .form-field {
@@ -30,5 +32,11 @@ body {
 
 .entity-properties .value {
   background-color: #fff;
-  box-shadow: 0px 1px 1px 0px rgba(0,0,0,.2)
+  box-shadow: 0px 1px 1px 0px rgba(0,0,0,.2);
+  word-break: break-word;
+}
+
+.entity-raw pre {
+  width: 100%;
+  overflow-x: auto;
 }
