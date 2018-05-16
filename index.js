@@ -108,38 +108,52 @@ class Shipwreck {
     this.token = '';
   }
 
+  _urlencode(data) {
+    return Object
+      .keys(data)
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
+      .join('&');
+  }
+
   async submitAction(action, data) {
+    const headers = new Headers();
+    headers.set('content-type', action.type || 'application/json');
+    headers.set('user-agent', 'shipwreck');
+    // append the auth token if it's available
+    this.token && headers.set('authentication', `Bearer ${this.token}`);
+
+    let body;
+    let url = action.href;
+
+    if (data) {
+      if (['GET', 'HEAD'].includes(action.method)) {
+        url = `${url}?${this._urlencode(data)}`;
+      }
+      else if (action.type.indexOf('json') !== -1) {
+        body = JSON.stringify(data);
+      }
+      else {
+        body = this._urlencode(data);
+      }
+    }
+
     const options = {
+      body,
       cache: 'no-cache',
-      headers: {
-        'user-agent': 'shipwreck',
-        'content-type': action.type || 'application/json',
-      },
+      headers,
       method: action.method || 'GET',
       mode: 'cors',
     };
 
-    if (action.method === 'POST' && data) {
-      options.headers['content-type'] = action.type;
-      options.body = data;
-    }
-
-    // append the auth token if it's available
-    if (this.token) {
-      options.headers['Authentication'] = `Bearer ${this.token}`;
-    }
-
-    return await fetch(action.href, options);
+    //console.info('submit action:', action.href, options);
+    return await fetch(url, options);
   }
 
-  async queryApi(href) {
-    //console.info('querying', href);
+  async fetch(action, data) {
     try {
-      const response = await this.submitAction({ href });
-      //console.info(response);
+      const response = await this.submitAction(action, data);
       const json = await response.json();
       const entity = new SirenEntity(json);
-      //console.info(entity);
       this.render(entity);
     }
     catch(err) {
@@ -152,10 +166,16 @@ class Shipwreck {
     output.innerHTML = '';
 
     // Display the properties
+    const rows = Object
+      .keys(entity.properties)
+      .map(k => `<tr>
+        <td class="key">${k}:</td>
+        <td class="value">${entity.properties[k]}</td></tr>`)
+      .join('\n');
     output.appendChild(_html(`
       <div class="entity-properties">
         <h2>Properties</h2>
-        <pre><code>${JSON.stringify(entity.properties, null, 2)}</code></pre>
+        <table><tbody>${rows}</tbody></<table>
       </div>
     `));
 
@@ -163,9 +183,7 @@ class Shipwreck {
     output.appendChild(_html(`
       <div class="entity-links">
         <h2>Links</h2>
-        <ul>
-          ${entity.links.map(l => `<li>${l.anchor}</li>`).join('\n')}
-        </ul>
+        <ul>${entity.links.map(l => `<li>${l.anchor}</li>`).join('\n')}</ul>
       </div>
     `));
 
@@ -180,17 +198,9 @@ class Shipwreck {
       const card = _html(`<div class="card"></div>`);
       const form = _html(a.form);
       form.onsubmit = () => {
-        // get the form data
-        const data = [];
-        for (let i = 0; i < form.elements.length; ++i) {
-          const el = form.elements[i];
-          if (!el.name) continue;
-          data.push(`${el.name}=${el.value}`);
-        }
-        // submit the action
-        this.submitAction(a, data.join('&'))
-          .then(response => response.json())
-          .then(json => this.render(new SirenEntity(json)));
+        const data = {};
+        a.fields.forEach(f => data[f.name] = form.elements[f.name].value);
+        this.fetch(a, data);
         return false;
       };
       card.appendChild(form);
@@ -216,10 +226,18 @@ const ship = new Shipwreck();
 const shipHref = document.getElementById('ship-href');
 const shipToken = document.getElementById('ship-token');
 
+shipToken.value = sessionStorage.getItem('auth-token');
+
+const _clearStorage = async () => {
+  shipToken.value = '';
+  sessionStorage.clear();
+}
+
 const _submit = async () => {
   location.hash = shipHref.value;
   ship.token = shipToken.value;
-  await ship.queryApi(shipHref.value);
+  ship.token && sessionStorage.setItem('auth-token', ship.token);
+  await ship.fetch({ href: shipHref.value });
 }
 
 const _update = async (href) => {

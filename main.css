@@ -19,3 +19,16 @@ body {
 .form-field {
   margin: 5px 0;
 }
+
+.entity-properties td {
+  padding: 5px;
+}
+
+.entity-properties .key {
+  vertical-align: top;
+}
+
+.entity-properties .value {
+  background-color: #fff;
+  box-shadow: 0px 1px 1px 0px rgba(0,0,0,.2)
+}
