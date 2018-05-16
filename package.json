@@ -1,0 +1,16 @@
+{
+  "name": "shipwreck",
+  "version": "1.0.0",
+  "description": "Heed the Sirens call",
+  "main": "index.htm",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "siren",
+    "hypermedia",
+    "api"
+  ],
+  "author": "Stephen Wright",
+  "license": "ISC"
+}
