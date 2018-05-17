@@ -20,6 +20,7 @@
       </div>
     </div>
     <input type="submit" value="Go">
+    <span class="divider">|</span>
     <input type="button" value="Clear Storage" onclick="_clearStorage()">
   </form>
 
@@ -41,6 +42,7 @@
 
     const _clearStorage = async () => {
       sessionStorage.clear();
+      shipToken.value = '';
       ship.token = '';
     }
 
