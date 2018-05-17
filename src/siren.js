@@ -59,7 +59,7 @@ class SirenLink {
   }
 
   get anchor() {
-    return `[ ${this.rel.join(',')} ] <a href="#${this.href}">${this.href}</a>`;
+    return `[ ${this.rel.join(', ')} ] <a href="#${this.href}">${this.href}</a>`;
   }
 
   get card() {
