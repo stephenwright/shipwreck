@@ -113,6 +113,14 @@ class Shipwreck {
     // clear the content of the target output element before refilling it
     target.innerHTML = '';
 
+    // Entity class
+    target.appendChild(_html(`
+      <div class="entity-class">
+        <h2>Class</h2>
+        [ ${entity.class.join(', ')} ]
+      </div>
+    `));
+
     // Display the Properties
     const rows = Object
       .keys(entity.properties)
@@ -132,25 +140,15 @@ class Shipwreck {
     target.appendChild(_html(`
       <div class="entity-links">
         <h2>Links</h2>
-        <ul>${entity.links.map(l => `<li>${l.anchor}</li>`).join('\n')}</ul>
+        ${entity.links.map(l => `<div>${l.anchor}</div>`).join('\n')}
       </div>
     `));
 
     // Display Entites
-    target.appendChild(_html(`
+    const entities = target.appendChild(_html(`
       <div class="entity-entities">
         <h2>Entities</h2>
-        ${entity.entities.map(e => {
-          const link = new SirenEntity(e).link('self');
-          return `
-          <div class="card">
-            <h3>
-              [${e.class.join(',')}]
-              <a href="#${link.href}">${e.properties.name || e.properties.title}</a>
-            </h3>
-            <div class="entity-raw">${_code(e.properties)}</div>
-          </div>
-        `;}).join('\n')}
+        ${entity.entities.map(e => e.card).join('\n')}
       </div>
     `));
 

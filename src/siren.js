@@ -1,6 +1,50 @@
 /**
- * classes for working with Siren Entities
+ * Classes for working with Siren Entities
  */
+
+/**
+ * The Primary thing return by a request to a Siren API
+ */
+class SirenEntity {
+  constructor(json) {
+    this.raw = json;
+    // optional
+    this.actions = (json['actions'] || []).map(a => new SirenAction(a));
+    this.class = json['class'] || [];
+    this.links = (json['links'] || []).map(l => new SirenLink(l));
+    this.properties = json['properties'] || {};
+    this.title = json['title'] || '';
+    // optional property of sub-entities
+    this.rel = json['rel'] || [];
+    // sub entities can be entities or links
+    // if it has an `href` it's a link, otherwise it's an entity
+    this.entities = (json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenEntity(e));
+  }
+
+  get card() {
+    return `
+      <div class="card">
+        <h3>[ ${this.class.join(', ')} ] ${this.title}</h3>
+        ${this.links.map(l => `<div>${l.anchor}</div>`).join('\n')}
+        <div class="entity-raw">
+          ${_code(this.properties)}
+        </div>
+      </div>
+    `;
+  }
+
+  action(name) {
+    return this.actions.find(a => a.name === name);
+  }
+
+  entity(rel) {
+    return this.entities.find(e => e.rel.includes(rel));
+  }
+
+  link(rel) {
+    return this.links.find(l => l.rel.includes(rel));
+  }
+}
 
 /**
  */
@@ -16,6 +60,14 @@ class SirenLink {
 
   get anchor() {
     return `[${this.rel.join(',')}] <a href="#${this.href}">${this.href}</a>`;
+  }
+
+  get card() {
+    return `
+      <div class="card">
+        <h3><a href="${this.href}">${this.title || this.href}</a></h3>
+      </div>
+    `;
   }
 }
 
@@ -68,34 +120,5 @@ class SirenAction {
         <input type='submit' value='submit'>
       </form>
     `;
-  }
-}
-
-/**
- */
-class SirenEntity {
-  constructor(json) {
-    this.raw = json;
-    // optional
-    this.actions = (json['actions'] || []).map(a => new SirenAction(a));
-    this.links = (json['links'] || []).map(l => new SirenLink(l));
-    this.properties = json['properties'] || {};
-    this.class = json['classes'] || [];
-    this.entities = json['entities'] || [];
-    this.title = json['title'] || '';
-    // for sub-entities
-    this.rel = json['rel'] || [];
-  }
-
-  action(name) {
-    return this.actions.find(a => a.name === name);
-  }
-
-  entity(rel) {
-    return this.entities.find(e => e.rel.includes(rel));
-  }
-
-  link(rel) {
-    return this.links.find(l => l.rel.includes(rel));
   }
 }
