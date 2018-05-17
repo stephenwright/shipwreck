@@ -26,7 +26,41 @@
   <!-- injection point for rendering entities -->
   <div id="output"></div>
 
-  <script type="text/javascript" src="index.js"></script>
+  <script type="text/javascript" src="./src/siren.js"></script>
+  <script type="text/javascript" src="./src/shipwreck.js"></script>
+  <script type="text/javascript">
+
+    // create shipwreck instance
+    const ship = new Shipwreck(document.getElementById('output'));
+
+    // get handle to form inputs
+    const shipHref = document.getElementById('ship-href');
+    const shipToken = document.getElementById('ship-token');
+
+    shipToken.value = ship.token;
+
+    const _clearStorage = async () => {
+      sessionStorage.clear();
+      ship.token = '';
+    }
+
+    // submit API reqest
+    const _submit = async () => {
+      location.hash = shipHref.value;
+      ship.token = shipToken.value;
+      await ship.fetch({ href: shipHref.value });
+    }
+
+    // sync the location hash with the api href input field
+    const _checkHash = () => {
+      if (shipHref.value === location.hash) return;
+      shipHref.value = location.hash.slice(1);
+      _submit();
+    }
+
+    window.onhashchange = _checkHash;
+    window.onload = _checkHash;
+  </script>
 
 </body>
 </html>
