@@ -1,6 +1,48 @@
+@import 'colours.css';
 
 body {
-  background-color: #eee;
+  background-color: var(--sky-light);
+}
+
+#flash {
+  position: sticky;
+  top: 0px;
+  padding: 5px 0px;
+}
+
+.banner {
+  padding: 9px;
+  margin: 10px 0px;
+  box-shadow: 0px 3px 3px 0px rgba(0,0,0,0.1);
+
+  color: var(--black-base);
+  background-color: var(--sky-light);
+  border: 0px solid var(--ink-base);
+  border-top-width: 3px;
+}
+
+.success {
+  color: var(--green-text);
+  background-color: var(--green-lighter);
+  border-color: var(--green-base);
+}
+
+.info {
+  color: var(--teal-text);
+  background-color: var(--teal-lighter);
+  border-color: var(--teal-base);
+}
+
+.warning {
+  color: var(--yellow-text);
+  background-color: var(--yellow-lighter);
+  border-color: var(--yellow-base);
+}
+
+.critical {
+  color: var(--red-text);
+  background-color: var(--red-lighter);
+  border-color: var(--red-base);
 }
 
 .divider {
@@ -19,7 +61,7 @@ input[type=number] {
 }
 
 .card {
-  background-color: #fff;
+  background-color: var(--white-base);
   margin: 10px;
   padding: 10px;
   box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.2);
