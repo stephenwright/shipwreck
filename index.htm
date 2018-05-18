@@ -24,7 +24,11 @@
     <input type="button" value="Clear Storage" onclick="_clearStorage()">
   </form>
 
+  <!-- a place for status messages -->
   <div id="flash"></div>
+
+  <!-- path -->
+  <div id='ship-path'></div>
 
   <!-- injection point for rendering entities -->
   <div id="output"></div>
@@ -44,9 +48,28 @@
       flash.add(data.message, 'critical');
     });
 
+    ship.on('update', data => {
+      const link = data.entity.link('self');
+      if (!link) {
+        return;
+      }
+      const url = new URL(link.href);
+      const parts = url.pathname.split('/');
+      let href = url.origin;
+      shipPath.innerHTML = `
+        <a href="#${href}">${href}</a>
+        ${parts.map(p => {
+          if (p === '') return;
+          href = `${href}/${p}`;
+          return `<a href="#${href}">${p}</a>`;
+        }).join(' / ')}
+      `;
+    });
+
     // get handle to form inputs
     const shipHref = document.getElementById('ship-href');
     const shipToken = document.getElementById('ship-token');
+    const shipPath = document.getElementById('ship-path');
 
     shipToken.value = ship.token;
 

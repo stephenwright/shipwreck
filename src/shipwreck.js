@@ -91,22 +91,15 @@ class Shipwreck {
   }
 
   async fetch(action, data) {
-    try {
-      const response = await this.submitAction(action, data);
-      if (!response.ok) {
-        if (response.status === 401) {
-          this.token = '';
-          this._raiseEvent('error', { message: 'Auth token is no longer valid.' });
-        }
-        throw new Error(`Request failed, status: ${response.status} (${response.statusText})`);
-      }
-      const json = await response.json();
-      const entity = new SirenEntity(json);
-      this.render(entity, this.target);
+    const response = await this.submitAction(action, data);
+    if (!response.ok) {
+      this._raiseEvent('error', { message: `Request failed, status: ${response.status} (${response.statusText})` });
+      return;
     }
-    catch(err) {
-      console.error(err);
-    }
+    const json = await response.json();
+    const entity = new SirenEntity(json);
+    this.render(entity, this.target);
+    this._raiseEvent('update', { entity });
   }
 
   render(entity, target) {

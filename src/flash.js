@@ -9,6 +9,10 @@ class Flash {
   }
 
   add(msg, type) {
-    this.box.appendChild(_html(`<div class="banner ${type}">${msg}</div>`));
+    this.box.appendChild(_html(`
+      <div class="banner ${type}">
+        ${msg}
+      </div>
+    `));
   }
 }
