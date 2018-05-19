@@ -4,6 +4,21 @@ body {
   background-color: var(--sky-light);
 }
 
+.card {
+  background-color: var(--white-base);
+  margin: 10px;
+  padding: 10px;
+  box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.2);
+}
+
+.divider {
+  color: #ddd;
+  display: inline-block;
+  margin: 0 5px;
+}
+
+/* notifications */
+
 #flash {
   position: sticky;
   top: 0px;
@@ -45,11 +60,7 @@ body {
   border-color: var(--red-base);
 }
 
-.divider {
-  color: #ddd;
-  display: inline-block;
-  margin: 0 5px;
-}
+/* forms */
 
 input[type=text],
 input[type=datetime],
@@ -60,12 +71,7 @@ input[type=number] {
   box-sizing: border-box;
 }
 
-.card {
-  background-color: var(--white-base);
-  margin: 10px;
-  padding: 10px;
-  box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.2);
-}
+/* Entities */
 
 .form-field {
   margin: 5px 0;
@@ -80,8 +86,8 @@ input[type=number] {
 }
 
 .entity-properties .value {
-  background-color: #fff;
   word-break: break-word;
+  background-color: #fff;
 }
 
 .entity-raw pre {
