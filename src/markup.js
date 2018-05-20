@@ -36,6 +36,21 @@ const markup = {
       return markup.linkCard(item);
   },
 
+  ship() {
+    return `
+      <div class="shipwreck">
+        <div class="current-path"></div>
+        <div class="tabs"></div>
+        <div class="fancy">
+          <div class="flex-parent">
+            <div class="root"></div>
+          </div>
+        </div>
+        <div class="raw"></div>
+      </div>
+    `;
+  },
+
   entityCard(entity) {
     return `
       <div class="card">
@@ -79,11 +94,11 @@ const markup = {
     return `
       <form action='${action.href}' method='${action.method}' type='${action.type}' onsubmit='return false;'>
         <h3>${action.name}</h3>
-        <p>${action.method} ${action.href}</p>
         <div class='form-fields'>
           ${action.fields.map(markup.fieldForm).join('\n')}
         </div>
         <input type='submit' value='submit'>
+        <p class="entity-action-href">${action.method} ${action.href}</p>
       </form>
     `;
   },

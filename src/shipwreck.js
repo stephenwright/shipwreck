@@ -87,18 +87,7 @@ class Shipwreck {
 
   async render(entity, target) {
     // clear the content of the target output element before refilling it
-    target.innerHTML = `
-      <div class="shipwreck">
-      <div class="current-path"></div>
-      <div class="tabs"></div>
-        <div class="fancy">
-          <div class="flex-parent">
-            <div class="root"></div>
-          </div>
-        </div>
-        <div class="raw"></div>
-      </div>
-    `;
+    target.innerHTML = markup.ship();
 
     const root = target.querySelector('.root');
     const fancy = target.querySelector('.fancy');
@@ -108,7 +97,7 @@ class Shipwreck {
     // Display the raw JSON received from the API request
     raw.innerHTML = `<div class="entity-raw">${markup.code(entity.raw)}</div>`;
 
-    // --- tabs
+    // Tabs
     const tabs = target.querySelector('.tabs');
     const tab1 = _html('<a name="shipwreck-entity" class="active">Entity</a>');
     const tab2 = _html('<a name="shipwreck-raw">Raw</a>');
@@ -127,7 +116,6 @@ class Shipwreck {
     tabs.appendChild(tab1);
     tabs.appendChild(tab2);
     raw.style.display = 'none';
-    // ---
 
     // Current path
     const link = entity.link('self');
@@ -215,6 +203,7 @@ class Shipwreck {
     }
   }
 
+  // get the markup for an action form, and attach a submission event
   actionForm(action) {
     const form = _html(markup.actionForm(action));
     form.onsubmit = () => {
