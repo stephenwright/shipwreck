@@ -1,19 +1,46 @@
 @import 'colours.css';
 
-body {
+html, body {
+  margin: 0px;
+  padding: 0px;
+}
+
+.main-form {
+  padding: 10px;
+  border-bottom: 1px solid var(--sky-base);
   background-color: var(--sky-light);
 }
 
+.shipwreck {
+}
+
+.shipwreck .current-path {
+  width: 100%;
+  margin: 10px;
+}
+
+.shipwreck .current-path a {
+  display: inline-block;
+  padding: 10px 0px;
+}
+
+.shipwreck .raw,
 .shipwreck .fancy {
+  background-color: var(--sky-light);
+  padding: 10px;
+}
+
+.shipwreck .flex-parent {
   display: flex;
   flex-wrap: wrap;
 }
 
 .shipwreck .root {
   flex: 1;
+  max-width: 800px
 }
 
-.shipwreck .children {
+.shipwreck .entity-entities {
   flex: 2;
 }
 
@@ -32,6 +59,30 @@ body {
   color: #ddd;
   display: inline-block;
   margin: 0 5px;
+}
+
+/* tabs */
+
+.tabs {
+  margin: 0px;
+  /* border-bottom: solid 1px var(--sky-dark); */
+}
+
+.tabs a {
+  display: inline-block;
+  cursor: pointer;
+  padding: 6px 10px 3px;
+  border-bottom: solid 3px transparent;
+  margin: 0px 10px;
+}
+
+.tabs a:hover {
+  background-color: var(--purple-lighter);
+  border-bottom-color: var(--purple-light);
+}
+
+.tabs a.active {
+  border-bottom-color: var(--purple-base);
 }
 
 /* notifications */
@@ -95,7 +146,7 @@ input[type=number] {
 }
 
 .entity-entities .head:hover {
-  background-color: var(--sky-light);
+  background-color: var(--purple-lighter);
 }
 
 .entity-entities .body {
@@ -115,11 +166,12 @@ input[type=number] {
 
 .entity-properties .key {
   vertical-align: top;
+  font-weight: bold;
 }
 
 .entity-properties .value {
   word-break: break-word;
-  background-color: #fff;
+  /* background-color: #fff; */
 }
 
 .entity-raw pre {

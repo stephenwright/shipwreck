@@ -87,7 +87,47 @@ class Shipwreck {
 
   async render(entity, target) {
     // clear the content of the target output element before refilling it
-    target.innerHTML = '';
+    target.innerHTML = `
+      <div class="shipwreck">
+      <div class="current-path"></div>
+      <div class="tabs"></div>
+        <div class="fancy">
+          <div class="flex-parent">
+            <div class="root"></div>
+          </div>
+        </div>
+        <div class="raw"></div>
+      </div>
+    `;
+
+    const root = target.querySelector('.root');
+    const fancy = target.querySelector('.fancy');
+    const flexParent = target.querySelector('.flex-parent');
+    const raw = target.querySelector('.raw');
+
+    // Display the raw JSON received from the API request
+    raw.innerHTML = `<div class="entity-raw">${markup.code(entity.raw)}</div>`;
+
+    // --- tabs
+    const tabs = target.querySelector('.tabs');
+    const tab1 = _html('<a name="shipwreck-entity" class="active">Entity</a>');
+    const tab2 = _html('<a name="shipwreck-raw">Raw</a>');
+    tab1.onclick = () => {
+      fancy.style.display = 'block';
+      raw.style.display = 'none';
+      tab1.classList.add('active');
+      tab2.classList.remove('active');
+    };
+    tab2.onclick = () => {
+      fancy.style.display = 'none';
+      raw.style.display = 'block';
+      tab1.classList.remove('active');
+      tab2.classList.add('active');
+    };
+    tabs.appendChild(tab1);
+    tabs.appendChild(tab2);
+    raw.style.display = 'none';
+    // ---
 
     // Current path
     const link = entity.link('self');
@@ -95,23 +135,11 @@ class Shipwreck {
       const url = new URL(link.href);
       const parts = url.pathname.split('/').filter(i => i);
       let href = url.origin;
-      target.appendChild(_html(`
-        <div class="current-path">
+      target.querySelector('.current-path').innerHTML = `
           <a href="#${href}">${href}</a> /
           ${parts.map(p => `<a href="#${href = href + '/' + p}">${p}</a>`).join(' / ')}
-        </div>
-      `));
+      `;
     }
-
-    const root = _html('<div class="root"></div>');
-    const children = _html('<div class="children"></div>');
-    const fancy = _html('<div class="fancy"></div>');
-    const raw = _html('<div class="raw"></div>');
-
-    fancy.appendChild(root);
-    fancy.appendChild(children);
-    target.appendChild(fancy);
-    target.appendChild(raw);
 
     // Entity class
     entity.class.length !== 0 && root.appendChild(_html(`
@@ -161,16 +189,14 @@ class Shipwreck {
         const body = card.querySelector('.body');
         const head = card.querySelector('.head');
         head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
-
         if (e.actions.length !== 0) {
           body.appendChild(_html('<label>actions:</label>'));
           e.actions.forEach(a => body.appendChild(this.actionForm(a)));
         }
-
         entities.appendChild(card);
       });
 
-      children.appendChild(entities);
+      flexParent.appendChild(entities);
     }
 
     // Display a form for each Action
@@ -187,14 +213,6 @@ class Shipwreck {
       });
       root.appendChild(actions);
     }
-
-    // Display the raw JSON received from the API request
-    raw.appendChild(_html(`
-      <div class="entity-raw">
-        <h2>Raw</h2>
-        ${markup.code(entity.raw)}
-      </div>
-    `));
   }
 
   actionForm(action) {

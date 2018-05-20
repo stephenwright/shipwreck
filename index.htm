@@ -8,27 +8,29 @@
 <body>
 
   <!-- a form for submitting request to a Siren API -->
-  <form method="post" onsubmit="_submit(); return false;">
-    <div class="form-fields">
-      <div class="form-field">
-        <label>HREF</label>
-        <input type="text" id="ship-href">
+  <div class="main-form">
+    <form method="post" onsubmit="_submit(); return false;">
+      <div class="form-fields">
+        <div class="form-field">
+          <label>HREF</label>
+          <input type="text" id="ship-href">
+        </div>
+        <div class="form-field">
+          <label>Auth Token</label>
+          <input type="text" id="ship-token">
+        </div>
       </div>
-      <div class="form-field">
-        <label>Auth Token</label>
-        <input type="text" id="ship-token">
-      </div>
-    </div>
-    <input type="submit" value="Go">
-    <span class="divider">|</span>
-    <input type="button" value="Clear Storage" onclick="_clearStorage()">
-  </form>
+      <input type="submit" value="Go">
+      <span class="divider">|</span>
+      <input type="button" value="Clear Storage" onclick="_clearStorage()">
+    </form>
+  </div>
 
   <!-- a place for status messages -->
   <div id="flash"></div>
 
   <!-- injection point for rendering entities -->
-  <div id="output" class="shipwreck"></div>
+  <div id="output"></div>
 
   <!-- libraries and app logic -->
   <script type="text/javascript" src="./src/markup.js"></script>
