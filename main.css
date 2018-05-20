@@ -73,6 +73,18 @@ input[type=number] {
 
 /* Entities */
 
+.entity-entities .head {
+  cursor: pointer;
+}
+
+.entity-entities .head:hover {
+  background-color: var(--sky-light);
+}
+
+.entity-entities .body {
+  display: none;
+}
+
 .form-field {
   margin: 5px 0;
 }

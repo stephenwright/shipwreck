@@ -28,7 +28,13 @@ class Shipwreck {
     this._listeners[name].push(fn);
   }
 
-  _raiseEvent(name, data) {
+  off(name, fn) {
+    if (!this._listeners[name]) return;
+    if (!fn) this._listeners[name] = [];
+    else this._listeners[name] = this._listeners[name].filter(f => f != fn);
+  }
+
+  async _raiseEvent(name, data) {
     if (!this._listeners[name]) return;
     this._listeners[name].forEach(fn => fn(data));
   }
@@ -37,7 +43,7 @@ class Shipwreck {
 
   async submitAction(action, data) {
     const headers = new Headers();
-    action.type && headers.set('content-type', action.type);
+    action.type && headers.set('}content-type', action.type);
     this._token && headers.set('authorization', `Bearer ${this._token}`);
 
     let body;
@@ -75,11 +81,11 @@ class Shipwreck {
     }
     const json = await response.json();
     const entity = new SirenEntity(json);
-    this.render(entity, this.target);
-    this._raiseEvent('update', { entity });
+    await this.render(entity, this.target);
+    await this._raiseEvent('update', { entity });
   }
 
-  render(entity, target) {
+  async render(entity, target) {
     // clear the content of the target output element before refilling it
     target.innerHTML = '';
 
@@ -90,7 +96,7 @@ class Shipwreck {
       const parts = url.pathname.split('/').filter(i => i);
       let href = url.origin;
       target.appendChild(_html(`
-        <div class="entity-path">
+        <div class="current-path">
           <a href="#${href}">${href}</a> /
           ${parts.map(p => `<a href="#${href = href + '/' + p}">${p}</a>`).join(' / ')}
         </div>
@@ -133,12 +139,23 @@ class Shipwreck {
     `));
 
     // Display Entites
-    entity.entities.length !== 0 && target.appendChild(_html(`
-      <div class="entity-entities">
-        <h2>Entities</h2>
-        ${entity.entities.map(markup.card).join('\n')}
-      </div>
-    `));
+    if (entity.entities.length !== 0) {
+      const entities = _html(`
+        <div class="entity-entities">
+          <h2>Entities</h2>
+        </div>
+      `);
+
+      const cards = entity.entities.forEach(e => {
+        const card = _html(markup.card(e));
+        const body = card.querySelector('.body');
+        const head = card.querySelector('.head');
+        head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+        entities.appendChild(card);
+      });
+
+      target.appendChild(entities);
+    }
 
     // Display a form for each Action
     if (entity.actions.length !== 0) {

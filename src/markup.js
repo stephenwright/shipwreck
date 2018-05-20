@@ -39,9 +39,11 @@ const markup = {
   entityCard(entity) {
     return `
       <div class="card">
-        <div><label>class:</label> [ ${entity.class.join(', ')} ]</div>
-        <div><label>rel:</label> [ ${entity.rel.join(', ')} ]</div>
-        <div class="details">
+        <div class="head">
+          <div><label>class:</label> [ ${entity.class.join(', ')} ]</div>
+          <div><label>rel:</label> [ ${entity.rel.join(', ')} ]</div>
+        </div>
+        <div class="body">
           <div><label>title:</label> ${entity.title}</div>
           <label>links:</label>
           <ul>
