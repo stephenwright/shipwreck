@@ -103,8 +103,18 @@ class Shipwreck {
       `));
     }
 
+    const root = _html('<div class="root"></div>');
+    const children = _html('<div class="children"></div>');
+    const fancy = _html('<div class="fancy"></div>');
+    const raw = _html('<div class="raw"></div>');
+
+    fancy.appendChild(root);
+    fancy.appendChild(children);
+    target.appendChild(fancy);
+    target.appendChild(raw);
+
     // Entity class
-    entity.class.length !== 0 && target.appendChild(_html(`
+    entity.class.length !== 0 && root.appendChild(_html(`
       <div class="entity-class">
         <h2>Class</h2>
         [ ${entity.class.join(', ')} ]
@@ -122,7 +132,7 @@ class Shipwreck {
           </tr>`)
         .join('\n');
 
-      target.appendChild(_html(`
+      root.appendChild(_html(`
         <div class="entity-properties">
           <h2>Properties</h2>
           <table><tbody>${rows}</tbody></table>
@@ -131,7 +141,7 @@ class Shipwreck {
     }
 
     // Display all the Links
-    entity.links.length !== 0 && target.appendChild(_html(`
+    entity.links.length !== 0 && root.appendChild(_html(`
       <div class="entity-links">
         <h2>Links</h2>
         ${entity.links.map(l => `<div>${markup.linkAnchor(l)}</div>`).join('\n')}
@@ -160,7 +170,7 @@ class Shipwreck {
         entities.appendChild(card);
       });
 
-      target.appendChild(entities);
+      children.appendChild(entities);
     }
 
     // Display a form for each Action
@@ -175,11 +185,11 @@ class Shipwreck {
         card.appendChild(this.actionForm(a));
         actions.appendChild(card);
       });
-      target.appendChild(actions);
+      root.appendChild(actions);
     }
 
     // Display the raw JSON received from the API request
-    target.appendChild(_html(`
+    raw.appendChild(_html(`
       <div class="entity-raw">
         <h2>Raw</h2>
         ${markup.code(entity.raw)}

@@ -4,6 +4,19 @@ body {
   background-color: var(--sky-light);
 }
 
+.shipwreck .fancy {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.shipwreck .root {
+  flex: 1;
+}
+
+.shipwreck .children {
+  flex: 2;
+}
+
 .card {
   background-color: var(--white-base);
   margin: 10px;
