@@ -11,6 +11,10 @@ body {
   box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.2);
 }
 
+.card h1 { font-size: 1.2em; }
+.card h2 { font-size: 1.1em; }
+.card h3 { font-size: 1.0em; }
+
 .divider {
   color: #ddd;
   display: inline-block;
@@ -83,6 +87,9 @@ input[type=number] {
 
 .entity-entities .body {
   display: none;
+}
+
+.entity-entities label {
 }
 
 .form-field {

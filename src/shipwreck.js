@@ -43,7 +43,7 @@ class Shipwreck {
 
   async submitAction(action, data) {
     const headers = new Headers();
-    action.type && headers.set('}content-type', action.type);
+    action.type && headers.set('content-type', action.type);
     this._token && headers.set('authorization', `Bearer ${this._token}`);
 
     let body;
@@ -151,6 +151,12 @@ class Shipwreck {
         const body = card.querySelector('.body');
         const head = card.querySelector('.head');
         head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+
+        if (e.actions.length !== 0) {
+          body.appendChild(_html('<label>actions:</label>'));
+          e.actions.forEach(a => body.appendChild(this.actionForm(a)));
+        }
+
         entities.appendChild(card);
       });
 
@@ -164,20 +170,11 @@ class Shipwreck {
           <h2>Actions</h2>
         </div>
       `);
-
       entity.actions.forEach(a => {
         const card = _html(`<div class="card"></div>`);
-        const form = _html(markup.actionForm(a));
-        form.onsubmit = () => {
-          const data = {};
-          a.fields.forEach(f => data[f.name] = form.elements[f.name].value);
-          this.fetch(a, data);
-          return false;
-        };
-        card.appendChild(form);
+        card.appendChild(this.actionForm(a));
         actions.appendChild(card);
       });
-
       target.appendChild(actions);
     }
 
@@ -188,6 +185,17 @@ class Shipwreck {
         ${markup.code(entity.raw)}
       </div>
     `));
+  }
+
+  actionForm(action) {
+    const form = _html(markup.actionForm(action));
+    form.onsubmit = () => {
+      const data = {};
+      action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
+      this.fetch(action, data);
+      return false;
+    };
+    return form;
   }
 
 }
