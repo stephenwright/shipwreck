@@ -3,6 +3,30 @@
  *
  * A simple client for working with Siren Hypermedia APIs
  */
+
+//import * from './siren.js';
+//import markup from './markup.js';
+
+/**
+ * Convert a JSON object into a URL encoded parameter string.
+ * Usefull for sending data in a query string, or as form parameters
+ */
+const _urlencode = data => {
+  return Object
+    .keys(data)
+    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
+    .join('&');
+}
+
+/** Convert a string to a DOM node */
+const _html = str => {
+  const template = document.createElement('template');
+  template.innerHTML = str.trim();
+  return template.content.firstChild;
+}
+
+/**
+ */
 class Shipwreck {
 
   constructor(target) {
@@ -88,9 +112,46 @@ class Shipwreck {
   }
 
   async render(entity, target) {
-    markup.ship(entity, target, ({entity, action, data}) => {
-      this.fetch(action, data);
+    target.innerHTML = markup.ship(entity);
+
+    // Tabs
+    const contents = target.querySelectorAll('.shipwreck > .content');
+    const tabs = target.querySelectorAll('.shipwreck > .tabs > a');
+    tabs.forEach(tab => {
+      tab.onclick = () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        contents.forEach(c => c.style.display = c.id === tab.name ? 'block' : 'none');
+      };
     });
+    tabs[0].click();
+
+    // intercept form submission
+    target.querySelectorAll('.entity-actions form').forEach(form => this.fixForm(form, entity));
+
+    // sub entities
+    const parent = target.querySelector('.entity-entities');
+    entity.entities.forEach(e => {
+      const card = _html(markup.card(e));
+      parent.appendChild(card);
+      // intercept form submission
+      card.querySelectorAll('.entity-actions form').forEach(form => this.fixForm(form, e));
+      // toggle body visibility when head is clicked
+      const body = card.querySelector('.body');
+      const head = card.querySelector('.head');
+      head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+
+  fixForm(form, entity) {
+    const action = entity.action(form.getAttribute('name'));
+    if (!action) return;
+    form.onsubmit = () => {
+      const data = {};
+      action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
+      this.fetch(action, data);
+      return false; // prevent browser from following form.action
+    };
   }
 
 }

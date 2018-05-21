@@ -1,21 +1,4 @@
-
-/**
- * Convert a JSON object into a URL encoded parameter string.
- * Usefull for sending data in a query string, or as form parameters
- */
-const _urlencode = data => {
-  return Object
-    .keys(data)
-    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
-    .join('&');
-}
-
-/** Convert a string to a DOM node */
-const _html = str => {
-  const template = document.createElement('template');
-  template.innerHTML = str.trim();
-  return template.content.firstChild;
-}
+//import * from './siren.js';
 
 /** helpers for generating HTML markup */
 const markup = {
@@ -124,14 +107,40 @@ const markup = {
     `;
   },
 
+  propertyRows(entity) {
+    return Object
+      .keys(entity.properties)
+      .map(k => `
+        <tr>
+          <td class="key">${k}:</td>
+          <td class="value">${entity.properties[k]}</td>
+        </tr>`
+      )
+      .join('\n');
+  },
+
+  // Display the [self] href in a nice clickable manner
+  currentPath(entity) {
+    const link = entity.link('self');
+    if (!link) return '';
+    const url = new URL(link.href);
+    let href = url.origin;
+    const path = url.pathname
+      .split('/')
+      .filter(i => i)
+      .map(part => `<a href="#${href = href + '/' + part}">${part}</a>`)
+      .join(' / ');
+    return `<a href="#${url.origin}">${url.origin}</a> / ${path}`;
+  },
+
   // Main Container
 
-  ship(entity, target, formSubmitHandler) {
-    target.innerHTML = `
+  ship(entity) {
+    return `
       <div class="shipwreck">
 
         <!-- Display the current location in a nice clickable manner -->
-        <div class="current-path"></div>
+        <div class="current-path">${markup.currentPath(entity)}</div>
 
         <!-- Tabs to switch between raw and pretty views -->
         <div class="tabs">
@@ -156,10 +165,10 @@ const markup = {
 
               <div class="entity-properties" ${Object.keys(entity.properties).length === 0 ? 'hidden': ''}>
                 <h2>Properties</h2>
-                <table><tbody></tbody></table>
+                <table><tbody>${markup.propertyRows(entity)}</tbody></table>
               </div>
 
-              <div class="entity-actions">
+              <div class="entity-actions" ${entity.actions.length === 0 ? 'hidden': ''}>
                 <h2>Actions</h2>
                 ${entity.actions.map(markup.card).join('\n')}
               </div>
@@ -167,6 +176,7 @@ const markup = {
             </div>
             <div class="flex-2" ${entity.entities.length === 0 ? 'hidden': ''}>
 
+              <!-- Sub-Entities -->
               <div class="entity-entities">
                 <h2>Entities</h2>
               </div>
@@ -182,70 +192,6 @@ const markup = {
 
       </div>
     `;
-
-    // Tabs
-    const contents = target.querySelectorAll('.shipwreck > .content');
-    const tabs = target.querySelectorAll('.shipwreck > .tabs > a');
-    tabs.forEach(tab => {
-      tab.onclick = () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        contents.forEach(c => c.style.display = c.id === tab.name ? 'block' : 'none');
-      };
-    });
-    tabs[0].click();
-
-    // Current path
-    const link = entity.link('self');
-    if (link) {
-      const url = new URL(link.href);
-      const parts = url.pathname.split('/').filter(i => i);
-      let href = url.origin;
-      target.querySelector('.current-path').innerHTML = `
-          <a href="#${href}">${href}</a> /
-          ${parts.map(p => `<a href="#${href = href + '/' + p}">${p}</a>`).join(' / \n')}
-      `;
-    }
-
-    // Display the Properties
-    const tbody = target.querySelector('.entity-properties tbody');
-    const rows = Object
-      .keys(entity.properties)
-      .forEach(k => tbody.appendChild(_html(`
-        <tr>
-          <td class="key">${k}:</td>
-          <td class="value">${entity.properties[k]}</td>
-        </tr>`
-      )));
-
-    const formFix = e => {
-      return form => {
-        const action = e.action(form.getAttribute('name'));
-        if (!action) return;
-        form.onsubmit = () => {
-          const data = {};
-          action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
-          formSubmitHandler && formSubmitHandler({ entity: e, action, data });
-          return false; // prevent browser from following form.action
-        };
-      };
-    };
-
-    // intercept form submission
-    target.querySelectorAll('.entity-actions form').forEach(formFix(entity));
-
-    // sub entities
-    const parent = target.querySelector('.entity-entities');
-    entity.entities.forEach(e => {
-      const card = _html(markup.card(e));
-      parent.appendChild(card);
-      // intercept form submission
-      card.querySelectorAll('.entity-actions form').forEach(formFix(e));
-      // toggle body visibility when head is clicked
-      const body = card.querySelector('.body');
-      const head = card.querySelector('.head');
-      head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
-    });
   },
 
 };

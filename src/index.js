@@ -1,3 +1,4 @@
+// import Shipwreck from './shipwreck.js';
 
 // notifications
 const flash = {
@@ -9,9 +10,10 @@ const flash = {
 // handles to form inputs
 const shipHref = document.getElementById('ship-href');
 const shipToken = document.getElementById('ship-token');
+const shipOutput = document.getElementById('ship-output');
 
 // create shipwreck instance
-const ship = new Shipwreck(document.getElementById('output'));
+const ship = new Shipwreck(shipOutput);
 
 ship.on('error', data => {
   flash.add(data.message, 'critical');
