@@ -22,7 +22,6 @@ shipToken.value = ship.token;
 // clear auth token
 const _clearStorage = async () => {
   flash.clear();
-  sessionStorage.clear();
   shipToken.value = '';
   ship.token = '';
   flash.add('Session storage has been cleared.', 'success');

@@ -20,11 +20,6 @@ const _html = str => {
 /** helpers for generating HTML markup */
 const markup = {
 
-  a(href, text) {
-    return `<a href="#${href}">${text}</a>`;
-  },
-
-  /** Stringify a JSON object into a code block */
   code(json) {
     return `<pre><code>${JSON.stringify(json, null, 2)}</code></pre>`;
   },
@@ -39,6 +34,8 @@ const markup = {
     else
       return '';
   },
+
+  // Entities
 
   entityCard(entity) {
     return `
@@ -69,14 +66,17 @@ const markup = {
   // Links
 
   linkAnchor(link) {
-    const links = link.rel.map(rel => markup.a(link.href, rel)).join(', ');
-    return `[ ${links} ] ${markup.a(link.href, link.title)}`;
+    const rels = link.rel.map(rel => `<a href="#${link.href}">${rel}</a>`).join(', ');
+    return `[ ${rels} ] <a href="#${link.href}">${link.title}</a>`;
   },
 
   linkCard(link) {
     return `
       <div class="card">
-        <h3>${link.anchor}</h3>
+        <div class="head">
+          <div><label>rel:</label> [ ${link.rel.join(', ')} ]</div>
+          <div><label>href:</label> ${link.href}</div>
+        </div>
       </div>
     `;
   },
@@ -124,6 +124,8 @@ const markup = {
     `;
   },
 
+  // Main Container
+
   ship(entity, target) {
     target.innerHTML = `
       <div class="shipwreck">
@@ -133,7 +135,7 @@ const markup = {
 
         <!-- Tabs to switch between raw and pretty views -->
         <div class="tabs">
-          <a name="content-entity" class="active">Entity</a>
+          <a name="content-entity">Entity</a>
           <a name="content-raw">Raw</a>
         </div>
 
@@ -192,6 +194,7 @@ const markup = {
         contents.forEach(c => c.style.display = c.id === tab.name ? 'block' : 'none');
       };
     });
+    tabs[0].click();
 
     // Current path
     const link = entity.link('self');
