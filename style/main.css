@@ -35,6 +35,8 @@ label {
   margin: 0 5px;
 }
 
+/* Shipwreck */
+
 .shipwreck {
 }
 
@@ -47,23 +49,17 @@ label {
   padding: 10px 0px;
 }
 
-.shipwreck .raw,
-.shipwreck .fancy {
-  background-color: var(--sky-light);
-  padding: 10px;
-}
-
 .shipwreck .flex-parent {
   display: flex;
   flex-wrap: wrap;
 }
 
-.shipwreck .root {
+.shipwreck .flex-1 {
   flex: 1;
   max-width: 800px
 }
 
-.shipwreck .entity-entities {
+.shipwreck .flex-2 {
   flex: 2;
 }
 
@@ -89,6 +85,11 @@ label {
 
 .tabs a.active {
   border-bottom-color: var(--purple-base);
+}
+
+.shipwreck .content {
+  background-color: var(--sky-light);
+  padding: 10px;
 }
 
 /* notifications */
