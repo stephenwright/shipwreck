@@ -126,7 +126,7 @@ const markup = {
 
   // Main Container
 
-  ship(entity, target) {
+  ship(entity, target, formSubmitHandler) {
     target.innerHTML = `
       <div class="shipwreck">
 
@@ -169,7 +169,6 @@ const markup = {
 
               <div class="entity-entities">
                 <h2>Entities</h2>
-                ${entity.entities.map(markup.card).join('\n')}
               </div>
 
             </div>
@@ -219,8 +218,30 @@ const markup = {
         </tr>`
       )));
 
-    // Make sub entity content togglable
-    target.querySelectorAll('.entity-entities > .card').forEach(card => {
+    const formFix = e => {
+      return form => {
+        const action = e.action(form.getAttribute('name'));
+        if (!action) return;
+        form.onsubmit = () => {
+          const data = {};
+          action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
+          formSubmitHandler && formSubmitHandler({ entity: e, action, data });
+          return false; // prevent browser from following form.action
+        };
+      };
+    };
+
+    // intercept form submission
+    target.querySelectorAll('.entity-actions form').forEach(formFix(entity));
+
+    // sub entities
+    const parent = target.querySelector('.entity-entities');
+    entity.entities.forEach(e => {
+      const card = _html(markup.card(e));
+      parent.appendChild(card);
+      // intercept form submission
+      card.querySelectorAll('.entity-actions form').forEach(formFix(e));
+      // toggle body visibility when head is clicked
       const body = card.querySelector('.body');
       const head = card.querySelector('.head');
       head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';

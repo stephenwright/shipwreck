@@ -88,20 +88,8 @@ class Shipwreck {
   }
 
   async render(entity, target) {
-    markup.ship(entity, target);
-    // intercept action form submissions
-    target.querySelectorAll('.entity-actions form').forEach(form => {
-      const action = entity.action(form.getAttribute('name'));
-      if (!action) {
-        this._raise('error', { message: `Unable to find action(${form.getAttribute('name')}).` });
-        return;
-      }
-      form.onsubmit = () => {
-        const data = {};
-        action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
-        this.fetch(action, data);
-        return false; // prevent browser from following form.action
-      };
+    markup.ship(entity, target, ({entity, action, data}) => {
+      this.fetch(action, data);
     });
   }
 
