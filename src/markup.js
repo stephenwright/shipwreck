@@ -110,12 +110,15 @@ const markup = {
   propertyRows(entity) {
     return Object
       .keys(entity.properties)
-      .map(k => `
-        <tr>
-          <td class="key">${k}:</td>
-          <td class="value">${entity.properties[k]}</td>
-        </tr>`
-      )
+      .map(key => {
+        let val = entity.properties[key];
+        val = typeof val === 'object' ? markup.code(val) : `<code>${val}</code>`;
+        return `
+          <tr>
+            <td class="key">${key}:</td>
+            <td class="value">${val}</td>
+          </tr>`;
+      })
       .join('\n');
   },
 

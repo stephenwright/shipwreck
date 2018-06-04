@@ -148,6 +148,10 @@ input[type=number] {
 
 /* Entities */
 
+.entity-properties tr:hover {
+  background-color: var(--yellow-lighter);
+}
+
 .entity-properties td {
   padding: 5px;
 }
@@ -155,10 +159,15 @@ input[type=number] {
 .entity-properties .key {
   vertical-align: top;
   font-weight: bold;
+  color: var(--ink-light);
 }
 
 .entity-properties .value {
   word-break: break-word;
+}
+
+.entity-properties .value pre {
+  margin: 0;
 }
 
 /* Sub Entities */
