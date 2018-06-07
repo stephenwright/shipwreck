@@ -4,6 +4,7 @@ html, body {
   margin: 0px;
   padding: 0px;
   color: var(--ink-base);
+  padding-bottom: 200px;
 }
 
 label {
@@ -97,7 +98,7 @@ label {
 #flash {
   position: sticky;
   top: 0px;
-  padding: 5px 0px;
+  padding: 5px 10px;
 }
 
 .banner {

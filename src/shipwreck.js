@@ -101,14 +101,21 @@ class Shipwreck {
 
   // submit a request and display the response
   async fetch(action, data) {
+    this._raise('fetch', { message: 'Doing a fetch.', action, data });
     const response = await this.submitAction(action, data);
     if (!response.ok) {
       this._raise('error', { message: `Request failed, status: ${response.status} (${response.statusText})` });
       return;
     }
-    const json = await response.json();
-    const entity = new SirenEntity(json);
-    await this.render(entity, this.target);
+    this._raise('success', { message: `Request success, status: ${response.status} (${response.statusText})` });
+    try {
+      const json = await response.json();
+      const entity = new SirenEntity(json);
+      await this.render(entity, this.target);
+    }
+    catch (err) {
+      console.warn(err);
+    }
   }
 
   async render(entity, target) {

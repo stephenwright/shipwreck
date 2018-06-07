@@ -15,8 +15,16 @@ const shipOutput = document.getElementById('ship-output');
 // create shipwreck instance
 const ship = new Shipwreck(shipOutput);
 
+ship.on('fetch', data => {
+  flash.clear();
+});
+
 ship.on('error', data => {
   flash.add(data.message, 'critical');
+});
+
+ship.on('success', data => {
+  //flash.add(data.message, 'success');
 });
 
 shipToken.value = ship.token;
@@ -36,7 +44,6 @@ const _submit = async () => {
   if (active) return;
   active = true;
   try {
-    flash.clear();
     location.hash = shipHref.value;
     ship.token = shipToken.value;
     await ship.fetch({ href: shipHref.value });
@@ -49,7 +56,6 @@ const _submit = async () => {
 
 // sync the location hash with the api href input field
 const _checkHash = () => {
-  if (shipHref.value === location.hash) return;
   shipHref.value = location.hash.slice(1);
   _submit();
 }
