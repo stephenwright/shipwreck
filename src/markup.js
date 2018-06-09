@@ -90,10 +90,15 @@ const markup = {
         return `<input type="${field.type}" value="${field.value}" name="${field.name}">`;
 
       default:
+        let extraAttributes = '';
+        if (field.type.toLowerCase() === 'number') {
+          extraAttributes = 'step="any"';
+        }
+
         return `
           <div class="form-field">
             <label>${field.name}</label>
-            <input type="${field.type}" value="${field.value}" name="${field.name}">
+            <input type="${field.type}" value="${field.value}" name="${field.name}" ${extraAttributes}>
           </div>
           `;
     }
