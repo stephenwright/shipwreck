@@ -85,16 +85,19 @@ const markup = {
   },
 
   fieldForm(field) {
-    switch (field.type) {
+    switch (field.type.toLowerCase()) {
       case 'hidden':
         return `<input type="${field.type}" value="${field.value}" name="${field.name}">`;
 
-      default:
-        let extraAttributes = '';
-        if (field.type.toLowerCase() === 'number') {
-          extraAttributes = 'step="any"';
-        }
+      case 'number':
+        return `
+          <div class="form-field">
+            <label>${field.name}</label>
+            <input type="${field.type}" value="${field.value}" name="${field.name}" step="any">
+          </div>
+          `;
 
+      default:
         return `
           <div class="form-field">
             <label>${field.name}</label>
