@@ -62,7 +62,7 @@ const clearStorage = async function () {
 }
 
 // submit form
-const submit = function () {
+const submitRequest = function () {
   location.hash = shipHref.value;
   _setSail();
 }
