@@ -37,14 +37,6 @@ ship.on('update', data => {
 
 shipToken.value = ship.token;
 
-// clear auth token
-const clearStorage = async () => {
-  flash.clear();
-  shipToken.value = '';
-  ship.token = null;
-  flash.add('Session storage has been cleared.', 'success');
-}
-
 // submit API reqest
 let active = false;
 const _setSail = async function () {
@@ -59,6 +51,14 @@ const _setSail = async function () {
     console.error(err);
   }
   active = false;
+}
+
+// clear auth token
+const clearStorage = async function () {
+  flash.clear();
+  shipToken.value = '';
+  ship.token = null;
+  flash.add('Session storage has been cleared.', 'success');
 }
 
 // submit form
