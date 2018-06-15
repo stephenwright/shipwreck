@@ -102,8 +102,8 @@ class Shipwreck {
   }
 
   // submit a request and display the response
-  async fetch(action, data) {
-    if (action.href === this._href) return;
+  async fetch(action, data, force = false) {
+    if (!force && action.href === this._href) return;
     this._raise('fetch', { message: 'Doing a fetch.', action, data });
     const response = await this.submitAction(action, data);
     if (!response.ok) {
@@ -133,11 +133,11 @@ class Shipwreck {
   fixForm(form, entity) {
     const action = entity.action(form.getAttribute('name'));
     if (!action) return;
-    form.onsubmit = () => {
+    form.onsubmit = (e) => {
+      e.preventDefault();
       const data = {};
       action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
-      this.fetch(action, data);
-      return false; // prevent browser from following form.action
+      this.fetch(action, data, true);
     };
   }
 
