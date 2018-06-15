@@ -27,24 +27,23 @@ ship.on('success', data => {
   //flash.add(data.message, 'success');
 });
 
-shipToken.value = ship.token;
+ship.on('update', data => {
+  const { entity } = data;
+  const self = entity.link('self');
+  if (!self) return;
+  shipHref.value = self.href;
+  location.hash = self.href;
+});
 
-// clear auth token
-const _clearStorage = async () => {
-  flash.clear();
-  shipToken.value = '';
-  ship.token = '';
-  flash.add('Session storage has been cleared.', 'success');
-}
+shipToken.value = ship.token;
 
 // submit API reqest
 let active = false;
-const _submit = async () => {
+const _setSail = async function () {
   // one request at a time
   if (active) return;
   active = true;
   try {
-    location.hash = shipHref.value;
     ship.token = shipToken.value;
     await ship.fetch({ href: shipHref.value });
   }
@@ -54,10 +53,24 @@ const _submit = async () => {
   active = false;
 }
 
+// clear auth token
+const clearStorage = async function () {
+  flash.clear();
+  shipToken.value = '';
+  ship.token = null;
+  flash.add('Session storage has been cleared.', 'success');
+}
+
+// submit form
+const submit = function () {
+  location.hash = shipHref.value;
+  _setSail();
+}
+
 // sync the location hash with the api href input field
-const _checkHash = () => {
+const _checkHash = function () {
   shipHref.value = location.hash.slice(1);
-  _submit();
+  _setSail();
 }
 
 window.onhashchange = _checkHash;

@@ -139,9 +139,9 @@ const markup = {
     const path = url.pathname
       .split('/')
       .filter(i => i)
-      .map(part => `<a href="#${href = href + '/' + part}">${part}</a>`)
+      .map(part => `<a href="${href = href + '/' + part}">${part}</a>`)
       .join(' / ');
-    return `<a href="#${url.origin}">${url.origin}</a> / ${path}`;
+    return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
   },
 
   // Main Container

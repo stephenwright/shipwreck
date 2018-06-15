@@ -9,7 +9,7 @@
 
   <!-- a form for submitting request to a Siren API -->
   <div class="main-form">
-    <form method="post" onsubmit="_submit(); return false;">
+    <form method="post" onsubmit="submitRequest(); return false;">
       <div class="form-fields">
         <div class="form-field">
           <label>HREF</label>
@@ -22,7 +22,7 @@
       </div>
       <input type="submit" value="Go">
       <span class="divider">|</span>
-      <input type="button" value="Clear Storage" onclick="_clearStorage()">
+      <input type="button" value="Clear Storage" onclick="clearStorage()">
     </form>
   </div>
 
