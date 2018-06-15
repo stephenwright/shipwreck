@@ -2,6 +2,7 @@
  * Classes for working with Siren Entities
  *
  * Entity
+ * - SubEntity
  * - Links
  * - Actions
  *   - Fields
@@ -12,7 +13,7 @@ class SirenBase {
     this.raw = json;
   }
 
-  json() {
+  get json() {
     return {};
   }
 
@@ -53,7 +54,7 @@ class SirenEntity extends SirenBase {
     return this.links.find(l => l.rel.includes(rel));
   }
 
-  json() {
+  get json() {
     const data = {};
     if (this.actions.length !== 0) data['actions'] = this.actions.map(action => action.json());
     if (this.class.length !== 0) data['class'] = this.class;
@@ -74,7 +75,7 @@ class SirenSubEntity extends SirenEntity {
     this.rel = json['rel'] || [];
   }
 
-  json() {
+  get json() {
     const data = super.json();
     if (this.rel.length !== 0) data['rel'] = this.rel;
     return data;
@@ -95,7 +96,7 @@ class SirenLink extends SirenBase {
     this.title = json['title'] = '';
   }
 
-  json() {
+  get json() {
     const data = {
       'rel': this.rel,
       'href': this.href,
@@ -128,7 +129,7 @@ class SirenAction extends SirenBase {
     return this.actions.find(a => a.name === name);
   }
 
-  json() {
+  get json() {
     const data = {
       'name': this.name,
       'href': this.href,
@@ -156,7 +157,7 @@ class SirenField extends SirenBase {
     this.value = json['value'] || '';
   }
 
-  json() {
+  get json() {
     const data = {
       'name': this.name,
     };

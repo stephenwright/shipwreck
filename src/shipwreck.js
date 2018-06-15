@@ -69,6 +69,7 @@ class Shipwreck {
   // -----
 
   async submitAction(action, data) {
+    const method = action.method || 'GET';
     const headers = new Headers();
     action.type && headers.set('content-type', action.type);
     this._token && headers.set('authorization', `Bearer ${this._token}`);
@@ -77,7 +78,7 @@ class Shipwreck {
     let url = action.href;
 
     if (data) {
-      if (['GET', 'HEAD'].includes(action.method)) {
+      if (['GET', 'HEAD'].includes(method)) {
         url = `${url}?${_urlencode(data)}`;
       }
       else if (action.type.indexOf('json') !== -1) {
@@ -92,11 +93,11 @@ class Shipwreck {
       body,
       cache: 'no-cache',
       headers,
-      method: action.method || 'GET',
+      method,
       mode: 'cors',
     };
 
-    return await fetch(url, options);
+    return fetch(url, options);
   }
 
   // submit a request and display the response
