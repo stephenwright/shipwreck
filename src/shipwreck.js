@@ -33,6 +33,7 @@ class Shipwreck {
     this.target = target;
     this._token = sessionStorage.getItem('auth-token') || '';
     this._listeners = {};
+    this._href = '';
   }
 
   get token() {
@@ -102,6 +103,7 @@ class Shipwreck {
 
   // submit a request and display the response
   async fetch(action, data) {
+    if (action.href === this._href) return;
     this._raise('fetch', { message: 'Doing a fetch.', action, data });
     const response = await this.submitAction(action, data);
     if (!response.ok) {
@@ -109,18 +111,42 @@ class Shipwreck {
       return;
     }
     this._raise('success', { message: `Request success, status: ${response.status} (${response.statusText})` });
+    this._href = action.href;
     try {
       const json = await response.json();
       const entity = new SirenEntity(json);
       await this.render(entity, this.target);
+      this._raise('update', { message: 'Updated Entity', entity });
     }
     catch (err) {
       console.warn(err);
     }
   }
 
+  pathClick(e) {
+    const href = e.target.href;
+    e.preventDefault();
+    if (this._href === href) return;
+    this.fetch({ href });
+  }
+
+  fixForm(form, entity) {
+    const action = entity.action(form.getAttribute('name'));
+    if (!action) return;
+    form.onsubmit = () => {
+      const data = {};
+      action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
+      this.fetch(action, data);
+      return false; // prevent browser from following form.action
+    };
+  }
+
   async render(entity, target) {
     target.innerHTML = markup.ship(entity);
+
+    // Current Path
+    const pathLinks = target.querySelectorAll('.current-path a');
+    pathLinks.forEach(a => a.addEventListener('click', this.pathClick.bind(this)));
 
     // Tabs
     const contents = target.querySelectorAll('.shipwreck > .content');
@@ -150,16 +176,4 @@ class Shipwreck {
       head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
     });
   }
-
-  fixForm(form, entity) {
-    const action = entity.action(form.getAttribute('name'));
-    if (!action) return;
-    form.onsubmit = () => {
-      const data = {};
-      action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
-      this.fetch(action, data);
-      return false; // prevent browser from following form.action
-    };
-  }
-
 }
