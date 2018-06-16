@@ -1,4 +1,4 @@
-// import Shipwreck from './shipwreck.js';
+import { Shipwreck, _html } from './shipwreck.js';
 
 // notifications
 const flash = {
@@ -60,6 +60,9 @@ const clearStorage = async function () {
   ship.token = null;
   flash.add('Session storage has been cleared.', 'success');
 }
+document
+  .getElementById('clear-storage-button')
+  .addEventListener('click', clearStorage);
 
 // submit form
 const submitRequest = function (e) {
@@ -67,8 +70,9 @@ const submitRequest = function (e) {
   location.hash = shipHref.value;
   _setSail();
 };
-const mainForm = document.getElementById('main-form')
-mainForm.addEventListener('submit', submitRequest);
+document
+  .getElementById('main-form')
+  .addEventListener('submit', submitRequest);
 
 // sync the location hash with the api href input field
 const _checkHash = function (e) {
