@@ -146,6 +146,7 @@ export class Shipwreck {
     }
   }
 
+  // display the markup and attach and logic
   async render(entity, target) {
     target.innerHTML = markup.ship(entity);
 
@@ -161,7 +162,7 @@ export class Shipwreck {
     });
     tabs[0].click();
 
-    // sub entities
+    // Sub-Entities
     const parent = target.querySelector('.entity-entities');
     entity.entities.forEach(e => {
       const card = _html(markup.card(e));
@@ -172,7 +173,7 @@ export class Shipwreck {
       head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
     });
 
-    // Links
+    // Links (do this after sub entities are added)
     target.querySelectorAll('.current-path a, #content-entity a')
       .forEach(a => a.addEventListener('click', (e) => {
         e.preventDefault();
