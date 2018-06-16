@@ -72,6 +72,12 @@ export class Shipwreck {
 
   // ----- events
 
+  // fetch: starting a fetch
+  // error: something went wrong
+  // success: fetch was successful
+  // complete: fetch complete (calls wether it was successful or not)
+  // update: then entity has been updated
+
   on(name, fn)  {
     this._listeners[name] = this._listeners[name] || [];
     this._listeners[name].push(fn);
@@ -144,6 +150,7 @@ export class Shipwreck {
     } catch (err) {
       console.warn(err); // eslint-disable-line no-console
     }
+    this._raise('complete', { message: 'Fetch complete.' });
   }
 
   // display the markup and attach and logic

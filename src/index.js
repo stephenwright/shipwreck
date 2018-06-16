@@ -12,18 +12,26 @@ const shipHref = document.getElementById('ship-href');
 const shipToken = document.getElementById('ship-token');
 const shipOutput = document.getElementById('ship-output');
 
+const loadingBar = document.getElementById('loading-bar');
+
 // create shipwreck instance
 const ship = new Shipwreck(shipOutput);
 
 ship.on('fetch', () => {
+  loadingBar.style.backgroundColor = 'var(--purple-base)';
+  loadingBar.style.width = '10%';
   flash.clear();
 });
 
 ship.on('error', data => {
+  loadingBar.style.backgroundColor = 'var(--red-base)';
+  loadingBar.style.width = '100%';
   flash.add(data.message, 'critical');
 });
 
 ship.on('success', () => {
+  loadingBar.style.backgroundColor = 'var(--green-base)';
+  loadingBar.style.width = '100%';
   //flash.add(data.message, 'success');
 });
 

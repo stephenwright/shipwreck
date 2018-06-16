@@ -36,6 +36,15 @@ label {
   margin: 0 5px;
 }
 
+#loading-bar {
+  position: sticky;
+  top: 0px;
+  width: 0%;
+  height: 6px;
+  background-color: var(--green-base);
+  transition: width .5s ease;
+}
+
 /* Shipwreck */
 
 .shipwreck {
@@ -96,8 +105,6 @@ label {
 /* notifications */
 
 #flash {
-  position: sticky;
-  top: 0px;
   padding: 5px 10px;
 }
 
