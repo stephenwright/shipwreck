@@ -50,8 +50,8 @@ const markup = {
   // Links
 
   linkAnchor(link) {
-    const rels = link.rel.map(rel => `<a href="#${link.href}">${rel}</a>`).join(', ');
-    return `[ ${rels} ] <a href="#${link.href}">${link.title}</a>`;
+    const rels = link.rel.map(rel => `<a href="${link.href}">${rel}</a>`).join(', ');
+    return `[ ${rels} ] <a href="${link.href}">${link.title}</a>`;
   },
 
   linkCard(link) {

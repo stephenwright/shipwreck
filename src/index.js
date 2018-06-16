@@ -79,7 +79,11 @@ document
 
 // sync the location hash with the api href input field
 const _checkHash = function () {
-  shipHref.value = location.hash.slice(1);
+  const hash = location.hash.slice(1);
+  if (shipHref.value === hash) {
+    return;
+  }
+  shipHref.value = hash;
   _setSail();
 };
 

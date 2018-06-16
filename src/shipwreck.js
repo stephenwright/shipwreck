@@ -32,7 +32,6 @@ export class Shipwreck {
     this.target = target;
     this._token = sessionStorage.getItem('auth-token') || '';
     this._listeners = {};
-    this._href = '';
     document.body.addEventListener('submit', async (e) => {
       if (!this.target.contains(e.target)) {
         return;
@@ -51,7 +50,7 @@ export class Shipwreck {
           data[el.name] = el.value;
         }
       }
-      this.fetch(action, data, true);
+      this.fetch(action, data);
     });
   }
 
@@ -129,10 +128,7 @@ export class Shipwreck {
   }
 
   // submit a request and display the response
-  async fetch(action, data, force = false) {
-    if (!force && action.href === this._href) {
-      return;
-    }
+  async fetch(action, data) {
     this._raise('fetch', { message: 'Doing a fetch.', action, data });
     const response = await this.submitAction(action, data);
     if (!response.ok) {
@@ -140,15 +136,10 @@ export class Shipwreck {
       return;
     }
     this._raise('success', { message: `Request success, status: ${response.status} (${response.statusText})` });
-    this._href = action.href;
     try {
       const json = await response.json();
       const entity = new SirenEntity(json);
       await this.render(entity, this.target);
-      const self = entity.link('self');
-      if (self) {
-        this._href = self.href;
-      }
       this._raise('update', { message: 'Updated Entity', entity });
     } catch (err) {
       console.warn(err); // eslint-disable-line no-console
@@ -157,14 +148,6 @@ export class Shipwreck {
 
   async render(entity, target) {
     target.innerHTML = markup.ship(entity);
-
-    // Current Path
-    const pathLinks = target.querySelectorAll('.current-path a');
-    pathLinks.forEach(a => a.addEventListener('click', (e) => {
-      const { href } = e.target;
-      e.preventDefault();
-      this.fetch({ href }, null, true);
-    }));
 
     // Tabs
     const contents = target.querySelectorAll('.shipwreck > .content');
@@ -188,5 +171,12 @@ export class Shipwreck {
       const head = card.querySelector('.head');
       head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
     });
+
+    // Links
+    target.querySelectorAll('.current-path a, #content-entity a')
+      .forEach(a => a.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.fetch({ href: e.target.href });
+      }));
   }
 }
