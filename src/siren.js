@@ -8,6 +8,9 @@
  *   - Fields
  */
 
+/**
+ * Base Siren class with stubs for common methods
+ */
 class SirenBase {
   constructor(json) {
     this.raw = json;
