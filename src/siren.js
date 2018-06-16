@@ -56,12 +56,24 @@ export class SirenEntity extends SirenBase {
 
   get json() {
     const data = {};
-    if (this.actions.length !== 0) data['actions'] = this.actions.map(action => action.json());
-    if (this.class.length !== 0) data['class'] = this.class;
-    if (this.links.length !== 0) data['links'] = this.links.map(link => link.json());
-    if (this.entities.length !== 0) data['entities'] = this.entities.map(entity => entity.json());
-    if (Object.keys(properties).length !== 0) data['properties'] = this.properties;
-    if (this.title) data['title'] = this.title;
+    if (this.actions.length !== 0) {
+      data['actions'] = this.actions.map(action => action.json());
+    }
+    if (this.class.length !== 0) {
+      data['class'] = this.class;
+    }
+    if (this.links.length !== 0) {
+      data['links'] = this.links.map(link => link.json());
+    }
+    if (this.entities.length !== 0) {
+      data['entities'] = this.entities.map(entity => entity.json());
+    }
+    if (Object.keys(properties).length !== 0) {
+      data['properties'] = this.properties;
+    }
+    if (this.title) {
+      data['title'] = this.title;
+    }
     return data;
   }
 }
@@ -77,7 +89,9 @@ export class SirenSubEntity extends SirenEntity {
 
   get json() {
     const data = super.json();
-    if (this.rel.length !== 0) data['rel'] = this.rel;
+    if (this.rel.length !== 0) {
+      data['rel'] = this.rel;
+    }
     return data;
   }
 }
@@ -101,9 +115,15 @@ export class SirenLink extends SirenBase {
       'rel': this.rel,
       'href': this.href,
     };
-    if (this.class.length !== 0) data['class'] = this.class;
-    if (this.type) data['type'] = this.type;
-    if (this.title) data['title'] = this.title;
+    if (this.class.length !== 0) {
+      data['class'] = this.class;
+    }
+    if (this.type) {
+      data['type'] = this.type;
+    }
+    if (this.title) {
+      data['title'] = this.title;
+    }
     return data;
   }
 }
@@ -121,7 +141,7 @@ export class SirenAction extends SirenBase {
     this.method = json['method'] || 'GET';
     this.title = json['title'] || '';
     this.type = json['type'] || 'application/x-www-form-urlencoded;charset=UTF-8';
-    this.fields = (json['fields'] || []).map(f => new SirenField(f))
+    this.fields = (json['fields'] || []).map(f => new SirenField(f));
   }
 
   // get field by name
@@ -134,11 +154,21 @@ export class SirenAction extends SirenBase {
       'name': this.name,
       'href': this.href,
     };
-    if (this.class.length !== 0) data['class'] = this.class;
-    if (this.method) data['method'] = this.method;
-    if (this.title) data['title'] = this.title;
-    if (this.type) data['type'] = this.type;
-    if (this.fields.length !== 0) data['fields'] = this.fields.map(field => field.json());
+    if (this.class.length !== 0) {
+      data['class'] = this.class;
+    }
+    if (this.method) {
+      data['method'] = this.method;
+    }
+    if (this.title) {
+      data['title'] = this.title;
+    }
+    if (this.type) {
+      data['type'] = this.type;
+    }
+    if (this.fields.length !== 0) {
+      data['fields'] = this.fields.map(field => field.json());
+    }
     return data;
   }
 }
@@ -161,10 +191,18 @@ export class SirenField extends SirenBase {
     const data = {
       'name': this.name,
     };
-    if (this.class.length !== 0) data['class'] = this.class;
-    if (this.title) data['title'] = this.title;
-    if (this.type) data['type'] = this.type;
-    if (this.value) data['value'] = this.value;
+    if (this.class.length !== 0) {
+      data['class'] = this.class;
+    }
+    if (this.title) {
+      data['title'] = this.title;
+    }
+    if (this.type) {
+      data['type'] = this.type;
+    }
+    if (this.value) {
+      data['value'] = this.value;
+    }
     return data;
   }
 }

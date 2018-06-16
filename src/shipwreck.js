@@ -16,14 +16,14 @@ export const _urlencode = data => {
     .keys(data)
     .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
     .join('&');
-}
+};
 
 /** Convert a string to a DOM node */
 export const _html = str => {
   const template = document.createElement('template');
   template.innerHTML = str.trim();
   return template.content.firstChild;
-}
+};
 
 /**
  */
@@ -34,7 +34,9 @@ export class Shipwreck {
     this._listeners = {};
     this._href = '';
     document.body.addEventListener('submit', async (e) => {
-      if (!this.target.contains(e.target)) return;
+      if (!this.target.contains(e.target)) {
+        return;
+      }
       e.preventDefault();
       const form = e.target;
       const action = {
@@ -46,7 +48,9 @@ export class Shipwreck {
       const data = {};
       for (const el of form.elements) {
         const name = el.name;
-        if (!name) continue;
+        if (!name) {
+          continue;
+        }
         data[name] = el.value;
       }
       this.fetch(action, data, true);
@@ -58,12 +62,15 @@ export class Shipwreck {
   }
 
   set token(val) {
-    if (val === this._token) return;
+    if (val === this._token) {
+      return;
+    }
     this._token = val;
-    if (val)
+    if (val) {
       sessionStorage.setItem('auth-token', val);
-    else
+    } else {
       sessionStorage.removeItem('auth-token');
+    }
   }
 
   // ----- events
@@ -74,13 +81,20 @@ export class Shipwreck {
   }
 
   off(name, fn) {
-    if (!this._listeners[name]) return;
-    if (!fn) this._listeners[name] = [];
-    else this._listeners[name] = this._listeners[name].filter(f => f != fn);
+    if (!this._listeners[name]) {
+      return;
+    }
+    if (!fn) {
+      this._listeners[name] = [];
+    } else {
+      this._listeners[name] = this._listeners[name].filter(f => f != fn);
+    }
   }
 
   async _raise(name, data) {
-    if (!this._listeners[name]) return;
+    if (!this._listeners[name]) {
+      return;
+    }
     this._listeners[name].forEach(fn => fn(data));
   }
 
@@ -98,11 +112,9 @@ export class Shipwreck {
     if (data) {
       if (['GET', 'HEAD'].includes(method)) {
         url = `${url}?${_urlencode(data)}`;
-      }
-      else if (action.type.indexOf('json') !== -1) {
+      } else if (action.type.indexOf('json') !== -1) {
         body = JSON.stringify(data);
-      }
-      else {
+      } else {
         body = _urlencode(data);
       }
     }
@@ -120,7 +132,9 @@ export class Shipwreck {
 
   // submit a request and display the response
   async fetch(action, data, force = false) {
-    if (!force && action.href === this._href) return;
+    if (!force && action.href === this._href) {
+      return;
+    }
     this._raise('fetch', { message: 'Doing a fetch.', action, data });
     const response = await this.submitAction(action, data);
     if (!response.ok) {
@@ -134,10 +148,11 @@ export class Shipwreck {
       const entity = new SirenEntity(json);
       await this.render(entity, this.target);
       const self = entity.link('self');
-      if (self) this._href = self.href;
+      if (self) {
+        this._href = self.href;
+      }
       this._raise('update', { message: 'Updated Entity', entity });
-    }
-    catch (err) {
+    } catch (err) {
       console.warn(err);
     }
   }
@@ -150,7 +165,9 @@ export class Shipwreck {
     pathLinks.forEach(a => a.addEventListener('click', (e) => {
       const href = e.target.href;
       e.preventDefault();
-      if (this._href === href) return;
+      if (this._href === href) {
+        return;
+      }
       this.fetch({ href });
     }));
 

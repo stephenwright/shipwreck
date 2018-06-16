@@ -5,7 +5,7 @@ const flash = {
   box: document.getElementById('flash'),
   clear: () => flash.box.innerHTML = '',
   add: (msg, type) => flash.box.appendChild(_html(`<div class="banner ${type}">${msg}</div>`)),
-}
+};
 
 // handles to form inputs
 const shipHref = document.getElementById('ship-href');
@@ -30,7 +30,9 @@ ship.on('success', data => {
 ship.on('update', data => {
   const { entity } = data;
   const self = entity.link('self');
-  if (!self) return;
+  if (!self) {
+    return;
+  }
   shipHref.value = self.href;
   location.hash = self.href;
 });
@@ -41,17 +43,18 @@ shipToken.value = ship.token;
 let active = false;
 const _setSail = async function () {
   // one request at a time
-  if (active) return;
+  if (active) {
+    return;
+  }
   active = true;
   try {
     ship.token = shipToken.value;
     await ship.fetch({ href: shipHref.value });
-  }
-  catch(err) {
+  } catch (err) {
     console.error(err);
   }
   active = false;
-}
+};
 
 // clear auth token
 const clearStorage = async function () {
@@ -59,7 +62,7 @@ const clearStorage = async function () {
   shipToken.value = '';
   ship.token = null;
   flash.add('Session storage has been cleared.', 'success');
-}
+};
 document
   .getElementById('clear-storage-button')
   .addEventListener('click', clearStorage);
