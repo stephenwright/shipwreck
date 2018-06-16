@@ -163,10 +163,7 @@ export class Shipwreck {
     pathLinks.forEach(a => a.addEventListener('click', (e) => {
       const { href } = e.target;
       e.preventDefault();
-      if (this._href === href) {
-        return;
-      }
-      this.fetch({ href });
+      this.fetch({ href }, null, true);
     }));
 
     // Tabs
