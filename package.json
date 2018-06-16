@@ -5,6 +5,7 @@
   "main": "index.htm",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
     "start": "live-server --cors --open=index.htm"
   },
   "keywords": [
@@ -16,6 +17,9 @@
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.12.0",
     "live-server": "^1.2.0"
   }
 }

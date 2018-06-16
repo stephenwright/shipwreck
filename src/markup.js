@@ -1,4 +1,4 @@
-import { SirenEntity, SirenLink, SirenAction, SirenField } from './siren.js';
+import { SirenEntity, SirenLink, SirenAction } from './siren.js';
 
 /** helpers for generating HTML markup */
 const markup = {
@@ -8,14 +8,15 @@ const markup = {
   },
 
   card(item) {
-    if (item instanceof SirenEntity)
+    if (item instanceof SirenEntity) {
       return markup.entityCard(item);
-    else if (item instanceof SirenLink)
+    } else if (item instanceof SirenLink) {
       return markup.linkCard(item);
-    else if (item instanceof SirenAction)
+    } else if (item instanceof SirenAction) {
       return markup.actionCard(item);
-    else
+    } else {
       return '';
+    }
   },
 
   // Entities
@@ -85,19 +86,19 @@ const markup = {
 
   fieldForm(field) {
     switch (field.type.toLowerCase()) {
-      case 'hidden':
-        return `<input type="${field.type}" value="${field.value}" name="${field.name}">`;
+    case 'hidden':
+      return `<input type="${field.type}" value="${field.value}" name="${field.name}">`;
 
-      case 'number':
-        return `
+    case 'number':
+      return `
           <div class="form-field">
             <label>${field.name}</label>
             <input type="${field.type}" value="${field.value}" name="${field.name}" step="any">
           </div>
           `;
 
-      default:
-        return `
+    default:
+      return `
           <div class="form-field">
             <label>${field.name}</label>
             <input type="${field.type}" value="${field.value}" name="${field.name}">
@@ -132,7 +133,9 @@ const markup = {
   // Display the [self] href in a nice clickable manner
   currentPath(entity) {
     const link = entity.link('self');
-    if (!link) return '';
+    if (!link) {
+      return '';
+    }
     const url = new URL(link.href);
     let href = url.origin;
     const path = url.pathname
