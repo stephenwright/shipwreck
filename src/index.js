@@ -15,7 +15,7 @@ const shipOutput = document.getElementById('ship-output');
 // create shipwreck instance
 const ship = new Shipwreck(shipOutput);
 
-ship.on('fetch', data => {
+ship.on('fetch', () => {
   flash.clear();
 });
 
@@ -23,7 +23,7 @@ ship.on('error', data => {
   flash.add(data.message, 'critical');
 });
 
-ship.on('success', data => {
+ship.on('success', () => {
   //flash.add(data.message, 'success');
 });
 
@@ -51,7 +51,7 @@ const _setSail = async function () {
     ship.token = shipToken.value;
     await ship.fetch({ href: shipHref.value });
   } catch (err) {
-    console.error(err);
+    console.error(err); // eslint-disable-line no-console
   }
   active = false;
 };
@@ -78,7 +78,7 @@ document
   .addEventListener('submit', submitRequest);
 
 // sync the location hash with the api href input field
-const _checkHash = function (e) {
+const _checkHash = function () {
   shipHref.value = location.hash.slice(1);
   _setSail();
 };

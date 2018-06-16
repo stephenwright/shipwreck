@@ -26,6 +26,7 @@ module.exports = {
     'func-names': 0,
     'global-require': 0,
     'guard-for-in': 0,
+    'import/extensions': 0,
     'max-len': 0,
     'new-cap': 0,
     'no-confusing-arrow': 0,

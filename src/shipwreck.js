@@ -47,11 +47,9 @@ export class Shipwreck {
       };
       const data = {};
       for (const el of form.elements) {
-        const name = el.name;
-        if (!name) {
-          continue;
+        if (el.name) {
+          data[el.name] = el.value;
         }
-        data[name] = el.value;
       }
       this.fetch(action, data, true);
     });
@@ -87,7 +85,7 @@ export class Shipwreck {
     if (!fn) {
       this._listeners[name] = [];
     } else {
-      this._listeners[name] = this._listeners[name].filter(f => f != fn);
+      this._listeners[name] = this._listeners[name].filter(f => f !== fn);
     }
   }
 
@@ -153,7 +151,7 @@ export class Shipwreck {
       }
       this._raise('update', { message: 'Updated Entity', entity });
     } catch (err) {
-      console.warn(err);
+      console.warn(err); // eslint-disable-line no-console
     }
   }
 
@@ -163,7 +161,7 @@ export class Shipwreck {
     // Current Path
     const pathLinks = target.querySelectorAll('.current-path a');
     pathLinks.forEach(a => a.addEventListener('click', (e) => {
-      const href = e.target.href;
+      const { href } = e.target;
       e.preventDefault();
       if (this._href === href) {
         return;

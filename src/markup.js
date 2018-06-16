@@ -1,4 +1,4 @@
-import { SirenEntity, SirenLink, SirenAction, SirenField } from './siren.js';
+import { SirenEntity, SirenLink, SirenAction } from './siren.js';
 
 /** helpers for generating HTML markup */
 const markup = {
