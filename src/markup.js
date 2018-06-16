@@ -72,8 +72,7 @@ const markup = {
         name="${action.name}"
         type="${action.type}"
         action="${action.href}"
-        method="${action.method}"
-        onsubmit="return false;">
+        method="${action.method}">
         <h3>${action.name}</h3>
         <div class="form-fields">
           ${action.fields.map(markup.fieldForm).join('\n')}
