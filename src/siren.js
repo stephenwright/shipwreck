@@ -154,7 +154,7 @@ class SirenField extends SirenBase {
     this.class = json['class'] || [];
     this.title = json['title'] || '';
     this.type = json['type'] || 'text';
-    this.value = json['value'] || '';
+    this.value = json['value'] === undefined ? '' : json['value'];
   }
 
   get json() {
