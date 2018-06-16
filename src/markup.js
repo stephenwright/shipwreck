@@ -1,4 +1,4 @@
-//import * from './siren.js';
+import { SirenEntity, SirenLink, SirenAction, SirenField } from './siren.js';
 
 /** helpers for generating HTML markup */
 const markup = {
@@ -205,3 +205,5 @@ const markup = {
   },
 
 };
+
+export default markup;

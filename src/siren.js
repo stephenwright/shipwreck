@@ -25,7 +25,7 @@ class SirenBase {
 /**
  * The Primary thing return by a request to a Siren API
  */
-class SirenEntity extends SirenBase {
+export class SirenEntity extends SirenBase {
   constructor(json) {
     super(json);
     // optional
@@ -68,7 +68,7 @@ class SirenEntity extends SirenBase {
 
 /**
  */
-class SirenSubEntity extends SirenEntity {
+export class SirenSubEntity extends SirenEntity {
   constructor(json) {
     super(json);
     // optional
@@ -84,7 +84,7 @@ class SirenSubEntity extends SirenEntity {
 
 /**
  */
-class SirenLink extends SirenBase {
+export class SirenLink extends SirenBase {
   constructor(json) {
     super(json);
     // required
@@ -110,7 +110,7 @@ class SirenLink extends SirenBase {
 
 /**
  */
-class SirenAction extends SirenBase {
+export class SirenAction extends SirenBase {
   constructor(json) {
     super(json);
     // required
@@ -145,7 +145,7 @@ class SirenAction extends SirenBase {
 
 /**
  */
-class SirenField extends SirenBase {
+export class SirenField extends SirenBase {
   constructor(json) {
     super(json);
     // required

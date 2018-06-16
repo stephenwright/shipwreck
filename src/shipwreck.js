@@ -4,14 +4,14 @@
  * A simple client for working with Siren Hypermedia APIs
  */
 
-//import * from './siren.js';
-//import markup from './markup.js';
+import { SirenEntity } from './siren.js';
+import markup from './markup.js';
 
 /**
  * Convert a JSON object into a URL encoded parameter string.
  * Usefull for sending data in a query string, or as form parameters
  */
-const _urlencode = data => {
+export const _urlencode = data => {
   return Object
     .keys(data)
     .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
@@ -19,7 +19,7 @@ const _urlencode = data => {
 }
 
 /** Convert a string to a DOM node */
-const _html = str => {
+export const _html = str => {
   const template = document.createElement('template');
   template.innerHTML = str.trim();
   return template.content.firstChild;
@@ -27,7 +27,7 @@ const _html = str => {
 
 /**
  */
-class Shipwreck {
+export class Shipwreck {
   constructor(target) {
     this.target = target;
     this._token = sessionStorage.getItem('auth-token') || '';
