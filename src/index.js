@@ -62,16 +62,19 @@ const clearStorage = async function () {
 }
 
 // submit form
-const submitRequest = function () {
+const submitRequest = function (e) {
+  e.preventDefault();
   location.hash = shipHref.value;
   _setSail();
-}
+};
+const mainForm = document.getElementById('main-form')
+mainForm.addEventListener('submit', submitRequest);
 
 // sync the location hash with the api href input field
-const _checkHash = function () {
+const _checkHash = function (e) {
   shipHref.value = location.hash.slice(1);
   _setSail();
-}
+};
 
 window.onhashchange = _checkHash;
 window.onload = _checkHash;

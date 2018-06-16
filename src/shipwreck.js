@@ -28,12 +28,29 @@ const _html = str => {
 /**
  */
 class Shipwreck {
-
   constructor(target) {
     this.target = target;
     this._token = sessionStorage.getItem('auth-token') || '';
     this._listeners = {};
     this._href = '';
+    document.body.addEventListener('submit', async (e) => {
+      if (!this.target.contains(e.target)) return;
+      e.preventDefault();
+      const form = e.target;
+      const action = {
+        name: form.name,
+        type: form.enctype,
+        href: form.action,
+        method: form.method,
+      };
+      const data = {};
+      for (const el of form.elements) {
+        const name = el.name;
+        if (!name) continue;
+        data[name] = el.value;
+      }
+      this.fetch(action, data, true);
+    });
   }
 
   get token() {
@@ -116,6 +133,8 @@ class Shipwreck {
       const json = await response.json();
       const entity = new SirenEntity(json);
       await this.render(entity, this.target);
+      const self = entity.link('self');
+      if (self) this._href = self.href;
       this._raise('update', { message: 'Updated Entity', entity });
     }
     catch (err) {
@@ -123,30 +142,17 @@ class Shipwreck {
     }
   }
 
-  pathClick(e) {
-    const href = e.target.href;
-    e.preventDefault();
-    if (this._href === href) return;
-    this.fetch({ href });
-  }
-
-  fixForm(form, entity) {
-    const action = entity.action(form.getAttribute('name'));
-    if (!action) return;
-    form.onsubmit = (e) => {
-      e.preventDefault();
-      const data = {};
-      action.fields.forEach(f => data[f.name] = form.elements[f.name].value);
-      this.fetch(action, data, true);
-    };
-  }
-
   async render(entity, target) {
     target.innerHTML = markup.ship(entity);
 
     // Current Path
     const pathLinks = target.querySelectorAll('.current-path a');
-    pathLinks.forEach(a => a.addEventListener('click', this.pathClick.bind(this)));
+    pathLinks.forEach(a => a.addEventListener('click', (e) => {
+      const href = e.target.href;
+      e.preventDefault();
+      if (this._href === href) return;
+      this.fetch({ href });
+    }));
 
     // Tabs
     const contents = target.querySelectorAll('.shipwreck > .content');
@@ -160,16 +166,11 @@ class Shipwreck {
     });
     tabs[0].click();
 
-    // intercept form submission
-    target.querySelectorAll('.entity-actions form').forEach(form => this.fixForm(form, entity));
-
     // sub entities
     const parent = target.querySelector('.entity-entities');
     entity.entities.forEach(e => {
       const card = _html(markup.card(e));
       parent.appendChild(card);
-      // intercept form submission
-      card.querySelectorAll('.entity-actions form').forEach(form => this.fixForm(form, e));
       // toggle body visibility when head is clicked
       const body = card.querySelector('.body');
       const head = card.querySelector('.head');
