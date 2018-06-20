@@ -7,11 +7,10 @@ const flash = {
   add: (msg, type) => flash.box.appendChild(_html(`<div class="banner ${type}">${msg}</div>`)),
 };
 
-// handles to form inputs
+// handles to key elements
 const shipHref = document.getElementById('ship-href');
 const shipToken = document.getElementById('ship-token');
 const shipOutput = document.getElementById('ship-output');
-
 const loadingBar = document.getElementById('loading-bar');
 
 // create shipwreck instance
