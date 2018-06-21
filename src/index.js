@@ -45,6 +45,7 @@ ship.on('update', data => {
 });
 
 shipToken.value = ship.token;
+shipToken.addEventListener('change', e => ship.token = e.target.value);
 
 // submit API reqest
 let active = false;
