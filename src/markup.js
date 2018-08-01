@@ -59,7 +59,7 @@ const markup = {
       <div class="card">
         <div class="head">
           <div><label>rel:</label> [ ${link.rel.join(', ')} ]</div>
-          <div><label>href:</label> ${link.href}</div>
+          <div><label>href:</label> <a href="${link.href}">${link.href}</a></div>
         </div>
       </div>
     `;
