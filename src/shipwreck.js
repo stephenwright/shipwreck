@@ -104,7 +104,7 @@ export class Shipwreck {
   // -----
 
   async submitAction(action, data) {
-    const method = action.method || 'GET';
+    const method = (action.method || 'GET').toUpperCase();
     const headers = new Headers();
     action.type && headers.set('content-type', action.type);
     this._token && headers.set('authorization', `Bearer ${this._token}`);
