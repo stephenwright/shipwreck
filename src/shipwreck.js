@@ -5,6 +5,7 @@
  */
 
 import EntityStore from './util/entity-store.js';
+import EventEmitter from './util/event-emitter.js';
 import markup from './markup.js';
 
 /** Convert a string to a DOM node */
@@ -15,12 +16,18 @@ export const _html = str => {
 };
 
 /**
+ * Emits the following events:
+ *  fetch - starting a fetch
+ *  success - fetch was successful
+ *  update - then entity has been updated
+ *  complete - fetch complete (calls wether it was successful or not)
+ *  error - something went wrong
  */
-export class Shipwreck {
+export class Shipwreck extends EventEmitter {
   constructor(target) {
+    super();
     this.target = target;
     this._token = sessionStorage.getItem('auth-token') || '';
-    this._listeners = {};
 
     this._store = new EntityStore();
     this._store.on('error', (data) => this._raise('error', data));
@@ -65,39 +72,6 @@ export class Shipwreck {
       sessionStorage.removeItem('auth-token');
     }
   }
-
-  // ----- events
-
-  // fetch: starting a fetch
-  // error: something went wrong
-  // success: fetch was successful
-  // complete: fetch complete (calls wether it was successful or not)
-  // update: then entity has been updated
-
-  on(name, fn)  {
-    this._listeners[name] = this._listeners[name] || [];
-    this._listeners[name].push(fn);
-  }
-
-  off(name, fn) {
-    if (!this._listeners[name]) {
-      return;
-    }
-    if (!fn) {
-      this._listeners[name] = [];
-    } else {
-      this._listeners[name] = this._listeners[name].filter(f => f !== fn);
-    }
-  }
-
-  async _raise(name, data) {
-    if (!this._listeners[name]) {
-      return;
-    }
-    this._listeners[name].forEach(fn => fn(data));
-  }
-
-  // -----
 
   // submit a request and display the response
   async fetch(href) {
