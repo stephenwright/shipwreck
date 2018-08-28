@@ -7,17 +7,6 @@
 import EntityStore from './util/entity-store.js';
 import markup from './markup.js';
 
-/**
- * Convert a JSON object into a URL encoded parameter string.
- * Usefull for sending data in a query string, or as form parameters
- */
-export const _urlencode = data => {
-  return Object
-    .keys(data)
-    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
-    .join('&');
-};
-
 /** Convert a string to a DOM node */
 export const _html = str => {
   const template = document.createElement('template');

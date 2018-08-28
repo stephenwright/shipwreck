@@ -1,6 +1,10 @@
 import EventEmitter from './event-emitter.js';
 import { SirenEntity, SirenAction } from '../siren.js';
 
+/**
+ * Convert a JSON object into a URL encoded parameter string.
+ * Usefull for sending data in a query string, or as form parameters
+ */
 const _urlencode = data => Object.keys(data)
   .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
   .join('&');
