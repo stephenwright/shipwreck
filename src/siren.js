@@ -14,10 +14,28 @@
 class SirenBase {
   constructor(json) {
     this.raw = json;
+    this.errors = new Map();
   }
 
   get json() {
     return {};
+  }
+
+  validate() {
+    this._validate();
+    return this.errors.length === 0;
+  }
+
+  _error(field, message) {
+    let errors = this.errors.get(field);
+    if (!errors) {
+      this.errors.set(field, errors = new Set());
+    }
+    errors.add(message);
+  }
+
+  _validate() {
+    // sub classes should overwrite this method
   }
 
   toString() {
@@ -26,6 +44,7 @@ class SirenBase {
 }
 
 /**
+ * Links represent navigational transitions.
  */
 export class SirenLink extends SirenBase {
   constructor(json) {
@@ -58,6 +77,7 @@ export class SirenLink extends SirenBase {
 }
 
 /**
+ * Fields represent controls inside of actions.
  */
 export class SirenField extends SirenBase {
   constructor(json) {
@@ -92,6 +112,7 @@ export class SirenField extends SirenBase {
 }
 
 /**
+ * Actions show available behaviors an entity exposes.
  */
 export class SirenAction extends SirenBase {
   constructor(json) {
@@ -137,9 +158,9 @@ export class SirenAction extends SirenBase {
 }
 
 /**
- * The Primary thing return by a request to a Siren API
+ * Common elements between SirenEntity and SirenSubEntity
  */
-export class SirenEntity extends SirenBase {
+class SirenEntityBase extends SirenBase {
   constructor(json) {
     super(json);
     // optional
@@ -148,11 +169,7 @@ export class SirenEntity extends SirenBase {
     this.links = (json['links'] || []).map(l => new SirenLink(l));
     this.properties = json['properties'] || {};
     this.title = json['title'] || '';
-    // optional for sub-entities
-    this.rel = json['rel'] || [];
-    // sub entities can be entities or links
-    // if it has an `href` it's a link, otherwise it's an entity
-    this.entities = (json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenEntity(e));
+    this.entities = [];
   }
 
   // get action by name
@@ -190,9 +207,51 @@ export class SirenEntity extends SirenBase {
     if (this.title) {
       data['title'] = this.title;
     }
-    if (this.rel.length !== 0) {
-      data['rel'] = this.rel;
-    }
     return data;
+  }
+}
+
+/**
+ * Embedded sub-entity representations retain all the characteristics of a standard entity,
+ * but MUST also contain a rel attribute describing the relationship of the sub-entity to its parent.
+ */
+export class SirenSubEntity extends SirenEntityBase {
+  constructor(json) {
+    super(json);
+    // optional for sub-entities
+    this.rel = json['rel'] || [];
+    // sub entities can be entities or links
+    // if it has an `href` it's a link, otherwise it's an entity
+    this.entities = (json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
+  }
+
+  _validate() {
+    const { rel } = this;
+    if (rel === undefined || !(rel instanceof Array) || rel.length === 0) {
+      this._error('rel', 'Required.');
+    }
+    if (!(rel instanceof Array) || rel.length === 0) {
+      this._error('rel', 'MUST be a non-empty array of strings.');
+    }
+  }
+
+  get json() {
+    const data = super.json;
+    data['rel'] = this.rel;
+    return data;
+  }
+}
+
+/**
+ * The Primary thing return by a request to a Siren API
+ * An Entity is a URI-addressable resource that has properties and actions associated with it.
+ * It may contain sub-entities and navigational links.
+ */
+export class SirenEntity extends SirenEntityBase {
+  constructor(json) {
+    super(json);
+    // sub entities can be entities or links
+    // if it has an `href` it's a link, otherwise it's an entity
+    this.entities = (json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
   }
 }
