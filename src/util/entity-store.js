@@ -109,9 +109,7 @@ export default class EntityStore extends EventEmitter {
       if (!self) {
         return;
       }
-      const copy = new SirenEntity(e.json);
-      delete copy.rel;
-      cache.set(self.href, copy);
+      cache.set(self.href, new SirenEntity(e.json));
     });
     return entity;
   }
