@@ -177,7 +177,9 @@ export class Shipwreck {
       // toggle body visibility when head is clicked
       const body = card.querySelector('.body');
       const head = card.querySelector('.head');
-      head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+      if (head && body) {
+        head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+      }
     });
 
     // Links (do this after sub entities are added)

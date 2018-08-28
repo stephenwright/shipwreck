@@ -109,6 +109,13 @@ export class SirenField extends SirenBase {
     }
     return data;
   }
+
+  _validate() {
+    if (!this.name) {
+      this._error('name', 'Required.');
+    }
+  }
+
 }
 
 /**
@@ -154,6 +161,16 @@ export class SirenAction extends SirenBase {
       data['fields'] = this.fields.map(field => field.json());
     }
     return data;
+  }
+
+  _validate() {
+    if (!this.name) {
+      this._error('name', 'Required.');
+    }
+    if (!this.href) {
+      this._error('href', 'Required.');
+    }
+    this.fields.forEach(f => f._validate());
   }
 }
 
@@ -209,6 +226,10 @@ class SirenEntityBase extends SirenBase {
     }
     return data;
   }
+
+  _validate() {
+    this.entities.forEach(e => e._validate());
+  }
 }
 
 /**
@@ -218,7 +239,7 @@ class SirenEntityBase extends SirenBase {
 export class SirenSubEntity extends SirenEntityBase {
   constructor(json) {
     super(json);
-    // optional for sub-entities
+    // required for sub-entities
     this.rel = json['rel'] || [];
     // sub entities can be entities or links
     // if it has an `href` it's a link, otherwise it's an entity
@@ -226,6 +247,7 @@ export class SirenSubEntity extends SirenEntityBase {
   }
 
   _validate() {
+    super._validate();
     const { rel } = this;
     if (rel === undefined || !(rel instanceof Array) || rel.length === 0) {
       this._error('rel', 'Required.');
