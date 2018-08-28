@@ -31,7 +31,7 @@ export class Shipwreck extends EventEmitter {
 
     this._store = new EntityStore();
     this._store.on('error', (data) => this._raise('error', data));
-    this._store.on('update', (data) => this._raise('success', data));
+    this._store.on('update', (data) => this._raise('update', data));
 
     document.body.addEventListener('submit', async (e) => {
       if (!this.target.contains(e.target)) {

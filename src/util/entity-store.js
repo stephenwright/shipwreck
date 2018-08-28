@@ -9,6 +9,12 @@ const _urlencode = data => Object.keys(data)
   .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
   .join('&');
 
+/**
+ * Emits the following events:
+ *  inflight - when the number of fetches in progress changes up or down
+ *  update - then entity has been updated
+ *  error - something went wrong
+ */
 export default class EntityStore extends EventEmitter {
   constructor() {
     super();
