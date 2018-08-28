@@ -27,7 +27,10 @@ export default class EntityStore extends EventEmitter {
     action.type && headers.set('content-type', action.type);
     let body;
     let url = action.href;
-    const data = action.fields && action.fields.reduce((d,f) => { d[f.name] = f.value; return d; }, {});
+    const data = action.fields && action.fields.reduce((d,f) => {
+      d[f.name] = f.value;
+      return d;
+    }, {});
     if (data) {
       if (['GET', 'HEAD'].includes(method)) {
         url = `${url}?${_urlencode(data)}`;
