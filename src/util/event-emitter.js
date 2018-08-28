@@ -12,7 +12,7 @@ export default class EventEmitter {
     if (!callbacks) {
       this._events.set(event, callbacks = new Set());
     }
-    callbacks.set(callback);
+    callbacks.add(callback);
   }
 
   off(event, callback) {

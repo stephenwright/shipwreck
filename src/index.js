@@ -57,7 +57,7 @@ const _setSail = async function () {
   active = true;
   try {
     ship.token = shipToken.value;
-    await ship.fetch({ href: shipHref.value });
+    await ship.fetch(shipHref.value);
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
   }

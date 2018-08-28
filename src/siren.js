@@ -18,7 +18,12 @@ class SirenBase {
   }
 
   get json() {
+    // sub classes should overwrite this method
     return {};
+  }
+
+  _validate() {
+    // sub classes should overwrite this method
   }
 
   validate() {
@@ -32,10 +37,6 @@ class SirenBase {
       this.errors.set(field, errors = new Set());
     }
     errors.add(message);
-  }
-
-  _validate() {
-    // sub classes should overwrite this method
   }
 
   toString() {
