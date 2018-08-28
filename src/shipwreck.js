@@ -51,8 +51,14 @@ export class Shipwreck extends EventEmitter {
         fields,
       };
       this._raise('fetch', {});
-      const entity = await this._store.submitAction(action);
-      await this.render(entity);
+      try {
+        const entity = await this._store.submitAction(action);
+        await this.render(entity);
+        this._raise('success', { message: 'Action submitted.' });
+      }
+      catch (err) {
+        this._raise('error', { message: error.message });
+      }
       this._raise('complete', {});
     });
   }
@@ -61,13 +67,15 @@ export class Shipwreck extends EventEmitter {
     return this._token;
   }
 
-  set token(val) {
-    if (val === this._token) {
+  set token(newToken) {
+    newToken = newToken || undefined; // falsey = undefined
+    if (newToken === this._token) {
       return;
     }
-    this._token = val;
-    if (val) {
-      sessionStorage.setItem('auth-token', val);
+    this._store.clear(this._token);
+    this._token = newToken;
+    if (newToken) {
+      sessionStorage.setItem('auth-token', newToken);
     } else {
       sessionStorage.removeItem('auth-token');
     }

@@ -30,6 +30,12 @@ export default class EntityStore extends EventEmitter {
     return cache;
   }
 
+  clear(token) {
+    if (this._cache.has(token)) {
+      this._cache.delete(token);
+    }
+  }
+
   async _fetch({ action, token }) {
     const method = (action.method || 'GET').toUpperCase();
     const headers = new Headers();
