@@ -159,7 +159,7 @@ export class SirenAction extends SirenBase {
       data['type'] = this.type;
     }
     if (this.fields.length !== 0) {
-      data['fields'] = this.fields.map(field => field.json());
+      data['fields'] = this.fields.map(field => field.json);
     }
     return data;
   }
@@ -208,18 +208,18 @@ class SirenEntityBase extends SirenBase {
   get json() {
     const data = {};
     if (this.actions.length !== 0) {
-      data['actions'] = this.actions.map(action => action.json());
+      data['actions'] = this.actions.map(action => action.json);
     }
     if (this.class.length !== 0) {
       data['class'] = this.class;
     }
     if (this.links.length !== 0) {
-      data['links'] = this.links.map(link => link.json());
+      data['links'] = this.links.map(link => link.json);
     }
     if (this.entities.length !== 0) {
-      data['entities'] = this.entities.map(entity => entity.json());
+      data['entities'] = this.entities.map(entity => entity.json);
     }
-    if (Object.keys(properties).length !== 0) {
+    if (Object.keys(this.properties).length !== 0) {
       data['properties'] = this.properties;
     }
     if (this.title) {

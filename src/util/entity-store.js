@@ -1,5 +1,5 @@
 import EventEmitter from './event-emitter.js';
-import { SirenEntity, SirenAction } from '../siren.js';
+import { SirenEntity, SirenSubEntity, SirenAction } from '../siren.js';
 
 /**
  * Convert a JSON object into a URL encoded parameter string.
@@ -94,6 +94,19 @@ export default class EntityStore extends EventEmitter {
     const entity = await this.submitAction(action, token);
     // cache the entity by the REQUESTED href
     cache.set(href, entity);
+    // cache sub-entites
+    entity.entities && entity.entities.forEach(e => {
+      if (!(e instanceof SirenSubEntity)) {
+        return;
+      }
+      const self = e.link('self');
+      if (!self) {
+        return;
+      }
+      const copy = new SirenEntity(e.json);
+      delete copy.rel;
+      cache.set(self.href, copy);
+    });
     return entity;
   }
 }
