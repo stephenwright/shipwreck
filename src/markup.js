@@ -1,4 +1,4 @@
-import { SirenEntity, SirenLink, SirenAction } from './siren.js';
+import { SirenEntity, SirenSubEntity, SirenLink, SirenAction } from './siren.js';
 
 /** helpers for generating HTML markup */
 const markup = {
@@ -8,7 +8,7 @@ const markup = {
   },
 
   card(item) {
-    if (item instanceof SirenEntity) {
+    if (item instanceof SirenEntity || item instanceof SirenSubEntity) {
       return markup.entityCard(item);
     } else if (item instanceof SirenLink) {
       return markup.linkCard(item);
