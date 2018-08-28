@@ -81,7 +81,6 @@ export class Shipwreck extends EventEmitter {
       if (entity) {
         this._raise('success', { message: 'Request success' });
         await this.render(entity);
-        this._raise('update', { message: 'Updated Entity', entity });
       }
     } catch (err) {
       console.warn(err); // eslint-disable-line no-console
