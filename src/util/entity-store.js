@@ -84,8 +84,8 @@ export default class EntityStore extends EventEmitter {
         cache.set(href, entity);
         this._raise('update', { href, entity });
       }
-    } catch (error) {
-      this._raise('error', { message: error.message });
+    } catch (err) {
+      this._raise('error', { message: err.message });
     }
     this._raise('inflight', { count: --this._inflight });
     return entity;

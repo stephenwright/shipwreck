@@ -55,7 +55,7 @@ export class Shipwreck extends EventEmitter {
         await this.render(entity);
         this._raise('success', { message: 'Action submitted.' });
       } catch (err) {
-        this._raise('error', { message: error.message });
+        this._raise('error', { message: err.message });
       }
       this._raise('complete', {});
     });
