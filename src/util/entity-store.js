@@ -43,11 +43,12 @@ export default class EntityStore extends EventEmitter {
     action.type && headers.set('content-type', action.type);
     let body;
     let url = action.href;
-    const data = action.fields && action.fields.reduce((d,f) => {
+    const data = action.fields.length > 0 && action.fields.reduce((d,f) => {
       d[f.name] = f.value;
       return d;
     }, {});
     if (data) {
+      console.info(data)
       if (['GET', 'HEAD'].includes(method)) {
         url = `${url}?${_urlencode(data)}`;
       } else if (action.type.indexOf('json') !== -1) {
