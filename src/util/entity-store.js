@@ -48,7 +48,6 @@ export default class EntityStore extends EventEmitter {
       return d;
     }, {});
     if (data) {
-      console.info(data)
       if (['GET', 'HEAD'].includes(method)) {
         url = `${url}?${_urlencode(data)}`;
       } else if (action.type.indexOf('json') !== -1) {
