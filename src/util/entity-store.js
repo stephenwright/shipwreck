@@ -101,7 +101,7 @@ export default class EntityStore extends EventEmitter {
     // cache the entity by the REQUESTED href
     cache.set(href, entity);
     // cache sub-entites
-    entity.entities && entity.entities
+    entity && entity.entities && entity.entities
       .filter(e => e instanceof SirenSubEntity && e.link('self'))
       .forEach(e => cache.set(e.link('self').href, new SirenEntity(e.json)));
     return entity;

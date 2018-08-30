@@ -30,8 +30,7 @@ export class Shipwreck extends EventEmitter {
     this._token = sessionStorage.getItem('auth-token') || '';
 
     this._store = new EntityStore();
-    this._store.on('error', (data) => this._raise('error', data));
-    this._store.on('update', (data) => this._raise('update', data));
+    this._store.on('error', this._onStoreError.bind(this));
 
     document.body.addEventListener('submit', async (e) => {
       if (!this.target.contains(e.target)) {
@@ -62,6 +61,10 @@ export class Shipwreck extends EventEmitter {
     });
   }
 
+  _onStoreError(data) {
+    this._raise('error', data);
+  }
+
   get token() {
     return this._token;
   }
@@ -86,8 +89,9 @@ export class Shipwreck extends EventEmitter {
     try {
       const entity = await this._store.get(href, this._token);
       if (entity) {
-        this._raise('success', { message: 'Request success' });
+        this._raise('update', { message: 'Entity was been updated', entity });
         await this.render(entity);
+        this._raise('success', { message: 'Request success' });
       }
     } catch (err) {
       console.warn(err); // eslint-disable-line no-console
