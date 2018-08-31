@@ -64,11 +64,12 @@ const _setSail = async function () {
   active = false;
 };
 
-// clear auth token
+// clear auth token and reload
 const clearStorage = async function () {
   flash.clear();
   shipToken.value = '';
   ship.token = null;
+  _setSail();
   flash.add('Session storage has been cleared.', 'success');
 };
 document
