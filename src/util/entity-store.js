@@ -12,7 +12,7 @@ const _urlencode = data => Object.keys(data)
 /**
  * Emits the following events:
  *  inflight - when the number of fetches in progress changes up or down
- *  update - then entity has been updated
+ *  update - an entity has been updated
  *  error - something went wrong
  */
 export default class EntityStore extends EventEmitter {
@@ -69,13 +69,13 @@ export default class EntityStore extends EventEmitter {
     return new SirenEntity(json);
   }
 
-  async submitAction(action, token) {
+  async submitAction(action, { token, useCache = true }) {
     let entity;
     this._raise('inflight', { count: ++this._inflight });
     try {
       entity = await this._fetch({ action, token });
       const self = entity.link('self');
-      if (self) {
+      if (useCache && self) {
         const cache = this.getCache(token);
         const { href } = self;
         // cache the entity by the SELF href
@@ -89,19 +89,21 @@ export default class EntityStore extends EventEmitter {
     return entity;
   }
 
-  async get(href, token) {
+  async get(href, { token, useCache = true } = {}) {
     const cache = this.getCache(token);
-    if (cache.has(href)) {
+    if (useCache && cache.has(href)) {
       return cache.get(href);
     }
     const action = new SirenAction({ href });
-    const entity = await this.submitAction(action, token);
-    // cache the entity by the REQUESTED href
-    cache.set(href, entity);
-    // cache sub-entites
-    entity && entity.entities && entity.entities
-      .filter(e => e instanceof SirenSubEntity && e.link('self'))
-      .forEach(e => cache.set(e.link('self').href, new SirenEntity(e.json)));
+    const entity = await this.submitAction(action, { token, useCache });
+    if (useCache) {
+      // cache the entity by the REQUESTED href
+      cache.set(href, entity);
+      // cache sub-entites
+      entity && entity.entities && entity.entities
+        .filter(e => e instanceof SirenSubEntity && e.link('self'))
+        .forEach(e => cache.set(e.link('self').href, new SirenEntity(e.json)));
+    }
     return entity;
   }
 }

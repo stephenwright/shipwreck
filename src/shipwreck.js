@@ -27,7 +27,7 @@ export class Shipwreck extends EventEmitter {
   constructor(target) {
     super();
     this.target = target;
-    this._entity;
+    this._entity = undefined;
     this._token = sessionStorage.getItem('auth-token') || '';
     this._cachingEnabled = true;
 
@@ -54,7 +54,10 @@ export class Shipwreck extends EventEmitter {
       };
       this._raise('fetch', {});
       try {
-        const entity = await this._store.submitAction(action, this._token);
+        const entity = await this._store.submitAction(action, {
+          token: this._token,
+          useCache: this._cachingEnabled,
+        });
         if (entity) {
           this.entity = entity;
           await this.render();
@@ -73,7 +76,7 @@ export class Shipwreck extends EventEmitter {
 
   _onStoreUpdate({ href, entity }) {
     this._entity = entity;
-    this._raise('change', { entity });
+    this._raise('change', { href, entity });
   }
 
   get entity() {
@@ -119,7 +122,10 @@ export class Shipwreck extends EventEmitter {
   async fetch(href) {
     this._raise('fetch', { message: 'Doing a fetch.', href });
     try {
-      const entity = await this._store.get(href, this._token);
+      const entity = await this._store.get(href, {
+        token: this._token,
+        useCache: this._cachingEnabled,
+      });
       if (entity) {
         this.entity = entity;
         await this.render();

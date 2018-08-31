@@ -36,7 +36,7 @@ ship.on('success', () => {
 
 ship.on('update', data => {
   const { entity } = data;
-  const self = entity && entity.link('self')
+  const self = entity && entity.link('self');
   if (self) {
     shipHref.value = self.href;
     location.hash = self.href;
@@ -71,9 +71,7 @@ const clearToken = async function () {
   ship.token = null;
   _setSail();
 };
-document
-  .getElementById('clear-token-button')
-  .addEventListener('click', clearToken);
+document.getElementById('clear-token-button').addEventListener('click', clearToken);
 
 // pull auth token from current entity properties
 const pullToken = async function () {
