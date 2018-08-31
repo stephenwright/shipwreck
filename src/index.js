@@ -36,12 +36,12 @@ ship.on('success', () => {
 
 ship.on('update', data => {
   const { entity } = data;
-  const self = entity.link('self');
-  if (!self) {
-    return;
+  const self = entity && entity.link('self')
+  if (self) {
+    shipHref.value = self.href;
+    location.hash = self.href;
   }
-  shipHref.value = self.href;
-  location.hash = self.href;
+  document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
 
 shipToken.value = ship.token;
@@ -65,16 +65,48 @@ const _setSail = async function () {
 };
 
 // clear auth token and reload
-const clearStorage = async function () {
+const clearToken = async function () {
   flash.clear();
   shipToken.value = '';
   ship.token = null;
   _setSail();
-  flash.add('Session storage has been cleared.', 'success');
 };
 document
-  .getElementById('clear-storage-button')
-  .addEventListener('click', clearStorage);
+  .getElementById('clear-token-button')
+  .addEventListener('click', clearToken);
+
+// pull auth token from current entity properties
+const pullToken = async function () {
+  flash.clear();
+  const { entity } = ship;
+  if (!entity) {
+    flash.add('There is currently no entity loaded.', 'warning');
+    return;
+  }
+  const token = entity.properties && entity.properties.token;
+  if (!token) {
+    flash.add('No token property was found in the current entity.', 'warning');
+  } else if (token === shipToken.value) {
+    flash.add('Token unchanged.', 'warning');
+  } else {
+    shipToken.value = token;
+    ship.token = token;
+    _setSail();
+    flash.add('Token updated.', 'success');
+  }
+};
+document.getElementById('pull-token-button').addEventListener('click', pullToken);
+
+// caching
+const setCaching = async function () {
+  flash.clear();
+  ship.cachingEnabled = this.checked;
+  _setSail();
+  flash.add(`Caching has been ${ship.cachingEnabled ? 'Enabled' : 'Disabled'}.`, 'info');
+};
+const cacheToggle = document.getElementById('cache-enabled-toggle');
+cacheToggle.checked = ship.cachingEnabled;
+cacheToggle.addEventListener('change', setCaching);
 
 // submit form
 const submitRequest = function (e) {
@@ -82,9 +114,7 @@ const submitRequest = function (e) {
   location.hash = shipHref.value;
   _setSail();
 };
-document
-  .getElementById('main-form')
-  .addEventListener('submit', submitRequest);
+document.getElementById('main-form').addEventListener('submit', submitRequest);
 
 // sync the location hash with the api href input field
 const _checkHash = function () {

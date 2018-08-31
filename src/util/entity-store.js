@@ -30,10 +30,8 @@ export default class EntityStore extends EventEmitter {
     return cache;
   }
 
-  clear(token) {
-    if (this._cache.has(token)) {
-      this._cache.delete(token);
-    }
+  async clear(token) {
+    return this._cache.has(token) && this._cache.delete(token);
   }
 
   async _fetch({ action, token }) {
