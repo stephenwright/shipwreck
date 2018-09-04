@@ -137,7 +137,7 @@ export class Shipwreck extends EventEmitter {
     this._raise('complete', { message: 'Fetch complete.' });
   }
 
-  // display the markup and attach and logic
+  // display the markup and attach some logic
   async render() {
     const { entity, target } = this;
     target.innerHTML = markup.ship(entity);
