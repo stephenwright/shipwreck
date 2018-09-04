@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Heed the Sirens' call",
   "main": "index.htm",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/stephenwright/shipwrech"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
