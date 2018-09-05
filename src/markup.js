@@ -74,6 +74,7 @@ const markup = {
         type="${action.type}"
         action="${action.href}"
         method="${action.method}">
+        <input type="hidden" name="_method" value="${action.method}">
         <h3>${action.name}</h3>
         <div class="form-fields">
           ${action.fields.map(markup.fieldForm).join('\n')}
@@ -91,19 +92,19 @@ const markup = {
 
     case 'number':
       return `
-          <div class="form-field">
-            <label>${field.name}</label>
-            <input type="${field.type}" value="${field.value}" name="${field.name}" step="any">
-          </div>
-          `;
+        <div class="form-field">
+          <label>${field.name}</label>
+          <input type="${field.type}" value="${field.value}" name="${field.name}" step="any">
+        </div>
+        `;
 
     default:
       return `
-          <div class="form-field">
-            <label>${field.name}</label>
-            <input type="${field.type}" value="${field.value}" name="${field.name}">
-          </div>
-          `;
+        <div class="form-field">
+          <label>${field.name}</label>
+          <input type="${field.type}" value="${field.value}" name="${field.name}">
+        </div>
+        `;
     }
   },
 
@@ -146,6 +147,44 @@ const markup = {
     return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
   },
 
+  entity(entity) {
+    return `
+      <div class="flex-parent">
+        <div class="flex-1">
+
+          <div class="entity-class" ${entity.class.length === 0 ? 'hidden': ''}>
+            <h2>Class</h2>
+            [ ${entity.class.join(', ')} ]
+          </div>
+
+          <div class="entity-links" ${entity.links.length === 0 ? 'hidden': ''}>
+            <h2>Links</h2>
+            ${entity.links.map(l => `<div>${markup.linkAnchor(l)}</div>`).join('\n')}
+          </div>
+
+          <div class="entity-properties" ${Object.keys(entity.properties).length === 0 ? 'hidden': ''}>
+            <h2>Properties</h2>
+            <table><tbody>${markup.propertyRows(entity)}</tbody></table>
+          </div>
+
+          <div class="entity-actions" ${entity.actions.length === 0 ? 'hidden': ''}>
+            <h2>Actions</h2>
+            ${entity.actions.map(markup.card).join('\n')}
+          </div>
+
+        </div>
+        <div class="flex-2" ${entity.entities.length === 0 ? 'hidden': ''}>
+
+          <!-- Sub-Entities -->
+          <div class="entity-entities">
+            <h2>Entities</h2>
+          </div>
+
+        </div>
+      </div>
+    `;
+  },
+
   // Main Container
 
   ship(entity) {
@@ -162,41 +201,7 @@ const markup = {
         </div>
 
         <!-- Pretty view of an entity -->
-        <div class="content" id="content-entity">
-          <div class="flex-parent">
-            <div class="flex-1">
-
-              <div class="entity-class" ${entity.class.length === 0 ? 'hidden': ''}>
-                <h2>Class</h2>
-                [ ${entity.class.join(', ')} ]
-              </div>
-
-              <div class="entity-links" ${entity.links.length === 0 ? 'hidden': ''}>
-                <h2>Links</h2>
-                ${entity.links.map(l => `<div>${markup.linkAnchor(l)}</div>`).join('\n')}
-              </div>
-
-              <div class="entity-properties" ${Object.keys(entity.properties).length === 0 ? 'hidden': ''}>
-                <h2>Properties</h2>
-                <table><tbody>${markup.propertyRows(entity)}</tbody></table>
-              </div>
-
-              <div class="entity-actions" ${entity.actions.length === 0 ? 'hidden': ''}>
-                <h2>Actions</h2>
-                ${entity.actions.map(markup.card).join('\n')}
-              </div>
-
-            </div>
-            <div class="flex-2" ${entity.entities.length === 0 ? 'hidden': ''}>
-
-              <!-- Sub-Entities -->
-              <div class="entity-entities">
-                <h2>Entities</h2>
-              </div>
-
-            </div>
-          </div>
-        </div>
+        <div class="content" id="content-entity">${markup.entity(entity)}</div>
 
         <!-- Raw JSON entity object -->
         <div class="content" id="content-raw">

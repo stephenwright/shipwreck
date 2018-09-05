@@ -36,38 +36,45 @@ export class Shipwreck extends EventEmitter {
     this._store.on('update', this._onStoreUpdate.bind(this));
 
     document.body.addEventListener('submit', async (e) => {
-      if (!this.target.contains(e.target)) {
-        return;
+      if (this.target && this.target.contains(e.target)) {
+        e.preventDefault();
+        this.formSubmit(e.target);
       }
-      e.preventDefault();
-      const form = e.target;
-      const fields = [];
-      for (const { name, value } of form.elements) {
-        name && fields.push({ name, value });
-      }
-      const action = {
-        name: form.name,
-        type: form.enctype,
-        href: form.action,
-        method: form.method,
-        fields,
-      };
-      this._raise('fetch', {});
-      try {
-        const entity = await this._store.submitAction(action, {
-          token: this._token,
-          useCache: this._cachingEnabled,
-        });
-        if (entity) {
-          this.entity = entity;
-          await this.render();
-          this._raise('success', { message: 'Action submitted.' });
-        }
-      } catch (err) {
-        this._raise('error', { message: err.message });
-      }
-      this._raise('complete', {});
     });
+  }
+
+  async formSubmit(form) {
+    const fields = [];
+    let method;
+    for (const { name, value } of form.elements) {
+      if (name === '_method') {
+        method = value;
+        continue;
+      }
+      name && fields.push({ name, value });
+    }
+    const action = {
+      name: form.name,
+      type: form.enctype,
+      href: form.action,
+      method: method || form.method || 'GET',
+      fields,
+    };
+    this._raise('fetch', {});
+    try {
+      const entity = await this._store.submitAction(action, {
+        token: this._token,
+        useCache: this._cachingEnabled,
+      });
+      if (entity) {
+        this.entity = entity;
+        await this.render();
+        this._raise('success', { message: 'Action submitted.' });
+      }
+    } catch (err) {
+      this._raise('error', { message: err.message });
+    }
+    this._raise('complete', {});
   }
 
   _onStoreError(data) {
