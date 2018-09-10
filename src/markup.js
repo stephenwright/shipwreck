@@ -93,16 +93,24 @@ const markup = {
     case 'number':
       return `
         <div class="form-field">
-          <label>${field.name}</label>
-          <input type="${field.type}" value="${field.value}" name="${field.name}" step="any">
+          <label for="${field.name}">${field.name}</label>
+          <input type="${field.type}" value="${field.value}" name="${field.name}" id="${field.name}" step="any">
+        </div>
+        `;
+
+    case 'checkbox':
+      return `
+        <div class="form-field">
+          <label for="${field.name}">${field.name}</label>
+          <input type="${field.type}" name="${field.name}" value="true" id="${field.name}"${ field.value ? ' checked' : '' }>
         </div>
         `;
 
     default:
       return `
         <div class="form-field">
-          <label>${field.name}</label>
-          <input type="${field.type}" value="${field.value}" name="${field.name}">
+          <label for="${field.name}">${field.name}</label>
+          <input type="${field.type}" value="${field.value}" name="${field.name}" id="${field.name}">
         </div>
         `;
     }

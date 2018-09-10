@@ -46,12 +46,12 @@ export class Shipwreck extends EventEmitter {
   async formSubmit(form) {
     const fields = [];
     let method;
-    for (const { name, value } of form.elements) {
+    for (const { name, value, type, checked } of form.elements) {
       if (name === '_method') {
         method = value;
         continue;
       }
-      name && fields.push({ name, value });
+      name && fields.push({ name, value: type === 'checkbox' ? checked : value });
     }
     const action = {
       name: form.name,
