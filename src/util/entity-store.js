@@ -96,7 +96,7 @@ export default class EntityStore extends EventEmitter {
     }
     const action = new SirenAction({ href });
     const entity = await this.submitAction(action, { token, useCache });
-    if (useCache) {
+    if (entity && useCache) {
       // cache the entity by the REQUESTED href
       cache.set(href, entity);
       // cache sub-entites
