@@ -28,7 +28,7 @@ class SirenBase {
 
   validate() {
     this._validate();
-    return this.errors.length === 0;
+    return this.errors.size === 0;
   }
 
   _error(field, message) {
@@ -75,6 +75,17 @@ export class SirenLink extends SirenBase {
     }
     return data;
   }
+
+  _validate() {
+    super._validate();
+    const { rel } = this;
+    if (rel === undefined) {
+      this._error('rel', 'Required.');
+    }
+    if (!(rel instanceof Array) || rel.length === 0) {
+      this._error('rel', 'MUST be a non-empty array of strings.');
+    }
+  }
 }
 
 /**
@@ -90,6 +101,8 @@ export class SirenField extends SirenBase {
     this.title = json['title'] || '';
     this.type = json['type'] || 'text';
     this.value = json['value'] === undefined ? '' : json['value'];
+    // NON-SPEC
+    this.options = json['options'] || [];
   }
 
   get json() {
@@ -229,7 +242,9 @@ class SirenEntityBase extends SirenBase {
   }
 
   _validate() {
+    this.actions.forEach(e => e._validate());
     this.entities.forEach(e => e._validate());
+    this.links.forEach(e => e._validate());
   }
 }
 
@@ -250,7 +265,7 @@ export class SirenSubEntity extends SirenEntityBase {
   _validate() {
     super._validate();
     const { rel } = this;
-    if (rel === undefined || !(rel instanceof Array) || rel.length === 0) {
+    if (rel === undefined) {
       this._error('rel', 'Required.');
     }
     if (!(rel instanceof Array) || rel.length === 0) {
