@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <title>shipwreck box sample</title>
+  <link rel="stylesheet" href="../style/colours.css">
+  <link rel="stylesheet" href="../style/main.css">
+</head>
+<body>
+  <div id="ship-output"></div>
+  <script type="module">
+    import box  from './box.js';
+    import { Shipwreck } from '../src/shipwreck.js';
+    import { SirenEntity } from '../src/siren.js';
+    const shipOutput = document.getElementById('ship-output');
+    const ship = new Shipwreck(shipOutput);
+    ship.entity = new SirenEntity(box);
+    ship.render();
+  </script>
+</body>
+</html>

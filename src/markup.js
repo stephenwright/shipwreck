@@ -85,6 +85,16 @@ const markup = {
     `;
   },
 
+  selectOptions(field) {
+    const options = field.options.map(opt => {
+      const attributes = [];
+      field.value !== undefined && [opt.value, opt.title].includes(field.value) && attributes.push('selected');
+      opt.value !== undefined && attributes.push(`value="${opt.value}"`);
+      return `<option ${attributes.join(' ')}>${opt.title || opt.value}</option>`;
+    });
+    return options.join('\n');
+  },
+
   fieldForm(field) {
     switch (field.type.toLowerCase()) {
     case 'hidden':
@@ -93,24 +103,52 @@ const markup = {
     case 'number':
       return `
         <div class="form-field">
-          <label for="${field.name}">${field.name}</label>
-          <input type="${field.type}" value="${field.value}" name="${field.name}" id="${field.name}" step="any">
+          <label>
+            ${field.name}
+            <input type="${field.type}" value="${field.value}" name="${field.name}" step="any" />
+          </label>
+        </div>
+        `;
+
+    case 'select':
+      return `
+        <div class="form-field">
+          <label>
+            ${field.name}
+            <select name="${field.name}">
+              ${markup.selectOptions(field)}
+            </select>
+          </label>
         </div>
         `;
 
     case 'checkbox':
       return `
         <div class="form-field">
-          <label for="${field.name}">${field.name}</label>
-          <input type="${field.type}" name="${field.name}" value="true" id="${field.name}"${ field.value ? ' checked' : '' }>
+          <label>
+            ${field.title || field.name}
+            <input type="${field.type}" name="${field.name}" value="${field.value}"${ field.value ? ' checked' : '' } />
+          </label>
+        </div>
+        `;
+
+    case 'radio':
+      return `
+        <div class="form-field">
+          <label>
+            ${field.title || field.name}
+            <input type="${field.type}" name="${field.name}" value="${field.value}"${ field.checked ? ' checked' : '' } />
+          </label>
         </div>
         `;
 
     default:
       return `
         <div class="form-field">
-          <label for="${field.name}">${field.name}</label>
-          <input type="${field.type}" value="${field.value}" name="${field.name}" id="${field.name}">
+          <label>
+            ${field.name}
+            <input type="${field.type}" value="${field.value}" name="${field.name}" />
+          </label>
         </div>
         `;
     }

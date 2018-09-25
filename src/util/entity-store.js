@@ -61,31 +61,37 @@ export default class EntityStore extends EventEmitter {
       method,
       mode: 'cors',
     };
-    const response = await fetch(url, options);
+    this._raise('inflight', { count: ++this._inflight });
+    const response = await fetch(url, options).finally(() => this._raise('inflight', { count: --this._inflight }));
     if (!response.ok) {
-      throw new Error(`Request failed, status: ${response.status} (${response.statusText})`);
+      this._raise('error', { message: `Request failed, status: ${response.status} (${response.statusText})` });
+    }
+    return response;
+  }
+
+  async _getEntity(action, token) {
+    const response = await this._fetch({ action, token });
+    if (response.status !== 200) {
+      return;
+    }
+    const contentType = response.headers.get('content-type');
+    if (contentType.search(/application\/(vnd.siren\+)?json/) === -1) {
+      return;
     }
     const json = await response.json();
     return new SirenEntity(json);
   }
 
   async submitAction(action, { token, useCache = true }) {
-    let entity;
-    this._raise('inflight', { count: ++this._inflight });
-    try {
-      entity = await this._fetch({ action, token });
-      const self = entity.link('self');
-      if (useCache && self) {
-        const cache = this.getCache(token);
-        const { href } = self;
-        // cache the entity by the SELF href
-        cache.set(href, entity);
-        this._raise('update', { href, entity });
-      }
-    } catch (err) {
-      this._raise('error', { message: err.message });
+    const entity = await this._getEntity(action, token);
+    const self = useCache && entity && entity.link('self');
+    if (self) {
+      const cache = this.getCache(token);
+      const { href } = self;
+      // cache the entity by the SELF href
+      cache.set(href, entity);
+      this._raise('update', { href, entity });
     }
-    this._raise('inflight', { count: --this._inflight });
     return entity;
   }
 
@@ -95,10 +101,11 @@ export default class EntityStore extends EventEmitter {
       return cache.get(href);
     }
     const action = new SirenAction({ href });
-    const entity = await this.submitAction(action, { token, useCache });
+    const entity = await this._getEntity(action, token);
     if (entity && useCache) {
       // cache the entity by the REQUESTED href
       cache.set(href, entity);
+      this._raise('update', { href, entity });
       // cache sub-entites
       entity && entity.entities && entity.entities
         .filter(e => e instanceof SirenSubEntity && e.link('self'))

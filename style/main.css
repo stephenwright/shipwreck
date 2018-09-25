@@ -45,9 +45,6 @@ label {
 
 /* Shipwreck */
 
-.shipwreck {
-}
-
 .shipwreck .current-path {
   margin: 10px;
 }
@@ -147,7 +144,8 @@ input[type=text],
 input[type=datetime],
 input[type=datetime-local],
 input[type=password],
-input[type=number] {
+input[type=number],
+select {
   width: 100%;
   box-sizing: border-box;
 }
