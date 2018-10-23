@@ -185,7 +185,7 @@ const markup = {
     }
     const url = new URL(link.href);
     let href = url.origin;
-    const path = url.pathname
+    const path = `${url.pathname}${url.search}`
       .split('/')
       .filter(i => i)
       .map(part => `<a href="${href = href + '/' + part}">${part}</a>`)

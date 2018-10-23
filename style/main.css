@@ -43,6 +43,17 @@ label {
   transition: width .5s ease;
 }
 
+.ship-href {
+  display: flex;
+}
+.form-field.ship-base {
+  width: 18em;
+}
+.form-field.ship-path {
+  flex-grow: 1;
+  margin-left: 10px;
+}
+
 /* Shipwreck */
 
 .shipwreck .current-path {

@@ -27,13 +27,15 @@ export class Shipwreck extends EventEmitter {
   constructor(target) {
     super();
     this.target = target;
-    this._entity = undefined;
+    this._baseUri = sessionStorage.getItem('baseUri') || '';
     this._token = sessionStorage.getItem('auth-token') || '';
+    this._entity = undefined;
     this._cachingEnabled = true;
 
     this._store = new EntityStore();
     this._store.on('error', this._onStoreError.bind(this));
     this._store.on('update', this._onStoreUpdate.bind(this));
+    this._store.on('inflight', this.onStoreInFlight.bind(this));
 
     document.body.addEventListener('submit', async (e) => {
       if (this.target && this.target.contains(e.target)) {
@@ -92,6 +94,10 @@ export class Shipwreck extends EventEmitter {
     this._raise('change', { href, entity });
   }
 
+  onStoreInFlight({ count }) {
+    this._raise('inflight', { count });
+  }
+
   get entity() {
     return this._entity;
   }
@@ -113,6 +119,23 @@ export class Shipwreck extends EventEmitter {
     return this._cachingEnabled;
   }
 
+  get baseUri() {
+    return this._baseUri;
+  }
+
+  set baseUri(uri) {
+    uri = uri || undefined; // falsey = undefined
+    if (uri === this._baseUri) {
+      return;
+    }
+    this._baseUri = uri;
+    if (uri) {
+      sessionStorage.setItem('baseUri', uri);
+    } else {
+      sessionStorage.removeItem('baseUri');
+    }
+  }
+
   get token() {
     return this._token;
   }
@@ -132,7 +155,9 @@ export class Shipwreck extends EventEmitter {
   }
 
   // submit a request and display the response
-  async fetch(href) {
+  async fetch(path) {
+    const { baseUri } = this;
+    const href = baseUri ? `${baseUri}${path.replace(baseUri, '')}` : path;
     this._raise('fetch', { message: 'Doing a fetch.', href });
     try {
       const entity = await this._store.get(href, {

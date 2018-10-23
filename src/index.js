@@ -8,13 +8,16 @@ const flash = {
 };
 
 // handles to key elements
-const shipHref = document.getElementById('ship-href');
+const shipBase = document.getElementById('ship-base');
+const shipPath = document.getElementById('ship-path');
 const shipToken = document.getElementById('ship-token');
 const shipOutput = document.getElementById('ship-output');
 const loadingBar = document.getElementById('loading-bar');
 
 // create shipwreck instance
 const ship = new Shipwreck(shipOutput);
+
+shipBase.value = ship.baseUri;
 
 ship.on('fetch', () => {
   loadingBar.style.backgroundColor = 'var(--purple-base)';
@@ -34,12 +37,19 @@ ship.on('success', () => {
   //flash.add(data.message, 'success');
 });
 
+ship.on('inflight', ({ count }) => {
+  if (count === 0) {
+    //loadingBar.style.width = count === 0 ? '100%' : '10%';
+  }
+});
+
 ship.on('update', data => {
   const { entity } = data;
   const self = entity && entity.link('self');
   if (self) {
-    shipHref.value = self.href;
-    location.hash = self.href;
+    const path = self.href.replace(ship.baseUri, '');
+    shipPath.value = path;
+    location.hash = path;
   }
   document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
@@ -57,7 +67,8 @@ const _setSail = async function () {
   active = true;
   try {
     ship.token = shipToken.value;
-    await ship.fetch(shipHref.value);
+    ship.baseUri = shipBase.value;
+    await ship.fetch(shipPath.value);
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
   }
@@ -109,7 +120,7 @@ cacheToggle.addEventListener('change', setCaching);
 // submit form
 const submitRequest = function (e) {
   e.preventDefault();
-  location.hash = shipHref.value;
+  location.hash = shipPath.value;
   _setSail();
 };
 document.getElementById('main-form').addEventListener('submit', submitRequest);
@@ -117,10 +128,10 @@ document.getElementById('main-form').addEventListener('submit', submitRequest);
 // sync the location hash with the api href input field
 const _checkHash = function () {
   const hash = location.hash.slice(1);
-  if (shipHref.value === hash) {
+  if (shipPath.value === hash) {
     return;
   }
-  shipHref.value = hash;
+  shipPath.value = hash;
   _setSail();
 };
 
