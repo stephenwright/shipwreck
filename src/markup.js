@@ -193,7 +193,7 @@ const markup = {
     return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
   },
 
-  // Display the [self] href in a nice clickable manner
+  // Display the query parameters - if present - of [self] href
   queryParams(entity) {
     const link = entity.link('self');
     if (!link) {
