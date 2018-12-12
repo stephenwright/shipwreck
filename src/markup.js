@@ -188,7 +188,7 @@ const markup = {
     const path = `${url.pathname}${url.search}`
       .split('/')
       .filter(i => i)
-      .map(part => `<a href="${href = href + '/' + part}">${part.substring(0, part.indexOf('?'))}</a>`)
+      .map(part => `<a href="${href = href + '/' + part}">${part.indexOf('?') < 0 ? part : part.substring(0, part.indexOf('?'))}</a>`)
       .join(' / ');
     return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
   },
@@ -204,13 +204,13 @@ const markup = {
     for (const p of url.searchParams.entries()) {
       let val = p[1];
       try {
-        val = `<a href="${new URL(url).href}">${val}</a>`;
+        val = `<a href="${new URL(val).href}">${val}</a>`;
       } catch (err) {
         // not a valid url. meh.
       }
       params.push(`<li>${p[0]} = ${val}</li>`);
     }
-    return `
+    return params.length === 0 ? '' : `
       <strong>Query Params:</strong>
       <ul>${params.join('')}</ul>
     `;
