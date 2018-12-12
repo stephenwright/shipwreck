@@ -27,8 +27,9 @@ export class Shipwreck extends EventEmitter {
   constructor(target) {
     super();
     this.target = target;
-    this._baseUri = sessionStorage.getItem('baseUri') || '';
-    this._token = sessionStorage.getItem('auth-token') || '';
+    this._baseUri = sessionStorage.getItem('ship-baseUri') || '';
+    this._token = sessionStorage.getItem('ship-authToken') || '';
+    this._cachingEnabled = sessionStorage.getItem('ship-caching') !== 'false';
     this._entity = undefined;
     this._cachingEnabled = true;
 
@@ -116,6 +117,7 @@ export class Shipwreck extends EventEmitter {
     if (!this._cachingEnabled) {
       this._store.clear(this._token);
     }
+    sessionStorage.setItem('ship-caching', val);
     return this._cachingEnabled;
   }
 
@@ -130,9 +132,9 @@ export class Shipwreck extends EventEmitter {
     }
     this._baseUri = uri;
     if (uri) {
-      sessionStorage.setItem('baseUri', uri);
+      sessionStorage.setItem('ship-baseUri', uri);
     } else {
-      sessionStorage.removeItem('baseUri');
+      sessionStorage.removeItem('ship-baseUri');
     }
   }
 
@@ -148,9 +150,9 @@ export class Shipwreck extends EventEmitter {
     this._store.clear(this._token);
     this._token = newToken;
     if (newToken) {
-      sessionStorage.setItem('auth-token', newToken);
+      sessionStorage.setItem('ship-authToken', newToken);
     } else {
-      sessionStorage.removeItem('auth-token');
+      sessionStorage.removeItem('ship-authToken');
     }
   }
 
@@ -201,15 +203,35 @@ export class Shipwreck extends EventEmitter {
       const body = card.querySelector('.body');
       const head = card.querySelector('.head');
       if (head && body) {
-        head.onclick = () =>  body.style.display = body.style.display === 'block' ? 'none' : 'block';
+        head.onclick = () =>  body.style.display = body.style.display === 'none' ? '' : 'none';
       }
+    });
+
+    const tabbed = target.querySelectorAll('.shipwreck .tabbed');
+    tabbed.forEach(group => {
+      const groupContents = group.querySelectorAll('.tab-content');
+      groupContents.forEach(c => c.style.display = 'none');
+      const groupTabs = group.querySelectorAll('.tabs a');
+      //console.info('tab group', { groupTabs, groupContents })
+      groupTabs.forEach(tab => {
+        tab.onclick = () => {
+          groupTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          groupContents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
+        };
+      });
+      groupTabs.length && groupTabs[0].click();
     });
 
     // Links (do this after sub entities are added)
     target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
       .forEach(a => a.addEventListener('click', (e) => {
+        const { href } = e.target;
+        if (!href || href.indexOf(this._baseUri) === -1) {
+          return;
+        }
         e.preventDefault();
-        this.fetch(e.target.href);
+        this.fetch(href);
       }));
   }
 }

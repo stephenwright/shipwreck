@@ -19,27 +19,34 @@ const markup = {
     }
   },
 
+  title(entity) {
+    return entity.title ? `<div><label>title:</label> ${entity.title}</div>` : '';
+  },
+
   // Entities
 
   entityCard(entity) {
     return `
       <div class="card">
+        <span class="type-tag">Entity</span>
         <div class="head">
           <div><label>class:</label> [ ${entity.class.join(', ')} ]</div>
           <div><label>rel:</label> [ ${entity.rel.join(', ')} ]</div>
         </div>
-        <div class="body">
-          <div><label>title:</label> ${entity.title}</div>
-          <label>links:</label>
-          <ul>
-          ${entity.links.map(l => `<li>${markup.linkAnchor(l)}</li>`).join('\n')}
-          </ul>
-          <div class="entity-properties entity-raw">
-            <label>properties:</label>
+        <div class="body tabbed">
+          <div class="entity-links">
+            <label>links:</label>
+            <ul>${entity.links.map(l => `<li>${markup.linkAnchor(l)}</li>`).join('\n')}</ul>
+          </div>
+          <div class="tabs">
+            <a name="entity-properties">properties</a>
+            ${entity.actions.length ? '<a name="entity-actions">actions</a>' : '' }
+          </div>
+          ${markup.title(entity)}
+          <div class="tab-content entity-properties entity-raw">
             ${markup.code(entity.properties)}
           </div>
-          <div class="entity-actions">
-            <label>actions:</label>
+          <div class="tab-content entity-actions">
             ${entity.actions.map(markup.actionForm).join('\n')}
           </div>
         </div>
@@ -57,6 +64,7 @@ const markup = {
   linkCard(link) {
     return `
       <div class="card">
+      <span class="type-tag">Link</span>
         <div class="head">
           <div><label>rel:</label> [ ${link.rel.join(', ')} ]</div>
           <div><label>href:</label> <a href="${link.href}">${link.href}</a></div>

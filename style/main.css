@@ -22,6 +22,20 @@ label {
   margin: 10px;
   padding: 10px;
   box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.card .type-tag {
+  position: absolute;
+  top: 5px;
+  right: -3px;
+  padding: 1px 10px 1px 5px;
+  display: inline-block;
+  color: var(--purple-base, #777);
+  background-color: var(--purple-lighter, #eee);
+  font-size: .8em;
+  text-transform: uppercase;
+  box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.1);
 }
 
 .card h1 { font-size: 1.2em; }
@@ -41,6 +55,7 @@ label {
   height: 6px;
   background-color: var(--green-base);
   transition: width .5s ease;
+  z-index: 1000;
 }
 
 .ship-href {
@@ -206,7 +221,29 @@ select {
 }
 
 .entity-entities .body {
-  display: none;
+  display: block;
+}
+
+.entity-entities .tabs {
+  font-size: .9em;
+  background-color: var(--purple-lighter);
+  margin-top: 10px;
+}
+
+.entity-entities .entity-actions {
+  display: block;
+}
+
+.entity-entities .entity-properties {
+  display: block;
+}
+
+.entity-entities .entity-links ul {
+  margin: 0;
+}
+
+.entity-entities .card .content {
+  background-color: inherit;
 }
 
 /* entity actions */
