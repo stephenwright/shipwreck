@@ -206,7 +206,7 @@ export class Shipwreck extends EventEmitter {
     });
 
     // Links (do this after sub entities are added)
-    target.querySelectorAll('.current-path a, #content-entity a')
+    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
       .forEach(a => a.addEventListener('click', (e) => {
         e.preventDefault();
         this.fetch(e.target.href);

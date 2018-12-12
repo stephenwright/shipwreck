@@ -188,9 +188,32 @@ const markup = {
     const path = `${url.pathname}${url.search}`
       .split('/')
       .filter(i => i)
-      .map(part => `<a href="${href = href + '/' + part}">${part}</a>`)
+      .map(part => `<a href="${href = href + '/' + part}">${part.substring(0, part.indexOf('?'))}</a>`)
       .join(' / ');
     return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
+  },
+
+  // Display the query parameters - if present - of [self] href
+  queryParams(entity) {
+    const link = entity.link('self');
+    if (!link) {
+      return '';
+    }
+    const url = new URL(link.href);
+    const params = [];
+    for (const p of url.searchParams.entries()) {
+      let val = p[1];
+      try {
+        val = `<a href="${new URL(url).href}">${val}</a>`;
+      } catch (err) {
+        // not a valid url. meh.
+      }
+      params.push(`<li>${p[0]} = ${val}</li>`);
+    }
+    return `
+      <strong>Query Params:</strong>
+      <ul>${params.join('')}</ul>
+    `;
   },
 
   entity(entity) {
@@ -239,6 +262,8 @@ const markup = {
 
         <!-- Display the current location in a nice clickable manner -->
         <div class="current-path">${markup.currentPath(entity)}</div>
+
+        <div class="current-path-params">${markup.queryParams(entity)}</div>
 
         <!-- Tabs to switch between raw and pretty views -->
         <div class="tabs">
