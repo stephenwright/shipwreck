@@ -11,9 +11,9 @@ const _urlencode = data => Object.keys(data)
 
 /**
  * Emits the following events:
- *  inflight - when the number of fetches in progress changes up or down
- *  update - an entity has been updated
- *  error - something went wrong
+ *  inflight - when the number of fetches in progress changes up or down { count }
+ *  update - an entity has been updated { href, entity }
+ *  error - something went wrong { message }
  */
 export default class EntityStore extends EventEmitter {
   constructor() {
@@ -82,6 +82,7 @@ export default class EntityStore extends EventEmitter {
     return new SirenEntity(json);
   }
 
+  // performs a request using the supplied action
   async submitAction(action, { token, useCache = true }) {
     const entity = await this._getEntity(action, token);
     const self = useCache && entity && entity.link('self');
@@ -95,9 +96,11 @@ export default class EntityStore extends EventEmitter {
     return entity;
   }
 
+  // performs a GET request to the specified href
   async get(href, { token, useCache = true } = {}) {
     const cache = this.getCache(token);
     if (useCache && cache.has(href)) {
+      this._raise('inflight', { count: this._inflight });
       return cache.get(href);
     }
     const action = new SirenAction({ href });

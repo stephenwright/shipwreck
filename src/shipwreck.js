@@ -18,10 +18,11 @@ export const _html = str => {
 /**
  * Emits the following events:
  *  fetch - starting a fetch
- *  success - fetch was successful
- *  update - then entity has been updated
+ *  inflight - there are current requests in flight { count }
+ *  update - then entity has been updated { href, entity }
+ *  success - fetch was successful { message }
+ *  error - something went wrong { message }
  *  complete - fetch complete (calls wether it was successful or not)
- *  error - something went wrong
  */
 export class Shipwreck extends EventEmitter {
   constructor(target) {
@@ -36,7 +37,7 @@ export class Shipwreck extends EventEmitter {
     this._store = new EntityStore();
     this._store.on('error', this._onStoreError.bind(this));
     this._store.on('update', this._onStoreUpdate.bind(this));
-    this._store.on('inflight', this.onStoreInFlight.bind(this));
+    this._store.on('inflight', this._onStoreInFlight.bind(this));
 
     document.body.addEventListener('submit', async (e) => {
       if (this.target && this.target.contains(e.target)) {
@@ -49,12 +50,6 @@ export class Shipwreck extends EventEmitter {
   async formSubmit(form) {
     const fields = [];
     let method;
-    // const data = new FormData(form);
-    // if (data.has('_method')) {
-    //   method = data.get('_method');
-    //   data.delete('_method');
-    // }
-    // data.forEach((value, name) => fields.push({ name, value }));
     for (const { name, value, type, checked } of form.elements) {
       if (name === '_method') {
         method = value;
@@ -86,8 +81,8 @@ export class Shipwreck extends EventEmitter {
     this._raise('complete', {});
   }
 
-  _onStoreError(data) {
-    this._raise('error', data);
+  _onStoreInFlight({ count }) {
+    this._raise('inflight', { count });
   }
 
   _onStoreUpdate({ href, entity }) {
@@ -95,8 +90,8 @@ export class Shipwreck extends EventEmitter {
     this._raise('change', { href, entity });
   }
 
-  onStoreInFlight({ count }) {
-    this._raise('inflight', { count });
+  _onStoreError({ message }) {
+    this._raise('error', { message });
   }
 
   get entity() {
@@ -160,7 +155,7 @@ export class Shipwreck extends EventEmitter {
   async fetch(path) {
     const { baseUri } = this;
     const href = baseUri ? `${baseUri}${path.replace(baseUri, '')}` : path;
-    this._raise('fetch', { message: 'Doing a fetch.', href });
+    this._raise('fetch', {});
     try {
       const entity = await this._store.get(href, {
         token: this._token,
