@@ -264,10 +264,6 @@ select {
   overflow-x: auto;
 }
 
-.raw-response .title {
-  background-color: #eee;
-}
-
 .raw-response .content {
   white-space: pre-wrap;
 }

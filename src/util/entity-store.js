@@ -72,7 +72,7 @@ export default class EntityStore extends EventEmitter {
   async _getEntity(action, token) {
     const response = await this._fetch({ action, token });
     if (![200, 201, 203, 205, 206].includes(response.status)) {
-      return;
+      return { response };
     }
     const contentType = response.headers.get('content-type');
     let entity = null;

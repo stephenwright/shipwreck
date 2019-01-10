@@ -99,6 +99,7 @@ export class Shipwreck extends EventEmitter {
 
   set entity(entity) {
     this._entity = entity;
+    this._raise('update', { message: 'Updated entity', entity });
   }
 
   get cachingEnabled() {
