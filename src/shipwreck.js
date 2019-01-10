@@ -66,13 +66,13 @@ export class Shipwreck extends EventEmitter {
     };
     this._raise('fetch', {});
     try {
-      const entity = await this._store.submitAction(action, {
+      const { entity } = await this._store.submitAction(action, {
         token: this._token,
         useCache: this._cachingEnabled,
       });
       if (entity) {
         this.entity = entity;
-        await this.render();
+        await this.renderEntity();
         this._raise('success', { message: 'Action submitted.' });
       }
     } catch (err) {
@@ -85,9 +85,8 @@ export class Shipwreck extends EventEmitter {
     this._raise('inflight', { count });
   }
 
-  _onStoreUpdate({ href, entity }) {
+  _onStoreUpdate({ entity }) {
     this._entity = entity;
-    this._raise('change', { href, entity });
   }
 
   _onStoreError({ message }) {
@@ -100,7 +99,6 @@ export class Shipwreck extends EventEmitter {
 
   set entity(entity) {
     this._entity = entity;
-    this._raise('update', { message: 'Entity was been updated', entity });
   }
 
   get cachingEnabled() {
@@ -157,23 +155,49 @@ export class Shipwreck extends EventEmitter {
     const href = baseUri ? `${baseUri}${path.replace(baseUri, '')}` : path;
     this._raise('fetch', {});
     try {
-      const entity = await this._store.get(href, {
+      const { entity, response } = await this._store.get(href, {
         token: this._token,
         useCache: this._cachingEnabled,
       });
       if (entity) {
         this.entity = entity;
-        await this.render();
-        this._raise('success', { message: 'Request success' });
+        await this.renderEntity();
+      } else if (response) {
+        await this.renderResponse(response);
+        this._raise('update', { message: 'Displaying raw response', href: response.url });
+      } else {
+        throw new Error('invalid response');
       }
+      this._raise('success', { message: 'Request success', href });
     } catch (err) {
       console.warn(err); // eslint-disable-line no-console
     }
-    this._raise('complete', { message: 'Fetch complete.' });
+    this._raise('complete', { message: 'Fetch complete.', href });
+  }
+
+  async watchLinks() {
+    const { target } = this;
+    // Links (do this after sub entities are added)
+    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
+      .forEach(a => a.addEventListener('click', (e) => {
+        const { href } = e.target;
+        if (!href || href.indexOf(this._baseUri) === -1) {
+          return;
+        }
+        e.preventDefault();
+        this.fetch(href);
+      }));
+  }
+
+  async renderResponse(response) {
+    const { target } = this;
+    const text = await response.text();
+    target.innerHTML = markup.raw(text, response.url);
+    this.watchLinks();
   }
 
   // display the markup and attach some logic
-  async render() {
+  async renderEntity() {
     const { entity, target } = this;
     target.innerHTML = markup.ship(entity);
 
@@ -218,15 +242,6 @@ export class Shipwreck extends EventEmitter {
       groupTabs.length && groupTabs[0].click();
     });
 
-    // Links (do this after sub entities are added)
-    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
-      .forEach(a => a.addEventListener('click', (e) => {
-        const { href } = e.target;
-        if (!href || href.indexOf(this._baseUri) === -1) {
-          return;
-        }
-        e.preventDefault();
-        this.fetch(href);
-      }));
+    this.watchLinks();
   }
 }

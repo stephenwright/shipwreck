@@ -75,16 +75,17 @@ export default class EntityStore extends EventEmitter {
       return;
     }
     const contentType = response.headers.get('content-type');
-    if (contentType.search(/application\/(vnd.siren\+)?json/) === -1) {
-      return;
+    let entity = null;
+    if (contentType.search(/application\/(vnd.siren\+)?json/) !== -1) {
+      const json = await response.json();
+      entity = new SirenEntity(json);
     }
-    const json = await response.json();
-    return new SirenEntity(json);
+    return { entity, response };
   }
 
   // performs a request using the supplied action
   async submitAction(action, { token, useCache = true }) {
-    const entity = await this._getEntity(action, token);
+    const { entity, response } = await this._getEntity(action, token);
     const self = useCache && entity && entity.link('self');
     if (self) {
       const cache = this.getCache(token);
@@ -93,7 +94,7 @@ export default class EntityStore extends EventEmitter {
       cache.set(href, entity);
       this._raise('update', { href, entity });
     }
-    return entity;
+    return { entity, response };
   }
 
   // performs a GET request to the specified href
@@ -101,10 +102,10 @@ export default class EntityStore extends EventEmitter {
     const cache = this.getCache(token);
     if (useCache && cache.has(href)) {
       this._raise('inflight', { count: this._inflight });
-      return cache.get(href);
+      return { entity: cache.get(href) };
     }
     const action = new SirenAction({ href });
-    const entity = await this._getEntity(action, token);
+    const { entity, response } = await this._getEntity(action, token);
     if (entity && useCache) {
       // cache the entity by the REQUESTED href
       cache.set(href, entity);
@@ -114,6 +115,6 @@ export default class EntityStore extends EventEmitter {
         .filter(e => e instanceof SirenSubEntity && e.link('self'))
         .forEach(e => cache.set(e.link('self').href, new SirenEntity(e.json)));
     }
-    return entity;
+    return { entity, response };
   }
 }

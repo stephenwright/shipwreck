@@ -25,12 +25,15 @@ ship.on('fetch', () => {
   flash.clear();
 });
 
-ship.on('update', ({ entity }) => {
+ship.on('update', ({ entity, href }) => {
   const self = entity && entity.link('self');
   if (self) {
-    const path = self.href.replace(ship.baseUri, '');
-    shipPath.value = path;
-    location.hash = path;
+    href = self.href;
+  }
+  if (href) {
+    href = href.replace(ship.baseUri, '');
+    shipPath.value = href;
+    location.hash = href;
   }
   document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
@@ -39,7 +42,7 @@ ship.on('success', () => {
   loadingBar.style.backgroundColor = 'var(--green-base)';
 });
 
-ship.on('error', ({ message }) => {
+ship.on('error', async ({ message }) => {
   loadingBar.style.backgroundColor = 'var(--red-base)';
   flash.add(message, 'critical');
 });

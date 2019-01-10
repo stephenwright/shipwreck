@@ -185,13 +185,8 @@ const markup = {
       .join('\n');
   },
 
-  // Display the [self] href in a nice clickable manner
-  currentPath(entity) {
-    const link = entity.link('self');
-    if (!link) {
-      return '';
-    }
-    const url = new URL(link.href);
+  uriCrumbs(uri) {
+    const url = new URL(uri);
     let href = url.origin;
     const path = `${url.pathname}${url.search}`
       .split('/')
@@ -199,6 +194,12 @@ const markup = {
       .map(part => `<a href="${href = href + '/' + part}">${part.indexOf('?') < 0 ? part : part.substring(0, part.indexOf('?'))}</a>`)
       .join(' / ');
     return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
+  },
+
+  // Display the [self] href in a nice clickable manner
+  currentPath(entity) {
+    const link = entity && entity.link('self');
+    return link ? markup.uriCrumbs(link.href) : '';
   },
 
   // Display the query parameters - if present - of [self] href
@@ -287,6 +288,15 @@ const markup = {
           <div class="entity-raw">${markup.code(entity.raw)}</div>
         </div>
 
+      </div>
+    `;
+  },
+
+  raw(content, url) {
+    return `
+      <div class="shipwreck raw-response">
+        <div class="current-path">${markup.uriCrumbs(url)}</div>
+        <div class="content">${content}</div>
       </div>
     `;
   },
