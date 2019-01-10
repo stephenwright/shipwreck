@@ -196,19 +196,8 @@ const markup = {
     return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
   },
 
-  // Display the [self] href in a nice clickable manner
-  currentPath(entity) {
-    const link = entity && entity.link('self');
-    return link ? markup.uriCrumbs(link.href) : '';
-  },
-
-  // Display the query parameters - if present - of [self] href
-  queryParams(entity) {
-    const link = entity.link('self');
-    if (!link) {
-      return '';
-    }
-    const url = new URL(link.href);
+  uriParams(uri) {
+    const url = new URL(uri);
     const params = [];
     for (const p of url.searchParams.entries()) {
       let val = p[1];
@@ -223,6 +212,18 @@ const markup = {
       <strong>Query Params:</strong>
       <ul>${params.join('')}</ul>
     `;
+  },
+
+  // Display the [self] href in a nice clickable manner
+  currentPath(entity) {
+    const link = entity && entity.link('self');
+    return link ? markup.uriCrumbs(link.href) : '';
+  },
+
+  // Display the query parameters - if present - of [self] href
+  queryParams(entity) {
+    const link = entity.link('self');
+    return link ? markup.uriParams(link.href) : '';
   },
 
   entity(entity) {
@@ -271,7 +272,6 @@ const markup = {
 
         <!-- Display the current location in a nice clickable manner -->
         <div class="current-path">${markup.currentPath(entity)}</div>
-
         <div class="current-path-params">${markup.queryParams(entity)}</div>
 
         <!-- Tabs to switch between raw and pretty views -->
@@ -296,7 +296,15 @@ const markup = {
     return `
       <div class="shipwreck raw-response">
         <div class="current-path">${markup.uriCrumbs(url)}</div>
-        <div class="content">${content}</div>
+        <div class="current-path-params">${markup.uriParams(url)}</div>
+
+        <!-- Tabs to switch between raw and pretty views -->
+        <div class="tabs">
+          <a name="content-raw">Raw</a>
+        </div>
+
+        <!-- Raw content -->
+        <div class="content" id="content-raw">${content}</div>
       </div>
     `;
   },

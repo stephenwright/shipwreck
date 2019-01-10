@@ -190,19 +190,9 @@ export class Shipwreck extends EventEmitter {
       }));
   }
 
-  async renderResponse(response) {
+  async initTabs() {
     const { target } = this;
-    const text = await response.text();
-    target.innerHTML = markup.raw(text, response.url);
-    this.watchLinks();
-  }
-
-  // display the markup and attach some logic
-  async renderEntity() {
-    const { entity, target } = this;
-    target.innerHTML = markup.ship(entity);
-
-    // Tabs
+    // Main tabs
     const contents = target.querySelectorAll('.shipwreck > .content');
     const tabs = target.querySelectorAll('.shipwreck > .tabs > a');
     tabs.forEach(tab => {
@@ -213,6 +203,36 @@ export class Shipwreck extends EventEmitter {
       };
     });
     tabs[0].click();
+
+    // Body tabs
+    const tabbed = target.querySelectorAll('.shipwreck .tabbed');
+    tabbed.forEach(group => {
+      const groupContents = group.querySelectorAll('.tab-content');
+      groupContents.forEach(c => c.style.display = 'none');
+      const groupTabs = group.querySelectorAll('.tabs a');
+      groupTabs.forEach(tab => {
+        tab.onclick = () => {
+          groupTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          groupContents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
+        };
+      });
+      groupTabs.length && groupTabs[0].click();
+    });
+  }
+
+  async renderResponse(response) {
+    const { target } = this;
+    const text = await response.text();
+    target.innerHTML = markup.raw(text, response.url);
+    this.initTabs();
+    this.watchLinks();
+  }
+
+  // display the markup and attach some logic
+  async renderEntity() {
+    const { entity, target } = this;
+    target.innerHTML = markup.ship(entity);
 
     // Sub-Entities
     const parent = target.querySelector('.entity-entities');
@@ -226,23 +246,7 @@ export class Shipwreck extends EventEmitter {
         head.onclick = () =>  body.style.display = body.style.display === 'none' ? '' : 'none';
       }
     });
-
-    const tabbed = target.querySelectorAll('.shipwreck .tabbed');
-    tabbed.forEach(group => {
-      const groupContents = group.querySelectorAll('.tab-content');
-      groupContents.forEach(c => c.style.display = 'none');
-      const groupTabs = group.querySelectorAll('.tabs a');
-      //console.info('tab group', { groupTabs, groupContents })
-      groupTabs.forEach(tab => {
-        tab.onclick = () => {
-          groupTabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          groupContents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
-        };
-      });
-      groupTabs.length && groupTabs[0].click();
-    });
-
+    this.initTabs();
     this.watchLinks();
   }
 }
