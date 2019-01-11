@@ -18,10 +18,11 @@ export const _html = str => {
 /**
  * Emits the following events:
  *  fetch - starting a fetch
- *  success - fetch was successful
- *  update - then entity has been updated
+ *  inflight - there are current requests in flight { count }
+ *  update - then entity has been updated { href, entity }
+ *  success - fetch was successful { message }
+ *  error - something went wrong { message }
  *  complete - fetch complete (calls wether it was successful or not)
- *  error - something went wrong
  */
 export class Shipwreck extends EventEmitter {
   constructor(target) {
@@ -36,7 +37,7 @@ export class Shipwreck extends EventEmitter {
     this._store = new EntityStore();
     this._store.on('error', this._onStoreError.bind(this));
     this._store.on('update', this._onStoreUpdate.bind(this));
-    this._store.on('inflight', this.onStoreInFlight.bind(this));
+    this._store.on('inflight', this._onStoreInFlight.bind(this));
 
     document.body.addEventListener('submit', async (e) => {
       if (this.target && this.target.contains(e.target)) {
@@ -49,12 +50,6 @@ export class Shipwreck extends EventEmitter {
   async formSubmit(form) {
     const fields = [];
     let method;
-    // const data = new FormData(form);
-    // if (data.has('_method')) {
-    //   method = data.get('_method');
-    //   data.delete('_method');
-    // }
-    // data.forEach((value, name) => fields.push({ name, value }));
     for (const { name, value, type, checked } of form.elements) {
       if (name === '_method') {
         method = value;
@@ -71,13 +66,13 @@ export class Shipwreck extends EventEmitter {
     };
     this._raise('fetch', {});
     try {
-      const entity = await this._store.submitAction(action, {
+      const { entity } = await this._store.submitAction(action, {
         token: this._token,
         useCache: this._cachingEnabled,
       });
       if (entity) {
         this.entity = entity;
-        await this.render();
+        await this.renderEntity();
         this._raise('success', { message: 'Action submitted.' });
       }
     } catch (err) {
@@ -86,17 +81,16 @@ export class Shipwreck extends EventEmitter {
     this._raise('complete', {});
   }
 
-  _onStoreError(data) {
-    this._raise('error', data);
-  }
-
-  _onStoreUpdate({ href, entity }) {
-    this._entity = entity;
-    this._raise('change', { href, entity });
-  }
-
-  onStoreInFlight({ count }) {
+  _onStoreInFlight({ count }) {
     this._raise('inflight', { count });
+  }
+
+  _onStoreUpdate({ entity }) {
+    this._entity = entity;
+  }
+
+  _onStoreError({ message }) {
+    this._raise('error', { message });
   }
 
   get entity() {
@@ -105,7 +99,7 @@ export class Shipwreck extends EventEmitter {
 
   set entity(entity) {
     this._entity = entity;
-    this._raise('update', { message: 'Entity was been updated', entity });
+    this._raise('update', { message: 'Updated entity', entity });
   }
 
   get cachingEnabled() {
@@ -160,29 +154,45 @@ export class Shipwreck extends EventEmitter {
   async fetch(path) {
     const { baseUri } = this;
     const href = baseUri ? `${baseUri}${path.replace(baseUri, '')}` : path;
-    this._raise('fetch', { message: 'Doing a fetch.', href });
+    this._raise('fetch', {});
     try {
-      const entity = await this._store.get(href, {
+      const { entity, response } = await this._store.get(href, {
         token: this._token,
         useCache: this._cachingEnabled,
       });
       if (entity) {
         this.entity = entity;
-        await this.render();
-        this._raise('success', { message: 'Request success' });
+        await this.renderEntity();
+      } else if (response) {
+        await this.renderResponse(response);
+        this._raise('update', { message: 'Displaying raw response', href: response.url });
+      } else {
+        throw new Error('invalid response');
       }
+      this._raise('success', { message: 'Request success', href });
     } catch (err) {
       console.warn(err); // eslint-disable-line no-console
     }
-    this._raise('complete', { message: 'Fetch complete.' });
+    this._raise('complete', { message: 'Fetch complete.', href });
   }
 
-  // display the markup and attach some logic
-  async render() {
-    const { entity, target } = this;
-    target.innerHTML = markup.ship(entity);
+  async watchLinks() {
+    const { target } = this;
+    // Links (do this after sub entities are added)
+    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
+      .forEach(a => a.addEventListener('click', (e) => {
+        const { href } = e.target;
+        if (!href || href.indexOf(this._baseUri) === -1) {
+          return;
+        }
+        e.preventDefault();
+        this.fetch(href);
+      }));
+  }
 
-    // Tabs
+  async initTabs() {
+    const { target } = this;
+    // Main tabs
     const contents = target.querySelectorAll('.shipwreck > .content');
     const tabs = target.querySelectorAll('.shipwreck > .tabs > a');
     tabs.forEach(tab => {
@@ -193,6 +203,36 @@ export class Shipwreck extends EventEmitter {
       };
     });
     tabs[0].click();
+
+    // Body tabs
+    const tabbed = target.querySelectorAll('.shipwreck .tabbed');
+    tabbed.forEach(group => {
+      const groupContents = group.querySelectorAll('.tab-content');
+      groupContents.forEach(c => c.style.display = 'none');
+      const groupTabs = group.querySelectorAll('.tabs a');
+      groupTabs.forEach(tab => {
+        tab.onclick = () => {
+          groupTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          groupContents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
+        };
+      });
+      groupTabs.length && groupTabs[0].click();
+    });
+  }
+
+  async renderResponse(response) {
+    const { target } = this;
+    const text = await response.text();
+    target.innerHTML = markup.raw(text, response.url);
+    this.initTabs();
+    this.watchLinks();
+  }
+
+  // display the markup and attach some logic
+  async renderEntity() {
+    const { entity, target } = this;
+    target.innerHTML = markup.ship(entity);
 
     // Sub-Entities
     const parent = target.querySelector('.entity-entities');
@@ -206,32 +246,7 @@ export class Shipwreck extends EventEmitter {
         head.onclick = () =>  body.style.display = body.style.display === 'none' ? '' : 'none';
       }
     });
-
-    const tabbed = target.querySelectorAll('.shipwreck .tabbed');
-    tabbed.forEach(group => {
-      const groupContents = group.querySelectorAll('.tab-content');
-      groupContents.forEach(c => c.style.display = 'none');
-      const groupTabs = group.querySelectorAll('.tabs a');
-      //console.info('tab group', { groupTabs, groupContents })
-      groupTabs.forEach(tab => {
-        tab.onclick = () => {
-          groupTabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          groupContents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
-        };
-      });
-      groupTabs.length && groupTabs[0].click();
-    });
-
-    // Links (do this after sub entities are added)
-    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
-      .forEach(a => a.addEventListener('click', (e) => {
-        const { href } = e.target;
-        if (!href || href.indexOf(this._baseUri) === -1) {
-          return;
-        }
-        e.preventDefault();
-        this.fetch(href);
-      }));
+    this.initTabs();
+    this.watchLinks();
   }
 }

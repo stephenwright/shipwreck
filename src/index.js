@@ -25,33 +25,28 @@ ship.on('fetch', () => {
   flash.clear();
 });
 
-ship.on('error', data => {
-  loadingBar.style.backgroundColor = 'var(--red-base)';
-  loadingBar.style.width = '100%';
-  flash.add(data.message, 'critical');
+ship.on('update', ({ entity, href }) => {
+  const self = entity && entity.link('self');
+  href = self && self.href || href;
+  if (href) {
+    href = href.replace(ship.baseUri, '');
+    shipPath.value = href;
+    location.hash = href;
+  }
+  document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
 
 ship.on('success', () => {
   loadingBar.style.backgroundColor = 'var(--green-base)';
+});
+
+ship.on('error', async ({ message }) => {
+  loadingBar.style.backgroundColor = 'var(--red-base)';
+  flash.add(message, 'critical');
+});
+
+ship.on('complete', () => {
   loadingBar.style.width = '100%';
-  //flash.add(data.message, 'success');
-});
-
-ship.on('inflight', ({ count }) => {
-  if (count === 0) {
-    //loadingBar.style.width = count === 0 ? '100%' : '10%';
-  }
-});
-
-ship.on('update', data => {
-  const { entity } = data;
-  const self = entity && entity.link('self');
-  if (self) {
-    const path = self.href.replace(ship.baseUri, '');
-    shipPath.value = path;
-    location.hash = path;
-  }
-  document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
 
 shipToken.value = ship.token;
