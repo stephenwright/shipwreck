@@ -154,9 +154,9 @@ export class Shipwreck extends EventEmitter {
 
   // submit a request and display the response
   async fetch(path) {
-    const href = ABSOLUTE_URL_REGEX.test(path) ? path : `${this.baseUri}${path}`;
     this._raise('fetch', {});
     try {
+      const { href } = new URL(ABSOLUTE_URL_REGEX.test(path) ? path : `${this.baseUri}${path}`);
       const { entity, response } = await this._store.get(href, {
         token: this._token,
         useCache: this._cachingEnabled,
@@ -173,8 +173,9 @@ export class Shipwreck extends EventEmitter {
       this._raise('success', { message: 'Request success', href });
     } catch (err) {
       console.warn(err); // eslint-disable-line no-console
+      this._raise('error', { message: err.message, error: err });
     }
-    this._raise('complete', { message: 'Fetch complete.', href });
+    this._raise('complete', { message: 'Fetch complete.' });
   }
 
   async watchLinks() {
