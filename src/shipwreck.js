@@ -15,6 +15,8 @@ export const _html = str => {
   return template.content.firstChild;
 };
 
+const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
+
 /**
  * Emits the following events:
  *  fetch - starting a fetch
@@ -152,8 +154,7 @@ export class Shipwreck extends EventEmitter {
 
   // submit a request and display the response
   async fetch(path) {
-    const { baseUri } = this;
-    const href = baseUri ? `${baseUri}${path.replace(baseUri, '')}` : path;
+    const href = ABSOLUTE_URL_REGEX.test(path) ? path : `${this.baseUri}${path}`;
     this._raise('fetch', {});
     try {
       const { entity, response } = await this._store.get(href, {
@@ -182,7 +183,7 @@ export class Shipwreck extends EventEmitter {
     target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
       .forEach(a => a.addEventListener('click', (e) => {
         const { href } = e.target;
-        if (!href || href.indexOf(this._baseUri) === -1) {
+        if (!href) {
           return;
         }
         e.preventDefault();
