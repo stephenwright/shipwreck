@@ -66,6 +66,7 @@ const markup = {
       <div class="card">
       <span class="type-tag">Link</span>
         <div class="head">
+          <div><label>class:</label> [ ${link.class.join(', ')} ]</div>
           <div><label>rel:</label> [ ${link.rel.join(', ')} ]</div>
           <div><label>href:</label> <a href="${link.href}">${link.href}</a></div>
         </div>

@@ -13,7 +13,8 @@
  */
 class SirenBase {
   constructor(json) {
-    this.raw = json;
+    this._json = JSON.parse(JSON.stringify(json));
+    this.raw = JSON.parse(JSON.stringify(json));
     this.errors = new Map();
   }
 
@@ -51,12 +52,12 @@ export class SirenLink extends SirenBase {
   constructor(json) {
     super(json);
     // required
-    this.rel = json['rel'] || [];
-    this.href = json['href'] || '';
+    this.rel = this._json['rel'] || [];
+    this.href = this._json['href'] || '';
     // optional
-    this.class = json['class'] = [];
-    this.type = json['type'] = '';
-    this.title = json['title'] = '';
+    this.class = this._json['class'] || [];
+    this.type = this._json['type'] || '';
+    this.title = this._json['title'] || '';
   }
 
   get json() {
@@ -95,14 +96,14 @@ export class SirenField extends SirenBase {
   constructor(json) {
     super(json);
     // required
-    this.name = json['name'] || '';
+    this.name = this._json['name'] || '';
     // optional
-    this.class = json['class'] || [];
-    this.title = json['title'] || '';
-    this.type = json['type'] || 'text';
-    this.value = json['value'] === undefined ? '' : json['value'];
+    this.class = this._json['class'] || [];
+    this.title = this._json['title'] || '';
+    this.type = this._json['type'] || 'text';
+    this.value = this._json['value'] === undefined ? '' : this._json['value'];
     // NON-SPEC
-    this.options = json['options'] || [];
+    this.options = this._json['options'] || [];
   }
 
   get json() {
@@ -139,14 +140,14 @@ export class SirenAction extends SirenBase {
   constructor(json) {
     super(json);
     // required
-    this.name = json['name'] || '';
-    this.href = json['href'] || '';
+    this.name = this._json['name'] || '';
+    this.href = this._json['href'] || '';
     // optional
-    this.class = json['class'] || [];
-    this.method = json['method'] || 'GET';
-    this.title = json['title'] || '';
-    this.type = json['type'] || 'application/x-www-form-urlencoded;charset=UTF-8';
-    this.fields = (json['fields'] || []).map(f => new SirenField(f));
+    this.class = this._json['class'] || [];
+    this.method = this._json['method'] || 'GET';
+    this.title = this._json['title'] || '';
+    this.type = this._json['type'] || 'application/x-www-form-urlencoded;charset=UTF-8';
+    this.fields = (this._json['fields'] || []).map(f => new SirenField(f));
   }
 
   // get field by name
@@ -195,11 +196,11 @@ class SirenEntityBase extends SirenBase {
   constructor(json) {
     super(json);
     // optional
-    this.actions = (json['actions'] || []).map(a => new SirenAction(a));
-    this.class = json['class'] || [];
-    this.links = (json['links'] || []).map(l => new SirenLink(l));
-    this.properties = json['properties'] || {};
-    this.title = json['title'] || '';
+    this.actions = (this._json['actions'] || []).map(a => new SirenAction(a));
+    this.class = this._json['class'] || [];
+    this.links = (this._json['links'] || []).map(l => new SirenLink(l));
+    this.properties = this._json['properties'] || {};
+    this.title = this._json['title'] || '';
     this.entities = [];
   }
 
@@ -256,10 +257,10 @@ export class SirenSubEntity extends SirenEntityBase {
   constructor(json) {
     super(json);
     // required for sub-entities
-    this.rel = json['rel'] || [];
+    this.rel = this._json['rel'] || [];
     // sub entities can be entities or links
     // if it has an `href` it's a link, otherwise it's an entity
-    this.entities = (json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
+    this.entities = (this._json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
   }
 
   _validate() {
@@ -290,6 +291,6 @@ export class SirenEntity extends SirenEntityBase {
     super(json);
     // sub entities can be entities or links
     // if it has an `href` it's a link, otherwise it's an entity
-    this.entities = (json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
+    this.entities = (this._json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
   }
 }
