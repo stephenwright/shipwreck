@@ -25,13 +25,14 @@ ship.on('fetch', () => {
   flash.clear();
 });
 
-ship.on('update', ({ entity, href }) => {
+ship.on('update', e => {
+  const { entity, href } = e.detail;
   const self = entity && entity.link('self');
-  href = self && self.href || href;
-  if (href) {
-    href = href.replace(ship.baseUri, '');
-    shipPath.value = href;
-    location.hash = href;
+  let uri = self && self.href || href;
+  if (uri) {
+    uri = uri.replace(ship.baseUri, '');
+    shipPath.value = uri;
+    location.hash = uri;
   }
   document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
@@ -40,9 +41,9 @@ ship.on('success', () => {
   loadingBar.style.backgroundColor = 'var(--green-base)';
 });
 
-ship.on('error', async ({ message }) => {
+ship.on('error', e => {
   loadingBar.style.backgroundColor = 'var(--red-base)';
-  flash.add(message, 'critical');
+  flash.add(e.detail.message, 'critical');
 });
 
 ship.on('complete', () => {
