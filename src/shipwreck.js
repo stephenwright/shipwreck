@@ -88,12 +88,12 @@ export class Shipwreck extends EventEmitter {
   }
 
   _onStoreUpdate(e) {
-    console.info(e)
     this._entity = e.detail.entity;
   }
 
   _onStoreError(e) {
-    this._raise('error', { message: e.detail.message });
+    const { message, response } = e.detail;
+    this._raise('error', { message, response });
   }
 
   get entity() {
