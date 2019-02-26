@@ -64,7 +64,10 @@ export default class EntityStore extends EventEmitter {
     this._raise('inflight', { count: ++this._inflight });
     const response = await fetch(url, options).finally(() => this._raise('inflight', { count: --this._inflight }));
     if (!response.ok) {
-      this._raise('error', { message: `Request failed, status: ${response.status} (${response.statusText})` });
+      this._raise('error', {
+        message: `Request failed, status: ${response.status} (${response.statusText})`,
+        response,
+      });
     }
     return response;
   }

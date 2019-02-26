@@ -41,9 +41,17 @@ ship.on('success', () => {
   loadingBar.style.backgroundColor = 'var(--green-base)';
 });
 
-ship.on('error', e => {
+ship.on('error', async (e) => {
   loadingBar.style.backgroundColor = 'var(--red-base)';
-  flash.add(e.detail.message, 'critical');
+  const { message, response } = e.detail;
+  flash.add(message, 'critical');
+  if (response) {
+    const contentType = response.headers.get('content-type');
+    if (contentType.search(/application\/(vnd.siren\+)?json/) !== -1) {
+      const text = await response.text();
+      flash.add(text, 'critical');
+    }
+  }
 });
 
 ship.on('complete', () => {
