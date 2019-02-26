@@ -1,33 +1,17 @@
 /**
- * EventEmitter
- * adds the ability to emit events
+ * @class EventEmitter
+ * convenience methods for emitting events.
  */
-export default class EventEmitter {
-  constructor() {
-    this._events = new Map();
-  }
-
+export default class EventEmitter extends EventTarget {
   on(event, callback) {
-    let callbacks = this._events.get(event);
-    if (!callbacks) {
-      this._events.set(event, callbacks = new Set());
-    }
-    callbacks.add(callback);
+    this.addEventListener(event, callback);
   }
 
   off(event, callback) {
-    let callbacks = this._events.get(event);
-    if (!callbacks) {
-      return;
-    }
-    callbacks.delete(callback);
+    this.removeEventListener(event, callback);
   }
 
-  _raise(event, data) {
-    let callbacks = this._events.get(event);
-    if (!callbacks) {
-      return;
-    }
-    callbacks.forEach(fn => fn(data));
+  _raise(event, detail) {
+    this.dispatchEvent(new CustomEvent(event, { detail }));
   }
 }

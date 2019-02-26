@@ -83,16 +83,17 @@ export class Shipwreck extends EventEmitter {
     this._raise('complete', {});
   }
 
-  _onStoreInFlight({ count }) {
-    this._raise('inflight', { count });
+  _onStoreInFlight(e) {
+    this._raise('inflight', { count: e.detail.count });
   }
 
-  _onStoreUpdate({ entity }) {
-    this._entity = entity;
+  _onStoreUpdate(e) {
+    console.info(e)
+    this._entity = e.detail.entity;
   }
 
-  _onStoreError({ message }) {
-    this._raise('error', { message });
+  _onStoreError(e) {
+    this._raise('error', { message: e.detail.message });
   }
 
   get entity() {
