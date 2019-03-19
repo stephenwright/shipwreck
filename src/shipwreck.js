@@ -34,7 +34,6 @@ export class Shipwreck extends EventEmitter {
     this._token = sessionStorage.getItem('ship-authToken') || '';
     this._cachingEnabled = sessionStorage.getItem('ship-caching') !== 'false';
     this._entity = undefined;
-    this._cachingEnabled = true;
 
     this._store = new EntityStore();
     this._store.on('error', this._onStoreError.bind(this));
