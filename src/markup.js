@@ -20,7 +20,12 @@ const markup = {
   },
 
   title(entity) {
-    return entity.title ? `<div><label>title:</label> ${entity.title}</div>` : '';
+    return !entity.title ? '' : `
+      <div>
+        <label>title:</label>
+        <span class='title'>${entity.title}</span>
+      </div>
+    `;
   },
 
   // Entities
@@ -30,6 +35,7 @@ const markup = {
       <div class="card">
         <span class="type-tag">Entity</span>
         <div class="head">
+          ${markup.title(entity)}
           <div><label>class:</label> [ ${entity.class.join(', ')} ]</div>
           <div><label>rel:</label> [ ${entity.rel.join(', ')} ]</div>
         </div>
@@ -42,7 +48,6 @@ const markup = {
             <a name="entity-properties">properties</a>
             ${entity.actions.length ? '<a name="entity-actions">actions</a>' : '' }
           </div>
-          ${markup.title(entity)}
           <div class="tab-content entity-properties entity-raw">
             ${markup.code(entity.properties)}
           </div>
@@ -84,7 +89,7 @@ const markup = {
         action="${action.href}"
         method="${action.method}">
         <input type="hidden" name="_method" value="${action.method}">
-        <h3>${action.name}</h3>
+        <h3>${action.title || action.name}</h3>
         <div class="form-fields">
           ${action.fields.map(markup.fieldForm).join('\n')}
         </div>
@@ -113,7 +118,7 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            ${field.name}
+            ${field.title || field.name}
             <input type="${field.type}" value="${field.value}" name="${field.name}" step="any" />
           </label>
         </div>
@@ -123,7 +128,7 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            ${field.name}
+            ${field.title || field.name}
             <select name="${field.name}">
               ${markup.selectOptions(field)}
             </select>
@@ -155,7 +160,7 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            ${field.name}
+            ${field.title || field.name}
             <input type="${field.type}" value="${field.value}" name="${field.name}" />
           </label>
         </div>
@@ -229,6 +234,7 @@ const markup = {
 
   entity(entity) {
     return `
+      ${entity.title ? `<div class="entity-title"><h1>${entity.title}</h1></div>` : ''}
       <div class="flex-parent">
         <div class="flex-1">
 
