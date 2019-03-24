@@ -11,7 +11,7 @@ export default class EventEmitter extends EventTarget {
     this.removeEventListener(event, callback);
   }
 
-  _raise(event, detail) {
+  _raise(event, detail = {}) {
     this.dispatchEvent(new CustomEvent(event, { detail }));
   }
 }
