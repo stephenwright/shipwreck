@@ -46,11 +46,8 @@ ship.on('error', async (e) => {
   const { message, response } = e.detail;
   flash.add(message, 'critical');
   if (response) {
-    const contentType = response.headers.get('content-type');
-    if (contentType.search(/application\/(vnd.siren\+)?json/) !== -1) {
-      const text = await response.text();
-      flash.add(text, 'critical');
-    }
+    const text = await response.clone().text();
+    text && flash.add(text, 'critical');
   }
 });
 
