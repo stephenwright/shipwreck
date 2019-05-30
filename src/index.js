@@ -107,17 +107,6 @@ const pullToken = async function () {
 };
 document.getElementById('pull-token-button').addEventListener('click', pullToken);
 
-// caching
-const setCaching = async function () {
-  flash.clear();
-  ship.cachingEnabled = this.checked;
-  _setSail();
-  flash.add(`Caching has been ${ship.cachingEnabled ? 'Enabled' : 'Disabled'}.`, 'info');
-};
-const cacheToggle = document.getElementById('cache-enabled-toggle');
-cacheToggle.checked = ship.cachingEnabled;
-cacheToggle.addEventListener('change', setCaching);
-
 // submit form
 const submitRequest = function (e) {
   e.preventDefault();
