@@ -1,13 +1,5 @@
 import EventEmitter from './event-emitter.js';
-import { SirenEntity, SirenSubEntity, SirenAction } from '../siren.js';
-
-/**
- * Convert a JSON object into a URL encoded parameter string.
- * Usefull for sending data in a query string, or as form parameters
- */
-const _urlencode = data => Object.keys(data)
-  .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
-  .join('&');
+import { SirenEntity, SirenAction } from '../siren.js';
 
 /**
  * Emits the following events:
@@ -19,6 +11,7 @@ export default class EntityStore extends EventEmitter {
   constructor() {
     super();
     this._cache = new Map();
+    this._requests = new Map();
     this._inflight = 0;
   }
 
@@ -34,17 +27,17 @@ export default class EntityStore extends EventEmitter {
     return this._cache.has(token) && this._cache.delete(token);
   }
 
-  async _fetch({ action, token }) {
+  async _fetch(action, token) {
     const method = (action.method || 'GET').toUpperCase();
     const headers = new Headers();
     token && headers.set('authorization', `Bearer ${token}`);
     action.type && headers.set('content-type', action.type);
     let body;
-    let url = new URL(action.href, window.location.origin);
+    const url = new URL(action.href, window.location.origin);
     const fields = await this._getFields(action);
     if (fields) {
       if (['GET', 'HEAD'].includes(method)) {
-        url = new URL(url.pathname + '?' + fields.toString(), url.origin);
+        fields.forEach((value, key) => url.searchParams.append(key, value || ''));
       } else if (action.type.indexOf('json') !== -1) {
         const json = {};
         fields.forEach((value, key) => json[key] = value);
@@ -88,52 +81,39 @@ export default class EntityStore extends EventEmitter {
     return fields;
   }
 
-  async _getEntity(action, token) {
-    const response = await this._fetch({ action, token });
+  async _getEntity(response) {
     if (![200, 201, 203, 205, 206].includes(response.status)) {
-      return { response };
+      return;
     }
     const contentType = response.headers.get('content-type');
-    let entity = null;
-    if (contentType.search(/application\/(vnd.siren\+)?json/) !== -1) {
-      const json = await response.json();
-      entity = new SirenEntity(json);
+    if (contentType.search(/application\/(vnd.siren\+)?json/) === -1) {
+      return;
     }
-    return { entity, response };
+    const json = await response.json();
+    return new SirenEntity(json);
   }
 
   // performs a request using the supplied action
-  async submitAction(action, { token, useCache = true }) {
-    const { entity, response } = await this._getEntity(action, token);
-    const self = useCache && entity && entity.link('self');
-    if (self) {
-      const cache = this.getCache(token);
-      const { href } = self;
-      // cache the entity by the SELF href
-      cache.set(href, entity);
-      this._raise('update', { href, entity });
-    }
+  async submitAction({ action, token }) {
+    const response = await this._fetch(action, token);
+    const entity = await this._getEntity(response);
     return { entity, response };
   }
 
   // performs a GET request to the specified href
-  async get(href, { token, useCache = true } = {}) {
-    const cache = this.getCache(token);
-    if (useCache && cache.has(href)) {
-      this._raise('inflight', { count: this._inflight });
-      return { entity: cache.get(href) };
+  async get({ href, token }) {
+    if (!href || typeof href !== 'string') {
+      throw 'Invalid HREF';
     }
-    const action = new SirenAction({ href });
-    const { entity, response } = await this._getEntity(action, token);
-    if (entity && useCache) {
-      // cache the entity by the REQUESTED href
-      cache.set(href, entity);
-      this._raise('update', { href, entity });
-      // cache sub-entites
-      entity && entity.entities && entity.entities
-        .filter(e => e instanceof SirenSubEntity && e.link('self'))
-        .forEach(e => cache.set(e.link('self').href, new SirenEntity(e.json)));
+    const requestKey = `${token}@${href}`;
+    let request = this._requests.get(requestKey);
+    if (!request) {
+      request = this._fetch(new SirenAction({ href }), token);
+      this._requests.set(requestKey, request);
     }
+    const response = await request;
+    this._requests.delete(requestKey);
+    const entity = await this._getEntity(response);
     return { entity, response };
   }
 }

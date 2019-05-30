@@ -2,7 +2,7 @@
   "name": "shipwreck",
   "version": "1.4.4",
   "description": "Heed the Sirens' call",
-  "main": "index.htm",
+  "main": "index.html",
   "repository": {
     "type" : "git",
     "url" : "https://github.com/stephenwright/shipwreck"
@@ -11,7 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "live-server --cors --open=index.htm"
+    "start": "live-server --cors"
   },
   "keywords": [
     "siren",

@@ -32,7 +32,6 @@ export class Shipwreck extends EventEmitter {
     this.target = target;
     this._baseUri = sessionStorage.getItem('ship-baseUri') || '';
     this._token = sessionStorage.getItem('ship-authToken') || '';
-    this._cachingEnabled = sessionStorage.getItem('ship-caching') !== 'false';
     this._entity = undefined;
 
     this._store = new EntityStore();
@@ -67,10 +66,7 @@ export class Shipwreck extends EventEmitter {
     };
     this._raise('fetch', {});
     try {
-      const { entity } = await this._store.submitAction(action, {
-        token: this._token,
-        useCache: this._cachingEnabled,
-      });
+      const { entity } = await this._store.submitAction({ action, token: this._token });
       if (entity) {
         this.entity = entity;
         await this.renderEntity();
@@ -104,19 +100,6 @@ export class Shipwreck extends EventEmitter {
     this._raise('update', { message: 'Updated entity', entity });
   }
 
-  get cachingEnabled() {
-    return this._cachingEnabled;
-  }
-
-  set cachingEnabled(val) {
-    this._cachingEnabled = val === true;
-    if (!this._cachingEnabled) {
-      this._store.clear(this._token);
-    }
-    sessionStorage.setItem('ship-caching', val);
-    return this._cachingEnabled;
-  }
-
   get baseUri() {
     return this._baseUri;
   }
@@ -143,7 +126,6 @@ export class Shipwreck extends EventEmitter {
     if (newToken === this._token) {
       return;
     }
-    this._store.clear(this._token);
     this._token = newToken;
     if (newToken) {
       sessionStorage.setItem('ship-authToken', newToken);
@@ -157,10 +139,7 @@ export class Shipwreck extends EventEmitter {
     this._raise('fetch', {});
     try {
       const { href } = new URL(ABSOLUTE_URL_REGEX.test(path) ? path : `${this.baseUri}${path}`);
-      const { entity, response } = await this._store.get(href, {
-        token: this._token,
-        useCache: this._cachingEnabled,
-      });
+      const { entity, response } = await this._store.get({ href, token: this._token });
       if (entity) {
         this.entity = entity;
         await this.renderEntity();
