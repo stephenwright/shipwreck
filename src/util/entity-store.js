@@ -40,18 +40,17 @@ export default class EntityStore extends EventEmitter {
     token && headers.set('authorization', `Bearer ${token}`);
     action.type && headers.set('content-type', action.type);
     let body;
-    let url = action.href;
-    const data = action.fields.length > 0 && action.fields.reduce((d,f) => {
-      d[f.name] = f.value;
-      return d;
-    }, {});
-    if (data) {
+    let url = new URL(action.href, window.location.origin);
+    const fields = await this._getFields(action);
+    if (fields) {
       if (['GET', 'HEAD'].includes(method)) {
-        url = `${url}?${_urlencode(data)}`;
+        url = new URL(url.pathname + '?' + fields.toString(), url.origin);
       } else if (action.type.indexOf('json') !== -1) {
-        body = JSON.stringify(data);
+        const json = {};
+        fields.forEach((value, key) => json[key] = value);
+        body = JSON.stringify(json);
       } else {
-        body = _urlencode(data);
+        body = fields.toString();
       }
     }
     const options = {
@@ -70,6 +69,23 @@ export default class EntityStore extends EventEmitter {
       });
     }
     return response;
+  }
+
+  async _getFields(action) {
+    if (!action.fields) {
+      return;
+    }
+    let fields;
+    if (['GET', 'HEAD'].includes(action.method.toUpperCase())) {
+      fields = new URL(action.href, window.location.origin).searchParams;
+    } else if (action.type === 'application/x-www-form-urlencoded') {
+      fields = new URLSearchParams();
+    } else {
+      fields = new FormData();
+    }
+    // if the field is specified multiple times, assume it is intentional
+    action.fields.forEach((field) => fields.append(field.name, field.value || ''));
+    return fields;
   }
 
   async _getEntity(action, token) {
