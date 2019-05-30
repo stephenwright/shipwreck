@@ -23,7 +23,9 @@ export default class EventEmitter /* extends EventTarget */ {
   off(event, callback) {
     const listeners = this.getListeners(event);
     const i = listeners.indexOf(callback);
-    if (i !== -1) listeners.splice(i, 1);
+    if (i !== -1) {
+      listeners.splice(i, 1);
+    }
     // this.removeEventListener(event, callback);
   }
 
