@@ -27,7 +27,7 @@ export default class EntityStore extends EventEmitter {
     return this._cache.has(token) && this._cache.delete(token);
   }
 
-  async _fetch(action, token) {
+  async _fetch({ action, token }) {
     const method = (action.method || 'GET').toUpperCase();
     const headers = new Headers();
     token && headers.set('authorization', `Bearer ${token}`);
@@ -95,7 +95,7 @@ export default class EntityStore extends EventEmitter {
 
   // performs a request using the supplied action
   async submitAction({ action, token }) {
-    const response = await this._fetch(action, token);
+    const response = await this._fetch({ action, token });
     const entity = await this._getEntity(response);
     return { entity, response };
   }
@@ -108,7 +108,7 @@ export default class EntityStore extends EventEmitter {
     const requestKey = `${token}@${href}`;
     let request = this._requests.get(requestKey);
     if (!request) {
-      request = this._fetch(new SirenAction({ href }), token);
+      request = this._fetch({ action: new SirenAction({ href }), token });
       this._requests.set(requestKey, request);
     }
     const response = await request;

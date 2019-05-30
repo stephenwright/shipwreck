@@ -2,7 +2,7 @@
  * @class EventEmitter
  * convenience methods for emitting events.
  */
-export default class EventEmitter /* extends EventTarget */ {
+export default class EventEmitter {
   constructor() {
     this._listeners = new Map();
   }
@@ -17,7 +17,6 @@ export default class EventEmitter /* extends EventTarget */ {
 
   on(event, callback) {
     this.getListeners(event).push(callback);
-    //this.addEventListener(event, callback);
   }
 
   off(event, callback) {
@@ -26,11 +25,9 @@ export default class EventEmitter /* extends EventTarget */ {
     if (i !== -1) {
       listeners.splice(i, 1);
     }
-    // this.removeEventListener(event, callback);
   }
 
   _raise(event, detail = {}) {
     this.getListeners(event).forEach(fn => fn({ detail }));
-    // this.dispatchEvent(new CustomEvent(event, { detail }));
   }
 }
