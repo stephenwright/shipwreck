@@ -37,7 +37,7 @@ export default class EntityStore extends EventEmitter {
     const fields = await this._getFields(action);
     if (fields) {
       if (['GET', 'HEAD'].includes(method)) {
-        fields.forEach((value, key) => url.searchParams.append(key, value || ''));
+        url.search = fields;
       } else if (action.type.indexOf('json') !== -1) {
         const json = {};
         fields.forEach((value, key) => json[key] = value);
