@@ -82,6 +82,7 @@ label {
 
 .shipwreck .current-path-params {
   margin: 10px;
+  word-break: break-word;
 }
 
 .shipwreck .current-path-params ul {
@@ -93,6 +94,10 @@ label {
 .shipwreck .flex-parent {
   display: flex;
   flex-wrap: wrap;
+}
+
+.shipwreck .flex-parent > div {
+  overflow: hidden;
 }
 
 .shipwreck .flex-1 {
@@ -255,6 +260,7 @@ select {
 .entity-action-href {
   font-size: .8em;
   color: var(--ink-lighter);
+  word-wrap: break-word;
 }
 
 .form-field {
