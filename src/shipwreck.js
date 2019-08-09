@@ -42,6 +42,12 @@ export class Shipwreck extends EventEmitter {
     document.body.addEventListener('submit', async (e) => {
       if (this.target && this.target.contains(e.target)) {
         e.preventDefault();
+
+        const method = e.target.getAttribute('method');
+        if (method === 'DELETE' && !confirm('Are you sure you want to DELETE this entity?')) {
+          return;
+        }
+
         this.formSubmit(e.target);
       }
     });
