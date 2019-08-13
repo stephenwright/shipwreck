@@ -44,7 +44,7 @@ export class Shipwreck extends EventEmitter {
         e.preventDefault();
 
         const method = e.target.getAttribute('method');
-        if (method === 'DELETE' && !confirm('Are you sure you want to DELETE this entity?')) {
+        if (method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) {
           return;
         }
 
