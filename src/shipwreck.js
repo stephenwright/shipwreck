@@ -49,6 +49,7 @@ export class Shipwreck extends EventEmitter {
 
   async formSubmit(form) {
     const fields = [];
+    let method;
     for (const { name, value, type, checked } of form.elements) {
       if (name === '_method') {
         method = value;
