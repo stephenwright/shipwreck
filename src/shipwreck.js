@@ -61,7 +61,13 @@ export class Shipwreck extends EventEmitter {
         method = value;
         continue;
       }
-      name && fields.push({ name, value: type === 'checkbox' ? checked : value });
+      if (type === 'radio' && !checked) {
+        continue;
+      }
+      if (type === 'checkbox' && !checked) {
+        continue;
+      }
+      name && fields.push({ name, value });
     }
     const action = {
       name: form.name,
@@ -223,7 +229,7 @@ export class Shipwreck extends EventEmitter {
 
     // Sub-Entities
     const parent = target.querySelector('.entity-entities');
-    entity.entities.forEach(e => {
+    entity._entities.forEach(e => {
       const card = _html(markup.card(e));
       parent.appendChild(card);
       // toggle body visibility when head is clicked

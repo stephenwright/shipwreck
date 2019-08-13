@@ -152,7 +152,7 @@ export class SirenAction extends SirenBase {
 
   // get field by name
   field(name) {
-    return this.actions.find(a => a.name === name);
+    return this._actions.find(a => a.name === name);
   }
 
   get json() {
@@ -196,42 +196,75 @@ class SirenEntityBase extends SirenBase {
   constructor(json) {
     super(json);
     // optional
-    this.actions = (this._json['actions'] || []).map(a => new SirenAction(a));
+    this._actions = (this._json['actions'] || []).map(a => new SirenAction(a));
+    this._entities = [];
+    this._links = (this._json['links'] || []).map(l => new SirenLink(l));
     this.class = this._json['class'] || [];
-    this.links = (this._json['links'] || []).map(l => new SirenLink(l));
     this.properties = this._json['properties'] || {};
     this.title = this._json['title'] || '';
-    this.entities = [];
   }
 
   // get action by name
   action(name) {
-    return this.actions.find(a => a.name === name);
+    return this._actions.find(a => a.name === name);
   }
 
-  // get sub entity by rel
-  entity(rel) {
-    return this.entities.find(e => e.rel.includes(rel));
+  // get all actions
+  actions() {
+    return this._actions;
   }
 
-  // get link by rel
-  link(rel) {
-    return this.links.find(l => l.rel.includes(rel));
+  // get first sub entity by rel or class
+  entity(query) {
+    if (query instanceof String) {
+      query = { rel: query, class: query };
+    }
+    return this._entities.find(e => (query.rel && e.rel.includes(query.rel)) || (query.class && e.class.includes(query.class)));
+  }
+
+  // get all sub entities by rel or class
+  entities(query) {
+    if (!query) {
+      return this._entities;
+    }
+    if (query instanceof String) {
+      query = { rel: query, class: query };
+    }
+    return this._entities.filter(e => (query.rel && e.rel.includes(query.rel)) || (query.class && e.class.includes(query.class)));
+  }
+
+  // get first link by rel or class
+  link(query) {
+    if (query instanceof String) {
+      query = { rel: query, class: query };
+    }
+    return this._links.find(l => (query.rel && l.rel.includes(query.rel)) || (query.class && l.class.includes(query.class)));
+  }
+
+  // get all links by rel or class
+  links(query) {
+    if (!query) {
+      return this._links;
+    }
+    if (query instanceof String) {
+      query = { rel: query, class: query };
+    }
+    return this._links.filter(l => (query.rel && l.rel.includes(query.rel)) || (query.class && l.class.includes(query.class)));
   }
 
   get json() {
     const data = {};
-    if (this.actions.length !== 0) {
-      data['actions'] = this.actions.map(action => action.json);
+    if (this._actions.length !== 0) {
+      data['actions'] = this._actions.map(action => action.json);
     }
     if (this.class.length !== 0) {
       data['class'] = this.class;
     }
-    if (this.links.length !== 0) {
-      data['links'] = this.links.map(link => link.json);
+    if (this._links.length !== 0) {
+      data['links'] = this._links.map(link => link.json);
     }
-    if (this.entities.length !== 0) {
-      data['entities'] = this.entities.map(entity => entity.json);
+    if (this._entities.length !== 0) {
+      data['entities'] = this._entities.map(entity => entity.json);
     }
     if (Object.keys(this.properties).length !== 0) {
       data['properties'] = this.properties;
@@ -243,9 +276,9 @@ class SirenEntityBase extends SirenBase {
   }
 
   _validate() {
-    this.actions.forEach(e => e._validate());
-    this.entities.forEach(e => e._validate());
-    this.links.forEach(e => e._validate());
+    this._actions.forEach(e => e._validate());
+    this._entities.forEach(e => e._validate());
+    this._links.forEach(e => e._validate());
   }
 }
 
@@ -260,7 +293,7 @@ export class SirenSubEntity extends SirenEntityBase {
     this.rel = this._json['rel'] || [];
     // sub entities can be entities or links
     // if it has an `href` it's a link, otherwise it's an entity
-    this.entities = (this._json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
+    this._entities = (this._json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
   }
 
   _validate() {
@@ -291,6 +324,6 @@ export class SirenEntity extends SirenEntityBase {
     super(json);
     // sub entities can be entities or links
     // if it has an `href` it's a link, otherwise it's an entity
-    this.entities = (this._json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
+    this._entities = (this._json['entities'] || []).map(e => e.href ? new SirenLink(e) : new SirenSubEntity(e));
   }
 }
