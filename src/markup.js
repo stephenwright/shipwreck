@@ -142,7 +142,7 @@ const markup = {
         <div class="form-field">
           <label>
             ${field.title || field.name}
-            <input type="${field.type}" name="${field.name}" value="${field.value}" ${ field.checked ? 'checked' : '' } />
+            <input type="${field.type}" name="${field.name}" value="${field.value}" ${ field.raw.checked ? 'checked' : '' } />
           </label>
         </div>
         `;
