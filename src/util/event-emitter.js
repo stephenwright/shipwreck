@@ -28,6 +28,6 @@ export default class EventEmitter {
   }
 
   _raise(event, detail = {}) {
-    this.getListeners(event).forEach(fn => fn({ detail }));
+    this.getListeners(event).forEach((fn) => fn({ detail }));
   }
 }

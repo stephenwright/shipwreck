@@ -25,14 +25,14 @@ ship.on('fetch', () => {
   flash.clear();
 });
 
-ship.on('update', e => {
+ship.on('update', (e) => {
   const { entity, href } = e.detail;
   const self = entity && entity.link({ rel: 'self' });
   let uri = self && self.href || href;
   if (uri) {
     uri = uri.replace(ship.baseUri, '');
     shipPath.value = uri;
-    location.hash = uri;
+    window.location.hash = uri;
   }
   document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
@@ -56,7 +56,7 @@ ship.on('complete', () => {
 });
 
 shipToken.value = ship.token;
-shipToken.addEventListener('change', e => ship.token = e.target.value);
+shipToken.addEventListener('change', (e) => ship.token = e.target.value);
 
 // submit API reqest
 let active = false;
@@ -73,7 +73,7 @@ const _setSail = async function () {
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
   }
-  active = false;
+  active = false; // eslint-disable-line require-atomic-updates
 };
 
 // clear auth token and reload
@@ -110,14 +110,14 @@ document.getElementById('pull-token-button').addEventListener('click', pullToken
 // submit form
 const submitRequest = function (e) {
   e.preventDefault();
-  location.hash = shipPath.value;
+  window.location.hash = shipPath.value;
   _setSail();
 };
 document.getElementById('main-form').addEventListener('submit', submitRequest);
 
 // sync the location hash with the api href input field
 const _checkHash = function () {
-  const hash = location.hash.slice(1);
+  const hash = window.location.hash.slice(1);
   if (shipPath.value === hash) {
     return;
   }

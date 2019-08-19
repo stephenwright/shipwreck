@@ -103,7 +103,7 @@ export default class EntityStore extends EventEmitter {
   // performs a GET request to the specified href
   async get({ href, token }) {
     if (!href || typeof href !== 'string') {
-      throw 'Invalid HREF';
+      throw new Error('Invalid HREF');
     }
     const requestKey = `${token}@${href}`;
     let request = this._requests.get(requestKey);
