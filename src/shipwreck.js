@@ -9,7 +9,7 @@ import EventEmitter from './util/event-emitter.js';
 import markup from './markup.js';
 
 /** Convert a string to a DOM node */
-export const _html = str => {
+export const _html = (str) => {
   const template = document.createElement('template');
   template.innerHTML = str.trim();
   return template.content.firstChild;
@@ -42,12 +42,10 @@ export class Shipwreck extends EventEmitter {
     document.body.addEventListener('submit', async (e) => {
       if (this.target && this.target.contains(e.target)) {
         e.preventDefault();
-
         const method = e.target.getAttribute('method');
         if (method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) {
           return;
         }
-
         this.formSubmit(e.target);
       }
     });
@@ -173,7 +171,7 @@ export class Shipwreck extends EventEmitter {
     const { target } = this;
     // Links (do this after sub entities are added)
     target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
-      .forEach(a => a.addEventListener('click', (e) => {
+      .forEach((a) => a.addEventListener('click', (e) => {
         const { href } = e.target;
         if (!href) {
           return;
@@ -188,26 +186,26 @@ export class Shipwreck extends EventEmitter {
     // Main tabs
     const contents = target.querySelectorAll('.shipwreck > .content');
     const tabs = target.querySelectorAll('.shipwreck > .tabs > a');
-    tabs.forEach(tab => {
+    tabs.forEach((tab) => {
       tab.onclick = () => {
-        tabs.forEach(t => t.classList.remove('active'));
+        tabs.forEach((t) => t.classList.remove('active'));
         tab.classList.add('active');
-        contents.forEach(c => c.style.display = c.id === tab.name ? 'block' : 'none');
+        contents.forEach((c) => c.style.display = c.id === tab.name ? 'block' : 'none');
       };
     });
     tabs[0].click();
 
     // Body tabs
     const tabbed = target.querySelectorAll('.shipwreck .tabbed');
-    tabbed.forEach(group => {
+    tabbed.forEach((group) => {
       const groupContents = group.querySelectorAll('.tab-content');
-      groupContents.forEach(c => c.style.display = 'none');
+      groupContents.forEach((c) => c.style.display = 'none');
       const groupTabs = group.querySelectorAll('.tabs a');
-      groupTabs.forEach(tab => {
+      groupTabs.forEach((tab) => {
         tab.onclick = () => {
-          groupTabs.forEach(t => t.classList.remove('active'));
+          groupTabs.forEach((t) => t.classList.remove('active'));
           tab.classList.add('active');
-          groupContents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
+          groupContents.forEach((c) => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
         };
       });
       groupTabs.length && groupTabs[0].click();
@@ -229,14 +227,14 @@ export class Shipwreck extends EventEmitter {
 
     // Sub-Entities
     const parent = target.querySelector('.entity-entities');
-    entity._entities.forEach(e => {
+    entity._entities.forEach((e) => {
       const card = _html(markup.card(e));
       parent.appendChild(card);
       // toggle body visibility when head is clicked
       const body = card.querySelector('.body');
       const head = card.querySelector('.head');
       if (head && body) {
-        head.onclick = () =>  body.style.display = body.style.display === 'none' ? '' : 'none';
+        head.onclick = () => body.style.display = body.style.display === 'none' ? '' : 'none';
       }
     });
     this.initTabs();

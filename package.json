@@ -1,6 +1,6 @@
 {
   "name": "shipwreck",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Heed the Sirens' call",
   "main": "index.html",
   "repository": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint .",
+    "lint": "eslint ./src",
     "lint:fix": "eslint . --fix",
     "start": "live-server --cors"
   },

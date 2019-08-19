@@ -10,13 +10,12 @@ const markup = {
   card(item) {
     if (item instanceof SirenEntity || item instanceof SirenSubEntity) {
       return markup.entityCard(item);
-    } else if (item instanceof SirenLink) {
+    } if (item instanceof SirenLink) {
       return markup.linkCard(item);
-    } else if (item instanceof SirenAction) {
+    } if (item instanceof SirenAction) {
       return markup.actionCard(item);
-    } else {
-      return '';
     }
+    return '';
   },
 
   title(entity) {
@@ -42,11 +41,11 @@ const markup = {
         <div class="body tabbed">
           <div class="entity-links">
             <label>links:</label>
-            <ul>${entity.links().map(l => `<li>${markup.linkAnchor(l)}</li>`).join('\n')}</ul>
+            <ul>${entity.links().map((l) => `<li>${markup.linkAnchor(l)}</li>`).join('\n')}</ul>
           </div>
           <div class="tabs">
             <a name="entity-properties">properties</a>
-            ${entity.actions().length ? '<a name="entity-actions">actions</a>' : '' }
+            ${entity.actions().length ? '<a name="entity-actions">actions</a>' : ''}
           </div>
           <div class="tab-content entity-properties entity-raw">
             ${markup.code(entity.properties)}
@@ -62,7 +61,7 @@ const markup = {
   // Links
 
   linkAnchor(link) {
-    const rels = link.rel.map(rel => `<a href="${link.href}">${rel}</a>`).join(', ');
+    const rels = link.rel.map((rel) => `<a href="${link.href}">${rel}</a>`).join(', ');
     return `[ ${rels} ] <a href="${link.href}">${link.title}</a>`;
   },
 
@@ -101,7 +100,7 @@ const markup = {
   },
 
   selectOptions(field) {
-    const options = field.options.map(opt => {
+    const options = field.options.map((opt) => {
       const attributes = [];
       field.value !== undefined && [opt.value, opt.title].includes(field.value) && attributes.push('selected');
       opt.value !== undefined && attributes.push(`value="${opt.value}"`);
@@ -142,7 +141,7 @@ const markup = {
         <div class="form-field">
           <label>
             ${field.title || field.name}
-            <input type="${field.type}" name="${field.name}" value="${field.value}" ${ field.checked ? 'checked' : '' } />
+            <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
           </label>
         </div>
         `;
@@ -155,7 +154,7 @@ const markup = {
             ${field.value.map((option) => `
             <div>
               <label>
-                <input type="${field.type}" name="${field.name}" value="${option.value}" ${ option.checked ? 'checked' : '' } />
+                <input type="${field.type}" name="${field.name}" value="${option.value}" ${option.checked ? 'checked' : ''} />
                 ${option.title}
               </label>
             </div>
@@ -166,7 +165,7 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            <input type="${field.type}" name="${field.name}" value="${field.value}" ${ field.checked ? 'checked' : '' } />
+            <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
             ${field.title || field.name}
           </label>
         </div>
@@ -195,7 +194,7 @@ const markup = {
   propertyRows(entity) {
     return Object
       .keys(entity.properties)
-      .map(key => {
+      .map((key) => {
         let val = entity.properties[key];
         val = typeof val === 'object' ? markup.code(val) : `<code>${val}</code>`;
         return `
@@ -212,8 +211,8 @@ const markup = {
     let href = url.origin;
     const path = `${url.pathname}${url.search}`
       .split('/')
-      .filter(i => i)
-      .map(part => `<a href="${href = href + '/' + part}">${part.indexOf('?') < 0 ? part : part.substring(0, part.indexOf('?'))}</a>`)
+      .filter((i) => i)
+      .map((part) => `<a href="${href = `${href}/${part}`}">${part.indexOf('?') < 0 ? part : part.substring(0, part.indexOf('?'))}</a>`)
       .join(' / ');
     return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
   },
@@ -254,28 +253,28 @@ const markup = {
       <div class="flex-parent">
         <div class="flex-1">
 
-          <div class="entity-class" ${entity.class.length === 0 ? 'hidden': ''}>
+          <div class="entity-class" ${entity.class.length === 0 ? 'hidden' : ''}>
             <h2>Class</h2>
             [ ${entity.class.join(', ')} ]
           </div>
 
-          <div class="entity-links" ${entity.links().length === 0 ? 'hidden': ''}>
+          <div class="entity-links" ${entity.links().length === 0 ? 'hidden' : ''}>
             <h2>Links</h2>
-            ${entity.links().map(l => `<div>${markup.linkAnchor(l)}</div>`).join('\n')}
+            ${entity.links().map((l) => `<div>${markup.linkAnchor(l)}</div>`).join('\n')}
           </div>
 
-          <div class="entity-properties" ${Object.keys(entity.properties).length === 0 ? 'hidden': ''}>
+          <div class="entity-properties" ${Object.keys(entity.properties).length === 0 ? 'hidden' : ''}>
             <h2>Properties</h2>
             <table><tbody>${markup.propertyRows(entity)}</tbody></table>
           </div>
 
-          <div class="entity-actions" ${entity.actions().length === 0 ? 'hidden': ''}>
+          <div class="entity-actions" ${entity.actions().length === 0 ? 'hidden' : ''}>
             <h2>Actions</h2>
             ${entity.actions().map(markup.card).join('\n')}
           </div>
 
         </div>
-        <div class="flex-2" ${entity.entities().length === 0 ? 'hidden': ''}>
+        <div class="flex-2" ${entity.entities().length === 0 ? 'hidden' : ''}>
 
           <!-- Sub-Entities -->
           <div class="entity-entities">

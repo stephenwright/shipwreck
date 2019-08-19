@@ -25,10 +25,10 @@ export default {
       rel: ['http://example.com/rel/box-owner'],
       properties: {
         name: 'Chester Tester',
-        id: 'u123'
+        id: 'u123',
       },
       links: [
-        { rel: ['self'], href: 'http://api.example.com/users/1'},
+        { rel: ['self'], href: 'http://api.example.com/users/1' },
       ],
     },
   ],
@@ -59,7 +59,7 @@ export default {
             { value: 'green' },
             { value: 'red' },
             { value: 'purple' },
-          ]
+          ],
         },
       ],
     },
@@ -67,5 +67,5 @@ export default {
   links: [
     { rel: ['self'], href: 'http://api.example.com/boxes/1' },
     { rel: ['next'], href: 'http://api.example.com/boxes/2' },
-  ]
+  ],
 };
