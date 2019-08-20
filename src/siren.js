@@ -104,6 +104,7 @@ export class SirenField extends SirenBase {
     this.value = this._json['value'] === undefined ? '' : this._json['value'];
     // NON-SPEC
     this.options = this._json['options'] || [];
+    this.checked = this._json['checked'];
   }
 
   get json() {
