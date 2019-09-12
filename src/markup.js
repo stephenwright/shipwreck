@@ -89,7 +89,10 @@ const markup = {
         action="${action.href}"
         method="${action.method}">
         <input type="hidden" name="_method" value="${action.method}">
-        <h3>${action.title || action.name}</h3>
+        <h3>
+          <span class="title">${action.title}</span>
+          <span class="name">${action.name}</span>
+        </h3>
         <div class="form-fields">
           ${action.fields.map(markup.fieldForm).join('\n')}
         </div>
@@ -118,7 +121,8 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            ${field.title || field.name}
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
             <input type="${field.type}" value="${field.value}" name="${field.name}" step="any" />
           </label>
         </div>
@@ -128,7 +132,8 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            ${field.title || field.name}
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
             <select name="${field.name}">
               ${markup.selectOptions(field)}
             </select>
@@ -140,7 +145,8 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            ${field.title || field.name}
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
             <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
           </label>
         </div>
@@ -150,7 +156,10 @@ const markup = {
       if (field.value instanceof Array) {
         return `
           <div class="form-field">
-            <h4>${field.title || field.name}</h4>
+            <h4>
+              <span class="title">${field.title}</span>
+              <span class="name">${field.name}</span>
+            </h4>
             ${field.value.map((option) => `
             <div>
               <label>
@@ -166,7 +175,8 @@ const markup = {
         <div class="form-field">
           <label>
             <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
-            ${field.title || field.name}
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
           </label>
         </div>
         `;
@@ -175,7 +185,8 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            ${field.title || field.name}
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
             <input type="${field.type}" value="${field.value}" name="${field.name}" />
           </label>
         </div>

@@ -263,6 +263,16 @@ select {
   word-wrap: break-word;
 }
 
+.entity-actions .title {
+  color: var(--ink-light);
+}
+
+.entity-actions .name {
+  color: var(--ink-lighter);
+  font-size: .9em;
+  display: block;
+}
+
 .form-field {
   margin: 5px 0;
 }
