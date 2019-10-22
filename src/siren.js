@@ -252,6 +252,23 @@ class SirenEntityBase extends SirenBase {
     return this._links.filter((l) => (query.rel && l.rel.includes(query.rel)) || (query.class && l.class.includes(query.class)));
   }
 
+  // safely get deep property using dot notation ('some.deep.property')
+  property(name) {
+    if (!name || !this.properties) {
+      return;
+    }
+    const keys = name.split('.');
+    let value = this.properties;
+    // eslint-disable-next-line no-cond-assign
+    for (let key; key = keys.shift();) {
+      value = value[key];
+      if (value === undefined) {
+        return;
+      }
+    }
+    return value;
+  }
+
   get json() {
     const data = {};
     if (this._actions.length !== 0) {

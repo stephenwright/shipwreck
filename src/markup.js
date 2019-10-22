@@ -93,6 +93,7 @@ const markup = {
           <span class="title">${action.title}</span>
           <span class="name">${action.name}</span>
         </h3>
+        ${action.class.length ? `<div><label>class:</label> [ ${action.class.join(', ')} ]</div>` : ''}
         <div class="form-fields">
           ${action.fields.map(markup.fieldForm).join('\n')}
         </div>

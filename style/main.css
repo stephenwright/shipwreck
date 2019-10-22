@@ -40,7 +40,7 @@ label {
 
 .card h1 { font-size: 1.2em; }
 .card h2 { font-size: 1.1em; }
-.card h3 { font-size: 1.0em; }
+.card h3 { font-size: 1.0em; margin-top: 0; }
 
 .divider {
   color: #ddd;
@@ -191,7 +191,7 @@ select {
   box-sizing: border-box;
 }
 
-/* Entities */
+/* entities */
 
 .entity-properties tr:hover {
   background-color: var(--yellow-lighter);
@@ -215,7 +215,7 @@ select {
   margin: 0;
 }
 
-/* Sub Entities */
+/* sub entities */
 
 .entity-entities .head {
   cursor: pointer;
@@ -257,12 +257,6 @@ select {
 
 /* entity actions */
 
-.entity-action-href {
-  font-size: .8em;
-  color: var(--ink-lighter);
-  word-wrap: break-word;
-}
-
 .entity-actions .title {
   color: var(--ink-light);
 }
@@ -273,8 +267,18 @@ select {
   display: block;
 }
 
-.form-field {
+.entity-actions .form-fields {
+  margin-top: 1em;
+}
+
+.entity-actions .form-field {
   margin: 5px 0;
+}
+
+.entity-action-href {
+  font-size: .8em;
+  color: var(--ink-lighter);
+  word-wrap: break-word;
 }
 
 /* raw entity data */
