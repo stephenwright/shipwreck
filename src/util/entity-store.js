@@ -1,5 +1,5 @@
 import EventEmitter from './event-emitter.js';
-import { SirenEntity, SirenAction } from '../siren.js';
+import { SirenEntity, SirenAction } from '../lib/siren/index.js';
 
 /**
  * Emits the following events:
