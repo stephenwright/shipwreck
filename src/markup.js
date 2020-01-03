@@ -85,7 +85,7 @@ const markup = {
     return `
       <form
         name="${action.name}"
-        type="${action.type}"
+        enctype="${action.type}"
         action="${action.href}"
         method="${action.method}">
         <input type="hidden" name="_method" value="${action.method}">
