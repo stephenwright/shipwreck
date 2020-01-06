@@ -54,7 +54,7 @@ export class Shipwreck extends EventEmitter {
   async formSubmit(form) {
     const fields = [];
     let method;
-    for (const { name, value, type, checked } of form.elements) {
+    for (const { name, value, type, checked, files } of form.elements) {
       if (name === '_method') {
         method = value;
         continue;
@@ -65,7 +65,7 @@ export class Shipwreck extends EventEmitter {
       if (type === 'checkbox' && !checked) {
         continue;
       }
-      name && fields.push({ name, value });
+      name && fields.push({ name, value, files });
     }
     const action = {
       name: form.name,
@@ -76,7 +76,8 @@ export class Shipwreck extends EventEmitter {
     };
     this._raise('fetch', {});
     try {
-      const { entity } = await this._store.submitAction({ action, token: this._token });
+      const token = action.href.startsWith(this._baseUri) ? this._token : undefined;
+      const { entity } = await this._store.submitAction({ action, token });
       if (entity) {
         this.entity = entity;
         await this.renderEntity();
