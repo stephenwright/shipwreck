@@ -1,5 +1,5 @@
 import EventEmitter from './event-emitter.js';
-import { SirenEntity, SirenAction } from '../siren.js';
+import { SirenEntity, SirenAction } from '../lib/siren/index.js';
 
 /**
  * Emits the following events:
@@ -31,7 +31,7 @@ export default class EntityStore extends EventEmitter {
     const method = (action.method || 'GET').toUpperCase();
     const headers = new Headers();
     token && headers.set('authorization', `Bearer ${token}`);
-    action.type && headers.set('content-type', action.type);
+    action.type && action.type !== 'multipart/form-data' && headers.set('content-type', action.type);
     let body;
     const url = new URL(action.href, window.location.origin);
     const fields = await this._getFields(action);
@@ -43,7 +43,7 @@ export default class EntityStore extends EventEmitter {
         fields.forEach((value, key) => json[key] = value);
         body = JSON.stringify(json);
       } else {
-        body = fields.toString();
+        body = fields;
       }
     }
     const options = {
@@ -77,7 +77,15 @@ export default class EntityStore extends EventEmitter {
       fields = new FormData();
     }
     // if the field is specified multiple times, assume it is intentional
-    action.fields.forEach((field) => fields.append(field.name, field.value || ''));
+    for (const { name, value, files } of action.fields) {
+      if (files) {
+        for (const file of files) {
+          fields.append(name, file, file.name);
+        }
+      } else {
+        fields.append(name, value || '');
+      }
+    }
     return fields;
   }
 
