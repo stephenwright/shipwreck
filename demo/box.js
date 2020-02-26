@@ -35,6 +35,7 @@ export default {
   actions: [
     {
       name: 'add-item',
+      title: 'Add an Item',
       method: 'POST',
       href: 'http://api.example.com/boxes/1',
       fields: [
@@ -44,13 +45,27 @@ export default {
     },
     {
       name: 'update-box',
+      title: 'Update Box',
       method: 'POST',
       href: 'http://api.example.com/boxes/1',
       fields: [
-        { name: 'label', type: 'text', required: true },
-        { name: 'public', type: 'checkbox', value: true },
+        { name: 'label', title: 'Label', type: 'text', required: true },
+        { name: 'public', title: 'Public', type: 'checkbox', checked: true },
+        {
+          name: 'level',
+          title: 'Level',
+          description: 'Describes how full the box is.',
+          type: 'radio',
+          value: [
+            { title: 'Full', value: 'full' },
+            { title: 'Half Full', value: 'half' },
+            { title: 'Half Empty', value: 'half' },
+            { title: 'Empty', value: 'empty', checked: true },
+          ],
+        },
         {
           name: 'colour',
+          title: 'Colour',
           type: 'select',
           value: 'green',
           options: [

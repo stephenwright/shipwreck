@@ -8,13 +8,13 @@
 <body>
   <div id="ship-output"></div>
   <script type="module">
-    import box  from './box';
-    import { Shipwreck } from '../src/shipwreck';
+    import box  from './box.js';
+    import { Shipwreck } from '../src/shipwreck.js';
     import { SirenEntity } from '../src/lib/siren/index.js';
     const shipOutput = document.getElementById('ship-output');
     const ship = new Shipwreck(shipOutput);
     ship.entity = new SirenEntity(box);
-    ship.render();
+    ship.renderEntity();
   </script>
 </body>
 </html>
