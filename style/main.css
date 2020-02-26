@@ -191,6 +191,33 @@ select {
   box-sizing: border-box;
 }
 
+.form-field.hidden {
+  background-color: var(--sky-light);
+  border: 1px dashed var(--sky-base);
+  position: relative;
+  padding: 3px
+}
+
+.form-field .type-tag {
+  font-size: .6em;
+}
+
+.hidden-field {
+  display: inline-block;
+  padding: 3px;
+  line-height: 1.5em;
+  min-height: 1em;
+  font-weight: normal;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+
+.form-actions {
+  background-color: var(--purple-lighter);
+  padding: 6px;
+}
+
 /* entities */
 
 .entity-properties tr:hover {
@@ -245,6 +272,14 @@ select {
 
 .entity-entities .entity-properties {
   display: block;
+}
+
+.entity-entities .tab-content {
+  background-color: var(--sky-light);
+  padding: .5em;
+  margin: .5em 0 0;
+  box-shadow: 0 0 6px var(--purple-light) inset;
+  border: 1px solid var(--purple-light);
 }
 
 .entity-entities .entity-links ul {
