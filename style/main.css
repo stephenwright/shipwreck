@@ -214,7 +214,6 @@ select {
 }
 
 .form-actions {
-  text-align: center;
   background-color: var(--purple-lighter);
   padding: 6px;
 }
