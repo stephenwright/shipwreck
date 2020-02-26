@@ -44,14 +44,18 @@ const markup = {
             <ul>${entity.links().map((l) => `<li>${markup.linkAnchor(l)}</li>`).join('\n')}</ul>
           </div>
           <div class="tabs">
-            <a name="entity-properties">properties</a>
-            ${entity.actions().length ? '<a name="entity-actions">actions</a>' : ''}
+            <a name="entity-properties">Properties</a>
+            ${entity.actions().length ? '<a name="entity-actions">Actions</a>' : ''}
+            ${entity.entities().length ? '<a name="entity-entities">Sub-Entities</a>' : ''}
           </div>
           <div class="tab-content entity-properties entity-raw">
             ${markup.code(entity.properties)}
           </div>
           <div class="tab-content entity-actions">
-            ${entity.actions().map(markup.actionForm).join('\n')}
+            ${entity.actions().map(markup.card).join('\n')}
+          </div>
+          <div class="tab-content entity-entities">
+            ${entity.entities().map(markup.card).join('\n')}
           </div>
         </div>
       </div>
@@ -97,7 +101,9 @@ const markup = {
         <div class="form-fields">
           ${action.fields.map(markup.fieldForm).join('\n')}
         </div>
-        <input type="submit" value="submit">
+        <div class="form-actions">
+          <input type="submit" value="Submit">
+        </div>
         <p class="entity-action-href">${action.method} ${action.href}</p>
       </form>
     `;
@@ -116,7 +122,17 @@ const markup = {
   fieldForm(field) {
     switch (field.type.toLowerCase()) {
     case 'hidden':
-      return `<input type="${field.type}" value="${field.value}" name="${field.name}">`;
+      return `
+        <input type="${field.type}" value="${field.value}" name="${field.name}">
+        <div class="form-field hidden">
+          <span class="type-tag">Hidden</span>
+          <label>
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
+            <span class="hidden-field">${field.value}</span>
+          </label>
+        </div>
+        `;
 
     case 'number':
       return `
@@ -290,7 +306,7 @@ const markup = {
 
           <!-- Sub-Entities -->
           <div class="entity-entities">
-            <h2>Entities</h2>
+            <h2>Sub-Entities</h2>
           </div>
 
         </div>
