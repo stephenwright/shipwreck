@@ -266,20 +266,20 @@ select {
   margin-top: 10px;
 }
 
+.entity-entities .tab-content {
+  background-color: var(--sky-light);
+  padding: .5em;
+  margin: .5em 0 0;
+  box-shadow: 0px 1px var(--sky-base) inset;
+  border: 1px solid var(--purple-light);
+}
+
 .entity-entities .entity-actions {
   display: block;
 }
 
 .entity-entities .entity-properties {
   display: block;
-}
-
-.entity-entities .tab-content {
-  background-color: var(--sky-light);
-  padding: .5em;
-  margin: .5em 0 0;
-  box-shadow: 0 0 6px var(--purple-light) inset;
-  border: 1px solid var(--purple-light);
 }
 
 .entity-entities .entity-links ul {
