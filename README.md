@@ -2,7 +2,7 @@
 
 A simple generic web based UI for browsing any [Siren](https://github.com/kevinswiber/siren) Hypermedia API.
 
-Enter the API root, to see all the entities properties, links, actions, and sub-entities rendered:
+Enter an API endpoint to render all the entity's properties, links, actions, and sub-entities.
 
 ![entity](./images/shipwreck.entity.png)
 
