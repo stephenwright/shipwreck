@@ -1,7 +1,7 @@
 {
   "name": "shipwreck",
   "version": "2.4.1",
-  "description": "Heed the Sirens' call",
+  "description": "Generic web based UI for browsing any Siren Hypermedia API",
   "main": "index.html",
   "repository": {
     "type": "git",
