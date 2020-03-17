@@ -1,6 +1,6 @@
 {
   "name": "shipwreck",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Generic web based UI for browsing any Siren Hypermedia API",
   "main": "index.html",
   "repository": {
@@ -22,9 +22,9 @@
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^6",
-    "eslint-config-airbnb-base": "^14",
-    "eslint-plugin-import": "^2.12.0",
-    "live-server": "^1.2.0"
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "live-server": "^1.2.1"
   }
 }
