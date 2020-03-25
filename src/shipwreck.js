@@ -199,9 +199,9 @@ export class Shipwreck extends EventEmitter {
     // Body tabs
     const tabbed = target.querySelectorAll('.shipwreck .tabbed');
     tabbed.forEach((group) => {
-      const groupContents = group.querySelectorAll('.tab-content');
+      const groupContents = group.querySelectorAll(':scope > .tab-content');
       groupContents.forEach((c) => c.style.display = 'none');
-      const groupTabs = group.querySelectorAll('.tabs a');
+      const groupTabs = group.querySelectorAll(':scope > .tabs a');
       groupTabs.forEach((tab) => {
         tab.onclick = () => {
           groupTabs.forEach((t) => t.classList.remove('active'));
