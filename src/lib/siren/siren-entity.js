@@ -2,6 +2,13 @@ import { SirenBase } from './siren-base.js';
 import { SirenLink } from './siren-link.js';
 import { SirenAction } from './siren-action.js';
 
+function finder(q) {
+  if (typeof q === 'string') {
+    q = { rel: q, class: q, href: q };
+  }
+  return (e) => (q.rel && e.rel.includes(q.rel)) || (q.class && e.class.includes(q.class)) || e.href === q.href;
+}
+
 /**
  * SirenEntity
  */
@@ -34,10 +41,7 @@ export class SirenEntity extends SirenBase {
 
   // get first sub entity by rel or class
   entity(query) {
-    if (typeof query === 'string') {
-      query = { rel: query, class: query };
-    }
-    return this._entities.find((e) => (query.rel && e.rel.includes(query.rel)) || (query.class && e.class.includes(query.class)));
+    return this._entities.find(finder(query));
   }
 
   // get all sub entities by rel or class
@@ -45,18 +49,12 @@ export class SirenEntity extends SirenBase {
     if (!query) {
       return this._entities;
     }
-    if (typeof query === 'string') {
-      query = { rel: query, class: query };
-    }
-    return this._entities.filter((e) => (query.rel && e.rel.includes(query.rel)) || (query.class && e.class.includes(query.class)));
+    return this._entities.filter(finder(query));
   }
 
   // get first link by rel or class
   link(query) {
-    if (typeof query === 'string') {
-      query = { rel: query, class: query };
-    }
-    return this._links.find((l) => (query.rel && l.rel.includes(query.rel)) || (query.class && l.class.includes(query.class)));
+    return this._links.find(finder(query));
   }
 
   // get all links by rel or class
@@ -64,10 +62,7 @@ export class SirenEntity extends SirenBase {
     if (!query) {
       return this._links;
     }
-    if (typeof query === 'string') {
-      query = { rel: query, class: query };
-    }
-    return this._links.filter((l) => (query.rel && l.rel.includes(query.rel)) || (query.class && l.class.includes(query.class)));
+    return this._links.filter(finder(query));
   }
 
   // safely get deep property using dot notation ('some.deep.property')
