@@ -110,13 +110,14 @@ const markup = {
   },
 
   selectOptions(field) {
-    const options = field.options.map((opt) => {
-      const attributes = [];
-      field.value !== undefined && [opt.value, opt.title].includes(field.value) && attributes.push('selected');
-      opt.value !== undefined && attributes.push(`value="${opt.value}"`);
-      return `<option ${attributes.join(' ')}>${opt.title || opt.value}</option>`;
-    });
-    return options.join('\n');
+    if (!(field.value instanceof Array)) {
+      return '';
+    }
+    return field.value.map((opt) => `
+      <option value="${opt.value || opt.title}" ${field.selected ? 'selected' : ''}>
+        ${opt.title || opt.value}
+      </option>
+    `).join('\n');
   },
 
   fieldForm(field) {
