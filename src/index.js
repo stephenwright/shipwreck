@@ -27,7 +27,7 @@ ship.on('fetch', () => {
 
 ship.on('update', (e) => {
   const { entity, href } = e.detail;
-  const self = entity && entity.link({ rel: 'self' });
+  const self = entity && entity.getLink('self');
   let uri = self && self.href || href;
   if (uri) {
     uri = uri.replace(ship.baseUri, '');

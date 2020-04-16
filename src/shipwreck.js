@@ -36,7 +36,6 @@ export class Shipwreck extends EventEmitter {
 
     this._store = new EntityStore();
     this._store.on('error', this._onStoreError.bind(this));
-    this._store.on('update', this._onStoreUpdate.bind(this));
     this._store.on('inflight', this._onStoreInFlight.bind(this));
 
     document.body.addEventListener('submit', async (e) => {
@@ -77,7 +76,7 @@ export class Shipwreck extends EventEmitter {
     this._raise('fetch', {});
     try {
       const token = action.href.startsWith(this._baseUri) ? this._token : undefined;
-      const { entity } = await this._store.submitAction({ action, token });
+      const { entity } = await this._store.submit({ action, token });
       if (entity) {
         this.entity = entity;
         await this.renderEntity();
@@ -91,10 +90,6 @@ export class Shipwreck extends EventEmitter {
 
   _onStoreInFlight(e) {
     this._raise('inflight', { count: e.detail.count });
-  }
-
-  _onStoreUpdate(e) {
-    this._entity = e.detail.entity;
   }
 
   _onStoreError(e) {
@@ -228,7 +223,7 @@ export class Shipwreck extends EventEmitter {
 
     // Sub-Entities
     const parent = target.querySelector('.entity-entities');
-    entity._entities.forEach((e) => {
+    entity.entities.forEach((e) => {
       const card = _html(markup.card(e));
       parent.appendChild(card);
       // toggle body visibility when head is clicked

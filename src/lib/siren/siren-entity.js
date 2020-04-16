@@ -2,11 +2,25 @@ import { SirenBase } from './siren-base.js';
 import { SirenLink } from './siren-link.js';
 import { SirenAction } from './siren-action.js';
 
-function finder(q) {
+function _finder(q) {
   if (typeof q === 'string') {
-    q = { rel: q, class: q, href: q };
+    q = { rel: q, class: q, href: q, name: q };
   }
-  return (e) => (q.rel && e.rel.includes(q.rel)) || (q.class && e.class.includes(q.class)) || e.href === q.href;
+  return (e) => {
+    if (q.rel && e.rel.includes(q.rel)) {
+      return true;
+    }
+    if (q.class && e.class.includes(q.class)) {
+      return true;
+    }
+    if (q.href && e.href === q.href) {
+      return true;
+    }
+    if (q.name && e.name === q.name) {
+      return true;
+    }
+    return false;
+  };
 }
 
 /**
@@ -16,9 +30,9 @@ export class SirenEntity extends SirenBase {
   constructor(json) {
     super(json);
     // optional
-    this._actions = (this._json['actions'] || []).map((a) => new SirenAction(a));
-    this._entities = [];
-    this._links = (this._json['links'] || []).map((l) => new SirenLink(l));
+    this.actions = (this._json['actions'] || []).map((a) => new SirenAction(a));
+    this.entities = [];
+    this.links = (this._json['links'] || []).map((l) => new SirenLink(l));
     this.class = this._json['class'] || [];
     this.properties = this._json['properties'] || {};
     this.title = this._json['title'] || '';
@@ -26,47 +40,35 @@ export class SirenEntity extends SirenBase {
     this.rel = this._json['rel'] || [];
     // sub entities can be entities or links
     // if it has an `href` it's a link, otherwise it's an entity
-    this._entities = (this._json['entities'] || []).map((e) => e.href ? new SirenLink(e) : new SirenEntity(e));
+    this.entities = (this._json['entities'] || []).map((e) => e.href ? new SirenLink(e) : new SirenEntity(e));
   }
 
-  // get action by name
-  action(name) {
-    return this._actions.find((a) => a.name === name);
+  getAction(query) {
+    return this.actions.find(_finder(query));
   }
 
-  // get all actions
-  actions() {
-    return this._actions;
+  getActions(query) {
+    return query ? this.actions.filter(_finder(query)) : this.actions;
   }
 
-  // get first sub entity by rel or class
-  entity(query) {
-    return this._entities.find(finder(query));
+  getEntity(query) {
+    return this.entities.find(_finder(query));
   }
 
-  // get all sub entities by rel or class
-  entities(query) {
-    if (!query) {
-      return this._entities;
-    }
-    return this._entities.filter(finder(query));
+  getEntities(query) {
+    return query ? this.entities.filter(_finder(query)) : this.entities;
   }
 
-  // get first link by rel or class
-  link(query) {
-    return this._links.find(finder(query));
+  getLink(query) {
+    return this.links.find(_finder(query));
   }
 
-  // get all links by rel or class
-  links(query) {
-    if (!query) {
-      return this._links;
-    }
-    return this._links.filter(finder(query));
+  getLinks(query) {
+    return query ? this.links.filter(_finder(query)) : this.links;
   }
 
   // safely get deep property using dot notation ('some.deep.property')
-  property(name) {
+  getProperty(name) {
     if (!name || !this.properties) {
       return;
     }
@@ -84,17 +86,17 @@ export class SirenEntity extends SirenBase {
 
   get json() {
     const data = {};
-    if (this._actions.length !== 0) {
-      data['actions'] = this._actions.map((action) => action.json);
+    if (this.actions.length !== 0) {
+      data['actions'] = this.actions.map((action) => action.json);
     }
     if (this.class.length !== 0) {
       data['class'] = this.class;
     }
-    if (this._links.length !== 0) {
-      data['links'] = this._links.map((link) => link.json);
+    if (this.links.length !== 0) {
+      data['links'] = this.links.map((link) => link.json);
     }
-    if (this._entities.length !== 0) {
-      data['entities'] = this._entities.map((entity) => entity.json);
+    if (this.entities.length !== 0) {
+      data['entities'] = this.entities.map((entity) => entity.json);
     }
     if (Object.keys(this.properties).length !== 0) {
       data['properties'] = this.properties;
@@ -106,8 +108,8 @@ export class SirenEntity extends SirenBase {
   }
 
   _validate() {
-    this._actions.forEach((e) => e._validate());
-    this._entities.forEach((e) => {
+    this.actions.forEach((e) => e._validate());
+    this.entities.forEach((e) => {
       e._validate();
       if (e.rel === undefined) {
         this._error('rel', 'Required.');
@@ -116,6 +118,6 @@ export class SirenEntity extends SirenBase {
         this._error('rel', 'MUST be a non-empty array of strings.');
       }
     });
-    this._links.forEach((e) => e._validate());
+    this.links.forEach((e) => e._validate());
   }
 }
