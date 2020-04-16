@@ -43,11 +43,11 @@ to allow an array of values.
 
 ### The "checked" field property
 
-Shipwreck supports the field having a `checked` property for inputs of type `radio` and `checkbow`
+Shipwreck supports the field having a `checked` property for inputs of type `radio` and `checkbox`
 
 ### The "select" field type
 
-`select` is not valid field type in the siren spec. Shipwreck supports `select`, and expects `value` to be an array.
+`select` is not a valid field type in the Siren spec. Shipwreck supports `select`, and expects `value` to be an array.
 
 ```
 {
