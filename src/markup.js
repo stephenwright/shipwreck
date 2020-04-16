@@ -65,7 +65,10 @@ const markup = {
   // Links
 
   linkAnchor(link) {
-    const rels = link.rel.map((rel) => `<a href="${link.href}">${rel}</a>`).join(', ');
+    const shouldLinkDirectly = (link.type !== null && link.type !== '' && link.type !== 'application/vnd.siren+json');
+    const linkClass = shouldLinkDirectly ? 'class="direct-link"' : '';
+
+    const rels = link.rel.map((rel) => `<a ${linkClass} href="${link.href}">${rel}</a>`).join(', ');
     return `[ ${rels} ] <a href="${link.href}">${link.title}</a>`;
   },
 

@@ -326,3 +326,8 @@ select {
 .raw-response .content {
   white-space: pre-wrap;
 }
+
+/* entity links */
+.entity-links a.direct-link::after {
+   content: ' \1f517';
+}
