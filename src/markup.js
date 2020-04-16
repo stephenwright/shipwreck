@@ -41,21 +41,21 @@ const markup = {
         <div class="body tabbed">
           <div class="entity-links">
             <label>links:</label>
-            <ul>${entity.links().map((l) => `<li>${markup.linkAnchor(l)}</li>`).join('\n')}</ul>
+            <ul>${entity.links.map((l) => `<li>${markup.linkAnchor(l)}</li>`).join('\n')}</ul>
           </div>
           <div class="tabs">
             <a name="entity-properties">Properties</a>
-            ${entity.actions().length ? '<a name="entity-actions">Actions</a>' : ''}
-            ${entity.entities().length ? '<a name="entity-entities">Sub-Entities</a>' : ''}
+            ${entity.actions.length ? '<a name="entity-actions">Actions</a>' : ''}
+            ${entity.entities.length ? '<a name="entity-entities">Sub-Entities</a>' : ''}
           </div>
           <div class="tab-content entity-properties entity-raw">
             ${markup.code(entity.properties)}
           </div>
           <div class="tab-content entity-actions">
-            ${entity.actions().map(markup.card).join('\n')}
+            ${entity.actions.map(markup.card).join('\n')}
           </div>
           <div class="tab-content entity-entities">
-            ${entity.entities().map(markup.card).join('\n')}
+            ${entity.entities.map(markup.card).join('\n')}
           </div>
         </div>
       </div>
@@ -265,13 +265,13 @@ const markup = {
 
   // Display the [self] href in a nice clickable manner
   currentPath(entity) {
-    const link = entity && entity.link({ rel: 'self' });
+    const link = entity && entity.getLink('self');
     return link ? markup.uriCrumbs(link.href) : '';
   },
 
   // Display the query parameters - if present - of [self] href
   queryParams(entity) {
-    const link = entity.link({ rel: 'self' });
+    const link = entity.getLink('self');
     return link ? markup.uriParams(link.href) : '';
   },
 
@@ -286,9 +286,9 @@ const markup = {
             [ ${entity.class.join(', ')} ]
           </div>
 
-          <div class="entity-links" ${entity.links().length === 0 ? 'hidden' : ''}>
+          <div class="entity-links" ${entity.links.length === 0 ? 'hidden' : ''}>
             <h2>Links</h2>
-            ${entity.links().map((l) => `<div>${markup.linkAnchor(l)}</div>`).join('\n')}
+            ${entity.links.map((l) => `<div>${markup.linkAnchor(l)}</div>`).join('\n')}
           </div>
 
           <div class="entity-properties" ${Object.keys(entity.properties).length === 0 ? 'hidden' : ''}>
@@ -296,13 +296,13 @@ const markup = {
             <table><tbody>${markup.propertyRows(entity)}</tbody></table>
           </div>
 
-          <div class="entity-actions" ${entity.actions().length === 0 ? 'hidden' : ''}>
+          <div class="entity-actions" ${entity.actions.length === 0 ? 'hidden' : ''}>
             <h2>Actions</h2>
-            ${entity.actions().map(markup.card).join('\n')}
+            ${entity.actions.map(markup.card).join('\n')}
           </div>
 
         </div>
-        <div class="flex-2" ${entity.entities().length === 0 ? 'hidden' : ''}>
+        <div class="flex-2" ${entity.entities.length === 0 ? 'hidden' : ''}>
 
           <!-- Sub-Entities -->
           <div class="entity-entities">

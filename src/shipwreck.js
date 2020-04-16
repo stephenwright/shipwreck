@@ -228,7 +228,7 @@ export class Shipwreck extends EventEmitter {
 
     // Sub-Entities
     const parent = target.querySelector('.entity-entities');
-    entity._entities.forEach((e) => {
+    entity.entities.forEach((e) => {
       const card = _html(markup.card(e));
       parent.appendChild(card);
       // toggle body visibility when head is clicked
