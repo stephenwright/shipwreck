@@ -19,7 +19,7 @@ export class SirenAction extends SirenBase {
   }
 
   // get field by name
-  field(name) {
+  getField(name) {
     return this._actions.find((a) => a.name === name);
   }
 
