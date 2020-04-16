@@ -4,27 +4,37 @@ import { SirenEntity, SirenAction } from '../lib/siren/index.js';
 /**
  * Emits the following events:
  *  inflight - when the number of fetches in progress changes up or down { count }
- *  update - an entity has been updated { href, entity }
  *  error - something went wrong { message }
  */
 export default class EntityStore extends EventEmitter {
   constructor() {
     super();
-    this._cache = new Map();
     this._requests = new Map();
     this._inflight = 0;
   }
 
-  getCache(token) {
-    let cache = this._cache.get(token);
-    if (!cache) {
-      this._cache.set(token, cache = new Map());
-    }
-    return cache;
+  // performs a request using the supplied action
+  async submit({ action, token }) {
+    const response = await this._fetch({ action, token });
+    const entity = await this._getEntity(response);
+    return { entity, response };
   }
 
-  async clear(token) {
-    return this._cache.has(token) && this._cache.delete(token);
+  // performs a GET request to the specified href
+  async get({ href, token }) {
+    if (!href || typeof href !== 'string') {
+      throw new Error('Invalid HREF');
+    }
+    const requestKey = `${token}@${href}`;
+    let request = this._requests.get(requestKey);
+    if (!request) {
+      request = this._fetch({ action: new SirenAction({ href }), token });
+      this._requests.set(requestKey, request);
+    }
+    const response = await request;
+    this._requests.delete(requestKey);
+    const entity = await this._getEntity(response);
+    return { entity, response };
   }
 
   async _fetch({ action, token }) {
@@ -99,29 +109,5 @@ export default class EntityStore extends EventEmitter {
     }
     const json = await response.json();
     return new SirenEntity(json);
-  }
-
-  // performs a request using the supplied action
-  async submitAction({ action, token }) {
-    const response = await this._fetch({ action, token });
-    const entity = await this._getEntity(response);
-    return { entity, response };
-  }
-
-  // performs a GET request to the specified href
-  async get({ href, token }) {
-    if (!href || typeof href !== 'string') {
-      throw new Error('Invalid HREF');
-    }
-    const requestKey = `${token}@${href}`;
-    let request = this._requests.get(requestKey);
-    if (!request) {
-      request = this._fetch({ action: new SirenAction({ href }), token });
-      this._requests.set(requestKey, request);
-    }
-    const response = await request;
-    this._requests.delete(requestKey);
-    const entity = await this._getEntity(response);
-    return { entity, response };
   }
 }
