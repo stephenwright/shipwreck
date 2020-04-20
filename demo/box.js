@@ -29,7 +29,7 @@ export default {
       },
       links: [
         { rel: ['self'], href: 'http://api.example.com/users/1' },
-        { rel: ['http://example.com/rel/box-owner-website'], href: 'http://example.com', type: 'application/html' },
+        { rel: ['http://example.com/rel/box-owner-website'], href: 'http://example.com', type: 'application/html', title: 'Box owner\'s website' },
       ],
     },
   ],

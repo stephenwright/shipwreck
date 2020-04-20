@@ -328,6 +328,6 @@ select {
 }
 
 /* entity links */
-.entity-links a.direct-link::after {
+.entity-links a[rel~="external"]::after {
    content: ' \1f517';
 }
