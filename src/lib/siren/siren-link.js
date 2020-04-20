@@ -34,11 +34,13 @@ export class SirenLink extends SirenBase {
 
   _validate() {
     super._validate();
+    if (!this.href) {
+      this._error('href', 'Required.');
+    }
     const { rel } = this;
     if (rel === undefined) {
       this._error('rel', 'Required.');
-    }
-    if (!(rel instanceof Array) || rel.length === 0) {
+    } else if (!(rel instanceof Array) || rel.length === 0) {
       this._error('rel', 'MUST be a non-empty array of strings.');
     }
   }
