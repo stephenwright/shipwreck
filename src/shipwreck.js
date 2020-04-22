@@ -166,14 +166,14 @@ export class Shipwreck extends EventEmitter {
   async watchLinks() {
     const { target } = this;
     // Links (do this after sub entities are added)
-    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a')
+    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a:not(.direct-link)')
       .forEach((a) => a.addEventListener('click', (e) => {
-        const { href } = e.target;
-        if (!href) {
+        const anchor = e.target;
+        if (!anchor || anchor.target || anchor.getAttribute('rel') === 'external' || !anchor.href) {
           return;
         }
         e.preventDefault();
-        this.fetch(href);
+        this.fetch(anchor.href);
       }));
   }
 

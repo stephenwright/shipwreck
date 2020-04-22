@@ -65,8 +65,14 @@ const markup = {
   // Links
 
   linkAnchor(link) {
-    const rels = link.rel.map((rel) => `<a href="${link.href}">${rel}</a>`).join(', ');
-    return `[ ${rels} ] <a href="${link.href}">${link.title}</a>`;
+    const notSiren = link.type && link.type.search(/application\/(vnd.siren\+)?json/) === -1;
+    const external = notSiren ? 'rel="external"' : '';
+    const rels = link.rel.map((rel) => `<a href="${link.href}" ${external}>${rel}</a>`).join(', ');
+    const parts = [`[ ${rels} ]`];
+    if (link.title) {
+      parts.push(`<a href="${link.href}" ${external}>${link.title}</a>`);
+    }
+    return parts.join(' ');
   },
 
   linkCard(link) {
