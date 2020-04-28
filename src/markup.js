@@ -119,7 +119,7 @@ const markup = {
     if (!(field.value instanceof Array)) {
       return '';
     }
-    return field.value.map((opt) => `
+    return field.options.map((opt) => `
       <option value="${opt.value || opt.title}" ${field.selected ? 'selected' : ''}>
         ${opt.title || opt.value}
       </option>
@@ -184,10 +184,10 @@ const markup = {
               <span class="title">${field.title}</span>
               <span class="name">${field.name}</span>
             </h4>
-            ${field.value.map((option) => `
+            ${field.options.map((option) => `
             <div>
               <label>
-                <input type="${field.type}" name="${field.name}" value="${option.value}" ${option.checked ? 'checked' : ''} />
+                <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
                 ${option.title}
               </label>
             </div>
@@ -196,7 +196,7 @@ const markup = {
         `;
       }
       return `
-        <div class="form-field">
+        <div class="form-field">option
           <label>
             <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
             <span class="title">${field.title}</span>

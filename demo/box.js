@@ -68,11 +68,10 @@ export default {
           name: 'colour',
           title: 'Colour',
           type: 'select',
-          value: 'green',
-          options: [
+          value: [
             { title: 'Select a colour', value: '' },
             { value: 'blue' },
-            { value: 'green' },
+            { value: 'green', selected: true },
             { value: 'red' },
             { value: 'purple' },
           ],

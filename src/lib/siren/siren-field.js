@@ -14,7 +14,10 @@ export class SirenField extends SirenBase {
     this.type = this._json['type'] || 'text';
     this.value = this._json['value'] === undefined ? '' : this._json['value'];
     // NON-SPEC
-    this.options = this._json['options'] || [];
+
+    if (this.value instanceof Array) {
+      this.options = this.value.map(({ title, value = '', checked, selected }) => ({ title, value, checked, selected }));
+    }
     this.checked = this._json['checked'];
   }
 
