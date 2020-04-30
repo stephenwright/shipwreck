@@ -75,7 +75,9 @@ export class Shipwreck extends EventEmitter {
     };
     this._raise('fetch', {});
     try {
-      const token = action.href.startsWith(this._baseUri) ? this._token : undefined;
+      const actionUrl = new URL(action.href);
+      const baseUrl = new URL(this._baseUri);
+      const token = actionUrl.hostname.endsWith(baseUrl.hostname) ? this._token : undefined;
       const { entity } = await this._store.submit({ action, token });
       if (entity) {
         this.entity = entity;
