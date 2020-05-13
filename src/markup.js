@@ -126,6 +126,18 @@ const markup = {
     `).join('\n');
   },
 
+  inputWrapper(field, input) {
+    return `
+      <div class="form-field">
+        <label>
+          <span class="title">${field.title}</span>
+          <span class="name">${field.name}</span>
+          ${input}
+        </label>
+      </div>
+      `;
+  },
+
   fieldForm(field) {
     switch (field.type.toLowerCase()) {
     case 'hidden':
@@ -141,40 +153,19 @@ const markup = {
         </div>
         `;
 
+    case 'date':
+    case 'datetime-local':
     case 'number':
-      return `
-        <div class="form-field">
-          <label>
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
-            <input type="${field.type}" value="${field.value}" name="${field.name}" step="any" />
-          </label>
-        </div>
-        `;
+      return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="${field.type}" step="any" />`);
 
-    case 'select':
-      return `
-        <div class="form-field">
-          <label>
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
-            <select name="${field.name}">
-              ${markup.selectOptions(field)}
-            </select>
-          </label>
-        </div>
-        `;
+    case 'datetime':
+      return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="datetime-local" step="any" />`);
 
     case 'checkbox':
-      return `
-        <div class="form-field">
-          <label>
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
-            <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
-          </label>
-        </div>
-        `;
+      return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="${field.type}" ${field.checked ? 'checked' : ''} />`);
+
+    case 'select':
+      return markup.inputWrapper(field, `<select name="${field.name}">${markup.selectOptions(field)}</select>`);
 
     case 'radio':
       if (field.value instanceof Array) {
@@ -206,15 +197,7 @@ const markup = {
         `;
 
     default:
-      return `
-        <div class="form-field">
-          <label>
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
-            <input type="${field.type}" value="${field.value}" name="${field.name}" />
-          </label>
-        </div>
-        `;
+      return markup.inputWrapper(field, `<input type="${field.type}" value="${field.value}" name="${field.name}" />`);
     }
   },
 
