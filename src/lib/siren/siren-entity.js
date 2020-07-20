@@ -7,7 +7,7 @@ function _finder(q) {
     q = { rel: q, class: q, href: q, name: q };
   }
   return (e) => {
-    if (q.rel && e.rel.includes(q.rel)) {
+    if (q.rel && e.rel && e.rel.includes(q.rel)) {
       return true;
     }
     if (q.class && e.class.includes(q.class)) {
