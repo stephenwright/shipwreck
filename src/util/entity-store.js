@@ -81,7 +81,7 @@ export default class EntityStore extends EventEmitter {
     let fields;
     if (['GET', 'HEAD'].includes(action.method.toUpperCase())) {
       fields = new URL(action.href, window.location.origin).searchParams;
-    } else if (action.type === 'application/x-www-form-urlencoded') {
+    } else if (action.type.includes('application/x-www-form-urlencoded')) {
       fields = new URLSearchParams();
     } else {
       fields = new FormData();
