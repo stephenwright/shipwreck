@@ -25,6 +25,7 @@ export default class EntityStore extends EventEmitter {
     if (!href || typeof href !== 'string') {
       throw new Error('Invalid HREF');
     }
+
     const requestKey = `${token}@${href}`;
     let request = this._requests.get(requestKey);
     if (!request) {
@@ -33,18 +34,26 @@ export default class EntityStore extends EventEmitter {
     }
     const response = await request;
     this._requests.delete(requestKey);
+
     const entity = await this._getEntity(response);
     return { entity, response };
   }
 
-  async _fetch({ action, token }) {
-    const method = (action.method || 'GET').toUpperCase();
+  parseAction({ action, token }) {
+    if (!action) {
+      throw new Error('No action given');
+    }
+
     const headers = new Headers();
     token && headers.set('authorization', `Bearer ${token}`);
     action.type && action.type !== 'multipart/form-data' && headers.set('content-type', action.type);
-    let body;
+
+    const fields = this._getFields(action);
+    const method = (action.method || 'GET').toUpperCase();
     const url = new URL(action.href, window.location.origin);
-    const fields = await this._getFields(action);
+
+    let body;
+
     if (fields) {
       if (['GET', 'HEAD'].includes(method)) {
         url.search = fields;
@@ -56,29 +65,40 @@ export default class EntityStore extends EventEmitter {
         body = fields;
       }
     }
-    const options = {
+
+    return { body, headers, method, url };
+  }
+
+  async _fetch({ action, token }) {
+    const { body, headers, method, url } = this.parseAction({ action, token });
+
+    this._raise('inflight', { count: ++this._inflight });
+
+    const response = await fetch(url, {
       body,
       cache: 'no-cache',
       headers,
       method,
       mode: 'cors',
-    };
-    this._raise('inflight', { count: ++this._inflight });
-    const response = await fetch(url, options).finally(() => this._raise('inflight', { count: --this._inflight }));
+    }).finally(() => this._raise('inflight', { count: --this._inflight }));
+
     if (!response.ok) {
       this._raise('error', {
         message: `Request failed, status: ${response.status} (${response.statusText})`,
         response,
       });
     }
+
     return response;
   }
 
-  async _getFields(action) {
+  _getFields(action) {
     if (!action.fields) {
       return;
     }
+
     let fields;
+
     if (['GET', 'HEAD'].includes(action.method.toUpperCase())) {
       fields = new URL(action.href, window.location.origin).searchParams;
     } else if (action.type.includes('application/x-www-form-urlencoded')) {
@@ -86,6 +106,7 @@ export default class EntityStore extends EventEmitter {
     } else {
       fields = new FormData();
     }
+
     // if the field is specified multiple times, assume it is intentional
     for (const { name, value, files } of action.fields) {
       if (files) {
@@ -96,6 +117,7 @@ export default class EntityStore extends EventEmitter {
         fields.append(name, value || '');
       }
     }
+
     return fields;
   }
 
