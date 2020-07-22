@@ -25,18 +25,14 @@ export default class EntityStore extends EventEmitter {
     if (!href || typeof href !== 'string') {
       throw new Error('Invalid HREF');
     }
-
     const requestKey = `${token}@${href}`;
     let request = this._requests.get(requestKey);
     if (!request) {
-      request = this._fetch({ action: new SirenAction({ href }), token });
+      const action = new SirenAction({ href });
+      request = this.submit({ action, token }).finally(() => this._requests.delete(requestKey));
       this._requests.set(requestKey, request);
     }
-    const response = await request;
-    this._requests.delete(requestKey);
-
-    const entity = await this._getEntity(response);
-    return { entity, response };
+    return request;
   }
 
   parseAction({ action, token }) {
