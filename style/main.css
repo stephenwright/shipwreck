@@ -308,7 +308,11 @@ select {
 }
 
 .entity-actions .form-field {
-  margin: 5px 0;
+  margin: .5rem 0;
+}
+
+.entity-actions .radio-option label {
+  cursor: pointer;
 }
 
 .entity-action-href {
