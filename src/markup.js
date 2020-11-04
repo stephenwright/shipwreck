@@ -171,12 +171,12 @@ const markup = {
       if (field.value instanceof Array) {
         return `
           <div class="form-field">
-            <h4>
+            <label>
               <span class="title">${field.title}</span>
               <span class="name">${field.name}</span>
-            </h4>
+            </label>
             ${field.options.map((option) => `
-            <div>
+            <div class="radio-option">
               <label>
                 <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
                 ${option.title}
