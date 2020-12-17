@@ -1,5 +1,7 @@
 import { SirenBase } from './siren-base.js';
 
+const optionsMapping = ({ title, value = '', checked, selected }) => ({ title, value, checked, selected });
+
 /**
  * Fields represent controls inside of actions.
  */
@@ -14,9 +16,10 @@ export class SirenField extends SirenBase {
     this.type = this._json['type'] || 'text';
     this.value = this._json['value'] === undefined ? '' : this._json['value'];
     // NON-SPEC
-
     if (this.value instanceof Array) {
-      this.options = this.value.map(({ title, value = '', checked, selected }) => ({ title, value, checked, selected }));
+      this.options = this.value.map(optionsMapping);
+    } else if (this._json['options'] instanceof Array) {
+      this.options = this._json['options'].map(optionsMapping);
     }
     this.checked = this._json['checked'];
   }
