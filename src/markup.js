@@ -1,5 +1,7 @@
 import { SirenEntity, SirenLink, SirenAction } from './lib/siren/index.js';
 
+let datalistId = 0;
+
 /** helpers for generating HTML markup */
 const markup = {
 
@@ -138,6 +140,60 @@ const markup = {
       `;
   },
 
+  datalist(field, id) {
+    return `
+      <datalist id="${id}">
+        ${field.options.map((o) => `
+        <option>${o.value}</option>
+        `).join('')}
+      </datalist>
+    `;
+  },
+
+  text(field) {
+    let input;
+    if (field.options) {
+      const id = `datalist-${++datalistId}`;
+      input = `
+        <input type="${field.type}" value="${field.value}" name="${field.name}" list="${id}" />
+        ${markup.datalist(field, id)}
+      `;
+    } else {
+      input = `<input type="${field.type}" value="${field.value}" name="${field.name}" />`;
+    }
+    return markup.inputWrapper(field, input);
+  },
+
+  radio(field) {
+    if (field.options) {
+      return `
+        <div class="form-field">
+          <label>
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
+          </label>
+          ${field.options.map((option) => `
+          <div class="radio-option">
+            <label>
+              <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
+              ${option.title}
+            </label>
+          </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    return `
+      <div class="form-field">
+        <label>
+          <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
+          <span class="title">${field.title}</span>
+          <span class="name">${field.name}</span>
+        </label>
+      </div>
+      `;
+  },
+
   fieldForm(field) {
     switch (field.type.toLowerCase()) {
     case 'hidden':
@@ -168,33 +224,10 @@ const markup = {
       return markup.inputWrapper(field, `<select name="${field.name}">${markup.selectOptions(field)}</select>`);
 
     case 'radio':
-      if (field.value instanceof Array) {
-        return `
-          <div class="form-field">
-            <label>
-              <span class="title">${field.title}</span>
-              <span class="name">${field.name}</span>
-            </label>
-            ${field.options.map((option) => `
-            <div class="radio-option">
-              <label>
-                <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
-                ${option.title}
-              </label>
-            </div>
-            `).join('')}
-          </div>
-        `;
-      }
-      return `
-        <div class="form-field">option
-          <label>
-            <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
-          </label>
-        </div>
-        `;
+      return markup.radio(field);
+
+    case 'text':
+      return markup.text(field);
 
     default:
       return markup.inputWrapper(field, `<input type="${field.type}" value="${field.value}" name="${field.name}" />`);

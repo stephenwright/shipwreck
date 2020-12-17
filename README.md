@@ -41,6 +41,8 @@ to allow an array of values.
 }
 ```
 
+Alternatively, see "Options property" section below.
+
 ### The "checked" field property
 
 Shipwreck supports the field having a `checked` property for inputs of type `radio` and `checkbox`
@@ -65,5 +67,23 @@ Shipwreck supports the field having a `checked` property for inputs of type `rad
       "selected": true
     }
   ]
+}
+```
+
+### Options property
+
+Options for a datalist, select, or radio group can also be provided via an options property
+
+```
+{
+  "title": "Example Text Control",
+  "name": "autocomplete-text-control",
+  "type": "text",
+  "value": "",
+  "options": [
+    { "value": "Blue" },
+    { "value": "Green" }
+  ]
+}
 }
 ```
