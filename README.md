@@ -79,11 +79,10 @@ Options for a datalist, select, or radio group can also be provided via an optio
   "title": "Example Text Control",
   "name": "autocomplete-text-control",
   "type": "text",
-  "value": "",
+  "value": "", // selected/default value
   "options": [
     { "value": "Blue" },
     { "value": "Green" }
   ]
-}
 }
 ```
