@@ -113,7 +113,7 @@ export class Shipwreck extends EventEmitter {
   }
 
   set baseUri(uri) {
-    uri = uri || undefined; // falsey = undefined
+    uri = uri || undefined; // falsy = undefined
     if (uri === this._baseUri) {
       return;
     }
@@ -130,7 +130,7 @@ export class Shipwreck extends EventEmitter {
   }
 
   set token(newToken) {
-    newToken = newToken || undefined; // falsey = undefined
+    newToken = newToken || undefined; // falsy = undefined
     if (newToken === this._token) {
       return;
     }

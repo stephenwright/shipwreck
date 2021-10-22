@@ -14,42 +14,59 @@ Or download the npm package and use it as a base for building your own UI.
 
 Shipwreck includes the following extension that are not part of the default spec.
 
-### Array of values for "radio" field type
-
-An html radio control works by having the same name for multiple inputs.
-Siren field's `name` property MUST be unique.
-
-Shipwreck follows [this proposal](https://groups.google.com/forum/#!msg/siren-hypermedia/8mbOX44gguU/qLzbV0LDBgAJ)
-to allow an array of values.
-
-```
-{
-  "title": "Example Radio Control",
-  "name": "radio-control",
-  "type": "radio",
-  "value": [
-    {
-      "title": "Enable",
-      "value": true,
-      "checked": true
-    },
-    {
-      "title": "Disable",
-      "value": false
-    }
-  ]
-}
-```
-
-Alternatively, see "Options property" section below.
-
 ### The "checked" field property
 
 Shipwreck supports the field having a `checked` property for inputs of type `radio` and `checkbox`
 
+```
+{
+  "title": "Sign Me Up For The Newsletter",
+  "name": "newsletter",
+  "type": "checkbox",
+  "value": "yes",
+  "checked": true,
+}
+```
+
 ### The "select" field type
 
-`select` is not a valid field type in the Siren spec. Shipwreck supports `select`, and expects `value` to be an array.
+`select` is not a valid field type in the Siren spec, but is supported by Shipwreck.
+You can specify options using `options` property, or by having options array assigned to `value`.
+
+### Options
+
+Options for a datalist, or select can be provided via an options property.
+
+```
+{
+  "title": "Example Text Control with Data List",
+  "name": "autocomplete-text-control",
+  "type": "text",
+  "value": "",
+  "options": [
+    { "value": "Blue" },
+    { "value": "Green" }
+  ]
+}
+```
+
+Options can also be used for radio, and checkbox.
+
+```
+{
+  "title": "Example Radio",
+  "name": "radio-control",
+  "type": "radio",
+  "value": "",
+  "options": [
+    { "title": "Blue", "value": "blue", "checked": true },
+    { "title": "Green", "value": "green" }
+  ]
+}
+```
+
+Alternatively, options can be assigned to `value`
+as per [this proposal](https://groups.google.com/forum/#!msg/siren-hypermedia/8mbOX44gguU/qLzbV0LDBgAJ).
 
 ```
 {
@@ -57,32 +74,8 @@ Shipwreck supports the field having a `checked` property for inputs of type `rad
   "name": "select-control",
   "type": "select",
   "value": [
-    {
-      "title": "Blue",
-      "value": "blue"
-    },
-    {
-      "title": "Green",
-      "value": "green",
-      "selected": true
-    }
-  ]
-}
-```
-
-### Options property
-
-Options for a datalist, select, or radio group can also be provided via an options property
-
-```
-{
-  "title": "Example Text Control",
-  "name": "autocomplete-text-control",
-  "type": "text",
-  "value": "", // selected/default value
-  "options": [
-    { "value": "Blue" },
-    { "value": "Green" }
+    { "title": "Blue", "value": "blue" },
+    { "title": "Green", "value": "green", "selected": true }
   ]
 }
 ```

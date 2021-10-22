@@ -194,6 +194,28 @@ const markup = {
       `;
   },
 
+  checkbox(field) {
+    if (field.options) {
+      return `
+        <div class="form-field">
+          <label>
+            <span class="title">${field.title}</span>
+            <span class="name">${field.name}</span>
+          </label>
+          ${field.options.map((option) => `
+          <div class="radio-option">
+            <label>
+              <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
+              ${option.title}
+            </label>
+          </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="${field.type}" ${field.checked ? 'checked' : ''} />`);
+  },
+
   fieldForm(field) {
     switch (field.type.toLowerCase()) {
     case 'hidden':
@@ -218,7 +240,7 @@ const markup = {
       return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="datetime-local" step="any" />`);
 
     case 'checkbox':
-      return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="${field.type}" ${field.checked ? 'checked' : ''} />`);
+      return markup.checkbox(field);
 
     case 'select':
       return markup.inputWrapper(field, `<select name="${field.name}">${markup.selectOptions(field)}</select>`);
