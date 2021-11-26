@@ -231,13 +231,11 @@ const markup = {
         </div>
         `;
 
-    case 'date':
-    case 'datetime-local':
+    // case 'date':
+    // case 'datetime':
+    // case 'datetime-local':
     case 'number':
       return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="${field.type}" step="any" />`);
-
-    case 'datetime':
-      return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="datetime-local" step="any" />`);
 
     case 'checkbox':
       return markup.checkbox(field);
