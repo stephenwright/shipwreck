@@ -1,6 +1,6 @@
 {
   "name": "shipwreck",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "Generic web based UI for browsing any Siren Hypermedia API",
   "main": "index.html",
   "repository": {
@@ -10,8 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ./src",
-    "lint:fix": "eslint . --fix",
-    "start": "wds --node-resolve --open"
+    "lint:fix": "eslint ./src --fix",
+    "start": "wds --node-resolve --open --watch"
   },
   "keywords": [
     "siren",
@@ -21,9 +21,7 @@
   "author": "Stephen Wright",
   "license": "ISC",
   "devDependencies": {
-    "@web/dev-server": "^0.1.28",
-    "eslint": "^8.3.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2"
+    "@web/dev-server": "^0.1.32",
+    "eslint": "^8.20.0"
   }
 }

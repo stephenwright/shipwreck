@@ -292,13 +292,13 @@ const markup = {
     const url = new URL(uri);
     const params = [];
     for (const p of url.searchParams.entries()) {
-      let val = p[1];
+      let [key, val] = p;
       try {
         val = `<a href="${new URL(val).href}">${val}</a>`;
       } catch (err) {
         // not a valid url. meh.
       }
-      params.push(`<li>${p[0]} = ${val}</li>`);
+      params.push(`<li>${key} = ${val}</li>`);
     }
     return params.length === 0 ? '' : `
       <strong>Query Params:</strong>

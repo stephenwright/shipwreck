@@ -4,7 +4,6 @@ module.exports = {
     es6: true,
   },
   extends: [
-    'airbnb-base',
     'eslint:recommended',
   ],
   plugins: [
@@ -67,5 +66,5 @@ module.exports = {
     'semi': ['error', 'always'],
     'space-before-blocks': 'error',
     'valid-jsdoc': 0,
-  }
+  },
 };
