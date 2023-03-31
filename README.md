@@ -65,8 +65,10 @@ Options can also be used for radio, and checkbox.
 }
 ```
 
-Alternatively, options can be assigned to `value`
+Shipwreck also supports options being assigned to `value`
 as per [this proposal](https://groups.google.com/forum/#!msg/siren-hypermedia/8mbOX44gguU/qLzbV0LDBgAJ).
+
+*Be aware, if using this option, you need to replace `value` with the value of the selected option before submitting the action.*
 
 ```
 {
