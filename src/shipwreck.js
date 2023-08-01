@@ -1,12 +1,14 @@
 /**
  * Shipwreck : Heed the Sirens' call
  *
- * A simple client for working with Siren Hypermedia APIs
+ * A web client for working with Siren Hypermedia APIs
  */
 
-import EntityStore from './util/entity-store.js';
-import EventEmitter from './util/event-emitter.js';
+import { SirenStore } from './siren';
+
 import markup from './markup.js';
+
+const store = new SirenStore();
 
 /** Convert a string to a DOM node */
 export const _html = (str) => {
@@ -26,77 +28,30 @@ const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
  *  error - something went wrong { message }
  *  complete - fetch complete (calls wether it was successful or not)
  */
-export class Shipwreck extends EventEmitter {
+export class Shipwreck {
   constructor(target) {
-    super();
     this.target = target;
+    this._entity = undefined;
+    this._eventListeners = new Map();
+
     this._baseUri = sessionStorage.getItem('ship-baseUri') || '';
     this._token = sessionStorage.getItem('ship-authToken') || '';
-    this._entity = undefined;
+    this.updateStore();
 
-    this._store = new EntityStore();
-    this._store.on('error', this._onStoreError.bind(this));
-    this._store.on('inflight', this._onStoreInFlight.bind(this));
+    store.addEventListener('error', e => {
+      const { message, response } = e.detail;
+      this._raise('error', { message, response });
+    });
+
+    store.addEventListener('inflight', e => this._raise('inflight', { count: e.detail.count }));
 
     document.body.addEventListener('submit', async (e) => {
-      if (this.target && this.target.contains(e.target)) {
-        e.preventDefault();
-        const method = e.target.getAttribute('method');
-        if (method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) { // eslint-disable-line
-          return;
-        }
-        this.formSubmit(e.target);
+      if (!this.target?.contains(e.target)) {
+        return;
       }
+      e.preventDefault();
+      this.formSubmit(e.target);
     });
-  }
-
-  async formSubmit(form) {
-    const fields = [];
-    let method;
-    for (const { name, value, type, checked, files } of form.elements) {
-      if (name === '_method') {
-        method = value;
-        continue;
-      }
-      if (type === 'radio' && !checked) {
-        continue;
-      }
-      if (type === 'checkbox' && !checked) {
-        continue;
-      }
-      name && fields.push({ name, value, files });
-    }
-    const action = {
-      name: form.name,
-      type: form.enctype,
-      href: form.action,
-      method: method || form.method || 'GET',
-      fields,
-    };
-    this._raise('fetch', {});
-    try {
-      const actionUrl = new URL(action.href);
-      const baseUrl = new URL(this._baseUri);
-      const token = actionUrl.hostname.endsWith(baseUrl.hostname) ? this._token : undefined;
-      const { entity } = await this._store.submit({ action, token });
-      if (entity) {
-        this.entity = entity;
-        await this.renderEntity();
-        this._raise('success', { message: 'Action submitted.' });
-      }
-    } catch (err) {
-      this._raise('error', { message: err.message });
-    }
-    this._raise('complete', {});
-  }
-
-  _onStoreInFlight(e) {
-    this._raise('inflight', { count: e.detail.count });
-  }
-
-  _onStoreError(e) {
-    const { message, response } = e.detail;
-    this._raise('error', { message, response });
   }
 
   get entity() {
@@ -123,6 +78,7 @@ export class Shipwreck extends EventEmitter {
     } else {
       sessionStorage.removeItem('ship-baseUri');
     }
+    this.updateStore();
   }
 
   get token() {
@@ -140,6 +96,89 @@ export class Shipwreck extends EventEmitter {
     } else {
       sessionStorage.removeItem('ship-authToken');
     }
+    this.updateStore();
+  }
+
+  updateStore() {
+    const headers = {};
+    this._token && (headers.Authorization = `Bearer ${this._token}`);
+    store.addTarget({ href: this._baseUri, options: { headers } });
+  }
+
+  // ===== events
+
+  _getEventListeners(event) {
+    if (!this._eventListeners.has(event)) {
+      this._eventListeners.set(event, []);
+    }
+    return this._eventListeners.get(event);
+  }
+
+  _raise(event, detail = {}) {
+    this._getEventListeners(event).forEach(fn => fn({ detail }));
+  }
+
+  on(event, callback) {
+    this._getEventListeners(event).push(callback);
+  }
+
+  off(event, callback) {
+    const listeners = this._getEventListeners(event);
+    const i = listeners.indexOf(callback);
+    if (i !== -1) {
+      listeners.splice(i, 1);
+    }
+  }
+
+  // =====
+
+  async formSubmit(form) {
+    const fields = [];
+    let method = form.getAttribute('method');
+
+    for (const { name, value, type, checked, files } of form.elements) {
+      if (name === '_method') {
+        method = value;
+        continue;
+      }
+      if (type === 'radio' && !checked) {
+        continue;
+      }
+      if (type === 'checkbox' && !checked) {
+        continue;
+      }
+      name && fields.push({ name, value, files });
+    }
+
+    if (method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) { // eslint-disable-line
+      return;
+    }
+
+    const action = {
+      name: form.name,
+      type: form.enctype,
+      href: form.action,
+      method: method || 'GET',
+      fields,
+    };
+
+    this._raise('fetch', {});
+
+    try {
+      const actionUrl = new URL(action.href);
+      const baseUrl = new URL(this._baseUri);
+      const token = actionUrl.hostname.endsWith(baseUrl.hostname) ? this._token : undefined;
+      const { entity } = await store.submit({ action, token });
+      if (entity) {
+        this.entity = entity;
+        await this.renderEntity();
+        this._raise('success', { message: 'Action submitted.' });
+      }
+    } catch (err) {
+      this._raise('error', { message: err.message });
+    }
+
+    this._raise('complete', {});
   }
 
   // submit a request and display the response
@@ -147,7 +186,7 @@ export class Shipwreck extends EventEmitter {
     this._raise('fetch', {});
     try {
       const { href } = new URL(ABSOLUTE_URL_REGEX.test(path) ? path : `${this.baseUri}${path}`);
-      const { entity, response } = await this._store.get({ href, token: this._token });
+      const { entity, response } = await store.get({ href, token: this._token });
       if (entity) {
         this.entity = entity;
         await this.renderEntity();
@@ -164,6 +203,8 @@ export class Shipwreck extends EventEmitter {
     }
     this._raise('complete', { message: 'Fetch complete.' });
   }
+
+  // ===== render
 
   async watchLinks() {
     const { target } = this;

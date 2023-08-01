@@ -8,8 +8,10 @@
  *   - Fields
  */
 
-export { SirenAction } from './siren-action.js';
 export { SirenEntity } from './siren-entity.js';
-export { SirenField } from './siren-field.js';
 export { SirenLink } from './siren-link.js';
+export { SirenAction } from './siren-action.js';
+export { SirenField } from './siren-field.js';
+
 export { SirenClient } from './siren-client.js';
+export { SirenStore } from './siren-store.js';
