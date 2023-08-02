@@ -4,7 +4,7 @@
  * A web client for working with Siren Hypermedia APIs
  */
 
-import { SirenStore } from './siren';
+import { SirenStore } from './siren/siren-store.js';
 
 import markup from './markup.js';
 

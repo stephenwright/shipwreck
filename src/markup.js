@@ -1,4 +1,4 @@
-import { SirenEntity, SirenLink, SirenAction } from './siren';
+import { SirenEntity, SirenLink, SirenAction } from './siren/index.js';
 
 let datalistId = 0;
 
