@@ -33,6 +33,7 @@ ship.on('update', (e) => {
     uri = uri.replace(ship.baseUri, '');
     shipPath.value = uri;
     window.location.hash = uri;
+    document.title = `Shipwreck - ${uri}`;
   }
   document.body.scrollTop = document.documentElement.scrollTop = 0;
 });
@@ -58,7 +59,7 @@ ship.on('complete', () => {
 shipToken.value = ship.token;
 shipToken.addEventListener('change', (e) => ship.token = e.target.value);
 
-// submit API reqest
+// submit API request
 let active = false;
 const _setSail = async function () {
   // one request at a time
@@ -72,8 +73,9 @@ const _setSail = async function () {
     await ship.fetch(shipPath.value);
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
+  } finally {
+    active = false; // eslint-disable-line require-atomic-updates
   }
-  active = false; // eslint-disable-line require-atomic-updates
 };
 
 // clear auth token and reload
@@ -110,7 +112,6 @@ document.getElementById('pull-token-button').addEventListener('click', pullToken
 // submit form
 const submitRequest = function (e) {
   e.preventDefault();
-  window.location.hash = shipPath.value;
   _setSail();
 };
 document.getElementById('main-form').addEventListener('submit', submitRequest);
