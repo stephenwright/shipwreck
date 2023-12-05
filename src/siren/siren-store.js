@@ -206,7 +206,7 @@ export class SirenStore {
     let body;
 
     if (fields) {
-      if (['GET', 'HEAD', 'DELETE'].includes(method)) {
+      if (['GET', 'HEAD'].includes(method)) {
         url.search = fields;
       } else if (action.type.indexOf('json') !== -1) {
         const json = {};
