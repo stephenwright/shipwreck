@@ -102,7 +102,7 @@ export class Shipwreck {
   updateStore() {
     const headers = {};
     this._token && (headers.Authorization = `Bearer ${this._token}`);
-    store.addTarget({ href: this._baseUri, options: { headers } });
+    store.addTarget({ href: this.baseUri, options: { headers } });
   }
 
   // ===== events
@@ -166,7 +166,7 @@ export class Shipwreck {
 
     try {
       const actionUrl = new URL(action.href);
-      const baseUrl = new URL(this._baseUri);
+      const baseUrl = new URL(this.baseUri);
       const token = actionUrl.hostname.endsWith(baseUrl.hostname) ? this._token : undefined;
       const { entity } = await store.submit({ action, token });
       if (entity) {
@@ -181,11 +181,30 @@ export class Shipwreck {
     this._raise('complete', {});
   }
 
+  buildUrl({ base, path, query }) {
+    if (ABSOLUTE_URL_REGEX.test(path)) {
+      return new URL(path);
+    }
+    const root = new URL(base || this.baseUri);
+    path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+    const url = new URL(path, root);
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        if (Array.isArray(value)) {
+          value.forEach(v => url.searchParams.append(key, v));
+        } else {
+          url.searchParams.set(key, value);
+        }
+      }
+    }
+    return url;
+  }
+
   // submit a request and display the response
   async fetch(path) {
     this._raise('fetch', {});
     try {
-      const { href } = new URL(ABSOLUTE_URL_REGEX.test(path) ? path : `${this.baseUri}${path}`);
+      const { href } = this.buildUrl({ path });
       const { entity, response } = await store.get({ href, token: this._token });
       if (entity) {
         this.entity = entity;
