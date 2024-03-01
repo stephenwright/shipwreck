@@ -19,25 +19,6 @@ export const _html = (str) => {
 
 const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
 
-function buildUrl({ base, path, query }) {
-  if (ABSOLUTE_URL_REGEX.test(path)) {
-    return new URL(path);
-  }
-  const root = new URL(base);
-  path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
-  const url = new URL(path, root);
-  if (query) {
-    for (const [key, value] of Object.entries(query)) {
-      if (Array.isArray(value)) {
-        value.forEach(v => url.searchParams.append(key, v));
-      } else {
-        url.searchParams.set(key, value);
-      }
-    }
-  }
-  return url;
-}
-
 /**
  * Emits the following events:
  *  fetch - starting a fetch
@@ -201,11 +182,30 @@ export class Shipwreck {
     this._raise('complete', {});
   }
 
+  buildUrl({ base, path, query }) {
+    if (ABSOLUTE_URL_REGEX.test(path)) {
+      return new URL(path);
+    }
+    const root = new URL(base || this.baseUri);
+    path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+    const url = new URL(path, root);
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        if (Array.isArray(value)) {
+          value.forEach(v => url.searchParams.append(key, v));
+        } else {
+          url.searchParams.set(key, value);
+        }
+      }
+    }
+    return url;
+  }
+
   // submit a request and display the response
   async fetch(path) {
     this._raise('fetch', {});
     try {
-      const { href } = buildUrl({ base: this.baseUri, path });
+      const { href } = this.buildUrl({ path });
       const { entity, response } = await store.get({ href, token: this._token });
       if (entity) {
         this.entity = entity;
