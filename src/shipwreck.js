@@ -19,6 +19,25 @@ export const _html = (str) => {
 
 const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
 
+function buildUrl({ base, path, query }) {
+  if (ABSOLUTE_URL_REGEX.test(path)) {
+    return new URL(path);
+  }
+  const root = new URL(base);
+  path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+  const url = new URL(path, root);
+  if (query) {
+    for (const [key, value] of Object.entries(query)) {
+      if (Array.isArray(value)) {
+        value.forEach(v => url.searchParams.append(key, v));
+      } else {
+        url.searchParams.set(key, value);
+      }
+    }
+  }
+  return url;
+}
+
 /**
  * Emits the following events:
  *  fetch - starting a fetch
@@ -72,7 +91,8 @@ export class Shipwreck {
     if (uri === this._baseUri) {
       return;
     }
-    this._baseUri = uri;
+    // strip trailing slash
+    this._baseUri = uri.replace(/\/$/, '');
     if (uri) {
       sessionStorage.setItem('ship-baseUri', uri);
     } else {
@@ -102,7 +122,7 @@ export class Shipwreck {
   updateStore() {
     const headers = {};
     this._token && (headers.Authorization = `Bearer ${this._token}`);
-    store.addTarget({ href: this._baseUri, options: { headers } });
+    store.addTarget({ href: this.baseUri, options: { headers } });
   }
 
   // ===== events
@@ -166,7 +186,7 @@ export class Shipwreck {
 
     try {
       const actionUrl = new URL(action.href);
-      const baseUrl = new URL(this._baseUri);
+      const baseUrl = new URL(this.baseUri);
       const token = actionUrl.hostname.endsWith(baseUrl.hostname) ? this._token : undefined;
       const { entity } = await store.submit({ action, token });
       if (entity) {
@@ -185,7 +205,7 @@ export class Shipwreck {
   async fetch(path) {
     this._raise('fetch', {});
     try {
-      const { href } = new URL(ABSOLUTE_URL_REGEX.test(path) ? path : `${this.baseUri}${path}`);
+      const { href } = buildUrl({ base: this.baseUri, path });
       const { entity, response } = await store.get({ href, token: this._token });
       if (entity) {
         this.entity = entity;
