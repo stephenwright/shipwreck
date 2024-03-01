@@ -72,8 +72,7 @@ export class Shipwreck {
     if (uri === this._baseUri) {
       return;
     }
-    // strip trailing slash
-    this._baseUri = uri.replace(/\/$/, '');
+    this._baseUri = uri;
     if (uri) {
       sessionStorage.setItem('ship-baseUri', uri);
     } else {
