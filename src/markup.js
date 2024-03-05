@@ -176,7 +176,8 @@ const markup = {
           <div class="radio-option">
             <label>
               <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
-              ${option.title}
+              <span class="title">${option.title}</span>
+              <span class="value">"${option.value}"</span>
             </label>
           </div>
           `).join('')}
@@ -206,7 +207,8 @@ const markup = {
           <div class="radio-option">
             <label>
               <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
-              ${option.title}
+              <span class="title">${option.title}</span>
+              <span class="value">"${option.value}"</span>
             </label>
           </div>
           `).join('')}
