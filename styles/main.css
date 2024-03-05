@@ -303,6 +303,11 @@ select {
   display: block;
 }
 
+.entity-actions .value {
+  color: var(--ink-lighter);
+  font-size: .9em;
+}
+
 .entity-actions .form-fields {
   margin-top: 1em;
 }
@@ -313,6 +318,15 @@ select {
 
 .entity-actions .radio-option label {
   cursor: pointer;
+  display: flex;
+  gap: .5em;
+  align-items: center;
+}
+
+.entity-actions .radio-option .value {
+  color: var(--blue-text);
+  background-color: var(--blue-lighter);
+  font-weight: normal;
 }
 
 .entity-action-href {
