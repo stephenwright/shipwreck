@@ -70,6 +70,11 @@ const _setSail = async function () {
   try {
     ship.token = shipToken.value;
     ship.baseUri = shipBase.value;
+    // check if path is url encoded
+    const path = shipPath.value;
+    if (path.startsWith('http%3A') || path.startsWith('https%3A')) {
+      shipPath.value = decodeURIComponent(path);
+    }
     await ship.fetch(shipPath.value);
   } catch (err) {
     console.error(err); // eslint-disable-line no-console
