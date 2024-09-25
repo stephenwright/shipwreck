@@ -21,7 +21,7 @@
   "author": "Stephen Wright",
   "license": "ISC",
   "devDependencies": {
-    "@web/dev-server": "^0.1.32",
+    "@web/dev-server": "^0.4.6",
     "eslint": "^8.20.0"
   }
 }
