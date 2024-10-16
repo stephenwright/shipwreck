@@ -205,7 +205,7 @@ export class Shipwreck {
     this._raise('fetch', {});
     try {
       const { href } = this.buildUrl({ path });
-      const { entity, response } = await store.get({ href, token: this._token });
+      const { entity, response } = await store.get({ href, token: this._token, noCache: true });
       if (entity) {
         this.entity = entity;
         await this.renderEntity();
