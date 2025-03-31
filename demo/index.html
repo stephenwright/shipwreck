@@ -2,18 +2,26 @@
 <html>
 <head>
   <title>shipwreck box sample</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="../styles/colours.css">
+  <link rel="stylesheet" href="../styles/main.css">
 </head>
 <body>
   <div id="ship-output"></div>
   <script type="module">
-    import box  from './box.js';
+    // create an instance of shipwreck, giving it a target element to render into
     import { Shipwreck } from '../src/shipwreck.js';
+    const target = document.getElementById('ship-output');
+    const ship = new Shipwreck(target);
+
+    // use shipwreck to fetch a siren entity and render the response
+    // ship.fetch('https://api.example.com/boxes/1');
+
+    // or render a siren entity directly
+    import box  from './box.js';
     import { SirenEntity } from '../src/siren';
-    const shipOutput = document.getElementById('ship-output');
-    const ship = new Shipwreck(shipOutput);
-    ship.entity = new SirenEntity(box);
-    ship.renderEntity();
+    const entity = new SirenEntity(box);
+    ship.render({ entity });
+    // all links and and actions will be intercepted and rendered by shipwreck
   </script>
 </body>
 </html>
