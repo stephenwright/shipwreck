@@ -5,7 +5,7 @@ let datalistId = 0;
 /** helpers for generating HTML markup */
 const markup = {
 
-  code(json) {
+  json(json) {
     return `<pre><code>${JSON.stringify(json, null, 2)}</code></pre>`;
   },
 
@@ -50,13 +50,13 @@ const markup = {
             ${entity.actions.length ? '<a name="entity-actions">Actions</a>' : ''}
             ${entity.entities.length ? '<a name="entity-entities">Sub-Entities</a>' : ''}
           </div>
-          <div class="tab-content entity-properties entity-raw">
-            ${markup.code(entity.properties)}
+          <div class="content entity-properties entity-raw">
+            ${markup.json(entity.properties)}
           </div>
-          <div class="tab-content entity-actions">
+          <div class="content entity-actions">
             ${entity.actions.map(markup.card).join('\n')}
           </div>
-          <div class="tab-content entity-entities">
+          <div class="content entity-entities">
             ${entity.entities.map(markup.card).join('\n')}
           </div>
         </div>
@@ -137,7 +137,7 @@ const markup = {
           ${input}
         </label>
       </div>
-      `;
+    `;
   },
 
   datalist(field, id) {
@@ -269,7 +269,7 @@ const markup = {
       .keys(entity.properties)
       .map((key) => {
         let val = entity.properties[key];
-        val = typeof val === 'object' ? markup.code(val) : `<code>${val}</code>`;
+        val = typeof val === 'object' ? markup.json(val) : `<code>${val}</code>`;
         return `
           <tr>
             <td class="key">${key}:</td>
@@ -297,7 +297,7 @@ const markup = {
       let [key, val] = p;
       try {
         val = `<a href="${new URL(val).href}">${val}</a>`;
-      } catch (err) {
+      } catch (err) { // eslint-disable-line no-unused-vars
         // not a valid url. meh.
       }
       params.push(`<li>${key} = ${val}</li>`);
@@ -352,6 +352,7 @@ const markup = {
           <!-- Sub-Entities -->
           <div class="entity-entities">
             <h2>Sub-Entities</h2>
+            ${entity.entities.map(markup.card).join('\n')}
           </div>
 
         </div>
@@ -361,47 +362,47 @@ const markup = {
 
   // Main Container
 
-  ship(entity) {
+  main({ path, params, raw, pretty }) {
     return `
-      <div class="shipwreck">
-
+      <div class="shipwreck tabbed">
         <!-- Display the current location in a nice clickable manner -->
-        <div class="current-path">${markup.currentPath(entity)}</div>
-        <div class="current-path-params">${markup.queryParams(entity)}</div>
+        <div class="current-path">${path}</div>
+        <div class="current-path-params">${params}</div>
 
         <!-- Tabs to switch between raw and pretty views -->
         <div class="tabs">
-          <a name="content-entity">Entity</a>
-          <a name="content-raw">Raw</a>
+          ${pretty ? '<a name="main-entity">Entity</a>' : ''}
+          ${raw ? '<a name="main-raw">Raw</a>' : ''}
         </div>
 
-        <!-- Pretty view of an entity -->
-        <div class="content" id="content-entity">${markup.entity(entity)}</div>
+        ${pretty ? `
+          <!-- Pretty view of an entity -->
+          <div class="content main-entity">${pretty}</div>
+        ` : ''}
 
-        <!-- Raw JSON entity object -->
-        <div class="content" id="content-raw">
-          <div class="entity-raw">${markup.code(entity.raw)}</div>
-        </div>
-
+        ${raw ? `
+          <!-- Raw JSON entity object -->
+          <div class="content main-raw">${raw}</div>
+        ` : ''}
       </div>
     `;
   },
 
+  ship(entity) {
+    return markup.main({
+      path: markup.currentPath(entity),
+      params: markup.queryParams(entity),
+      raw: `<div class="entity-raw">${markup.json(entity.raw)}</div>`,
+      pretty: markup.entity(entity),
+    });
+  },
+
   raw(content, url) {
-    return `
-      <div class="shipwreck raw-response">
-        <div class="current-path">${markup.uriCrumbs(url)}</div>
-        <div class="current-path-params">${markup.uriParams(url)}</div>
-
-        <!-- Tabs to switch between raw and pretty views -->
-        <div class="tabs">
-          <a name="content-raw">Raw</a>
-        </div>
-
-        <!-- Raw content -->
-        <div class="content" id="content-raw">${content}</div>
-      </div>
-    `;
+    return markup.main({
+      path: markup.uriCrumbs(url),
+      params: markup.uriParams(url),
+      raw: `<pre>${content}</pre>`,
+    });
   },
 
 };

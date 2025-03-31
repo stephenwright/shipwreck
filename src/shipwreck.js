@@ -5,10 +5,9 @@
  */
 
 import { SirenStore } from './siren/siren-store.js';
+import { intercept } from './router.js';
 
 import markup from './markup.js';
-
-const store = new SirenStore();
 
 /** Convert a string to a DOM node */
 export const _html = (str) => {
@@ -30,29 +29,32 @@ const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
  */
 export class Shipwreck {
   constructor(target) {
-    this.target = target;
-    this._entity = undefined;
+    this._target = target;
     this._eventListeners = new Map();
 
     this._baseUri = sessionStorage.getItem('ship-baseUri') || '';
     this._token = sessionStorage.getItem('ship-authToken') || '';
-    this.updateStore();
 
-    store.addEventListener('error', e => {
+    this._store = new SirenStore();
+    this._store.addEventListener('error', e => {
       const { message, response } = e.detail;
       this._raise('error', { message, response });
     });
+    this._store.addEventListener('inflight', e => this._raise('inflight', { count: e.detail.count }));
+    this._updateStore();
 
-    store.addEventListener('inflight', e => this._raise('inflight', { count: e.detail.count }));
+    this._watchLinks();
+    this._watchForms();
 
-    document.body.addEventListener('submit', async (e) => {
-      if (!this.target?.contains(e.target)) {
-        return;
-      }
-      e.preventDefault();
-      this.formSubmit(e.target);
-    });
   }
+
+  _updateStore() {
+    const headers = {};
+    this._token && (headers.Authorization = `Bearer ${this._token}`);
+    this._store.addTarget({ href: this.baseUri, options: { headers } });
+  }
+
+  // ===== properties
 
   get entity() {
     return this._entity;
@@ -62,7 +64,6 @@ export class Shipwreck {
     this._entity = entity;
     this._raise('update', { message: 'Updated entity', entity });
   }
-
   get baseUri() {
     return this._baseUri;
   }
@@ -73,12 +74,15 @@ export class Shipwreck {
       return;
     }
     this._baseUri = uri;
+
+    this._updateStore();
+    this._watchLinks();
+
     if (uri) {
       sessionStorage.setItem('ship-baseUri', uri);
     } else {
       sessionStorage.removeItem('ship-baseUri');
     }
-    this.updateStore();
   }
 
   get token() {
@@ -96,13 +100,21 @@ export class Shipwreck {
     } else {
       sessionStorage.removeItem('ship-authToken');
     }
-    this.updateStore();
+    this._updateStore();
   }
 
-  updateStore() {
-    const headers = {};
-    this._token && (headers.Authorization = `Bearer ${this._token}`);
-    store.addTarget({ href: this.baseUri, options: { headers } });
+  // ===== watchers
+
+  _watchLinks() {
+    this._interceptor?.remove();
+    this._interceptor = this._baseUri ? intercept(this._baseUri, href => this.fetch(href)) : undefined;
+  }
+
+  _watchForms() {
+    this._target.addEventListener('submit', e => {
+      e.preventDefault();
+      this._submitForm(e.target);
+    });
   }
 
   // ===== events
@@ -132,7 +144,40 @@ export class Shipwreck {
 
   // =====
 
-  async formSubmit(form) {
+  /**
+   * Construct a URL from a base, path, and query
+   * @param {string} base - base URL, defaults to this.baseUri
+   * @param {string} path - path to fetch
+   * @param {object} query - query parameters
+   * @returns {URL}
+   */
+  buildUrl({ base, path, query }) {
+    if (ABSOLUTE_URL_REGEX.test(path)) {
+      return new URL(path);
+    }
+    const root = new URL(base || this.baseUri);
+    path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+    const url = new URL(path, root);
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        Array.isArray(value)
+          ? value.forEach(v => url.searchParams.append(key, v))
+          : url.searchParams.set(key, value);
+      }
+    }
+    return url;
+  }
+
+  // =====
+
+  /**
+   * Convert a form into a siren action and submit the action
+   * requests confirmation for DELETE actions
+   * renders the results if response is a siren entity
+   * @param {HTMLFormElement} form
+   */
+  async _submitForm(form) {
+    // convert html form to siren action
     const fields = [];
     let method = form.getAttribute('method');
 
@@ -150,10 +195,6 @@ export class Shipwreck {
       name && fields.push({ name, value, files });
     }
 
-    if (method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) { // eslint-disable-line
-      return;
-    }
-
     const action = {
       name: form.name,
       type: form.enctype,
@@ -162,18 +203,18 @@ export class Shipwreck {
       fields,
     };
 
-    this._raise('fetch', {});
+    // confirm destructive actions
+    if (action.method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) {
+      return;
+    }
 
+    // submit the action and render the response
     try {
-      const actionUrl = new URL(action.href);
-      const baseUrl = new URL(this.baseUri);
-      const token = actionUrl.hostname.endsWith(baseUrl.hostname) ? this._token : undefined;
-      const { entity } = await store.submit({ action, token });
-      if (entity) {
-        this.entity = entity;
-        await this.renderEntity();
-        this._raise('success', { message: 'Action submitted.' });
-      }
+      this._raise('fetch', {});
+      const { entity, response } = await this._store.submit({ action });
+      this.entity = entity;
+      await this.render({ entity, response });
+      this._raise('success', { message: 'Action submitted.' });
     } catch (err) {
       this._raise('error', { message: err.message });
     }
@@ -181,121 +222,54 @@ export class Shipwreck {
     this._raise('complete', {});
   }
 
-  buildUrl({ base, path, query }) {
-    if (ABSOLUTE_URL_REGEX.test(path)) {
-      return new URL(path);
-    }
-    const root = new URL(base || this.baseUri);
-    path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
-    const url = new URL(path, root);
-    if (query) {
-      for (const [key, value] of Object.entries(query)) {
-        if (Array.isArray(value)) {
-          value.forEach(v => url.searchParams.append(key, v));
-        } else {
-          url.searchParams.set(key, value);
-        }
-      }
-    }
-    return url;
-  }
-
-  // submit a request and display the response
+  /**
+   * Fetch an entity and render the results
+   * @params {string} path - path to fetch
+   */
   async fetch(path) {
     this._raise('fetch', {});
     try {
       const { href } = this.buildUrl({ path });
-      const { entity, response } = await store.get({ href, token: this._token, noCache: true });
-      if (entity) {
-        this.entity = entity;
-        await this.renderEntity();
-      } else if (response) {
-        await this.renderResponse(response);
-        this._raise('update', { message: 'Displaying raw response', href: response.url });
-      } else {
-        throw new Error('invalid response');
-      }
+      const { entity, response } = await this._store.get({ href, noCache: true });
+      this.entity = entity;
+      this.render({ entity, response });
       this._raise('success', { message: 'Request success', href });
     } catch (err) {
-      console.warn(err); // eslint-disable-line no-console
+      console.warn(err);
       this._raise('error', { message: err.message, error: err });
     }
     this._raise('complete', { message: 'Fetch complete.' });
   }
 
-  // ===== render
-
-  async watchLinks() {
-    const { target } = this;
-    // Links (do this after sub entities are added)
-    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a:not(.direct-link)')
-      .forEach((a) => a.addEventListener('click', (e) => {
-        const anchor = e.target;
-        if (!anchor || anchor.target || anchor.getAttribute('rel') === 'external' || !anchor.href) {
-          return;
-        }
-        e.preventDefault();
-        this.fetch(anchor.href);
-      }));
-  }
-
-  async initTabs() {
-    const { target } = this;
-    // Main tabs
-    const contents = target.querySelectorAll('.shipwreck > .content');
-    const tabs = target.querySelectorAll('.shipwreck > .tabs > a');
-    tabs.forEach((tab) => {
-      tab.onclick = () => {
-        tabs.forEach((t) => t.classList.remove('active'));
-        tab.classList.add('active');
-        contents.forEach((c) => c.style.display = c.id === tab.name ? 'block' : 'none');
-      };
-    });
-    tabs[0].click();
-
-    // Body tabs
-    const tabbed = target.querySelectorAll('.shipwreck .tabbed');
-    tabbed.forEach((group) => {
-      const groupContents = group.querySelectorAll(':scope > .tab-content');
-      groupContents.forEach((c) => c.style.display = 'none');
-      const groupTabs = group.querySelectorAll(':scope > .tabs a');
-      groupTabs.forEach((tab) => {
+  /**
+   *
+   * @param {SirenEntity}} entity - the entity to display
+   * @param {Response} response - the response to display if no siren entity is available
+   */
+  async render({ entity, response }) {
+    if (entity) {
+      this._target.innerHTML = markup.ship(entity);
+      this._raise('update', { message: 'Updated entity', entity });
+    } else if (response) {
+      const text = await response.text();
+      this._target.innerHTML = markup.raw(text, response.url);
+    }
+    // wire up tabbed content, in the following structure:
+    //  div.tabbed
+    //   div.tabs
+    //     a[name=<name>]
+    //   div.content.<name>
+    this._target.querySelectorAll('.tabbed').forEach(el => {
+      const tabs = el.querySelectorAll(':scope > .tabs > a');
+      const contents = el.querySelectorAll(':scope > .content');
+      tabs.forEach(tab => {
         tab.onclick = () => {
-          groupTabs.forEach((t) => t.classList.remove('active'));
+          tabs.forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
-          groupContents.forEach((c) => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
+          contents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
         };
       });
-      groupTabs.length && groupTabs[0].click();
+      tabs.length && tabs[0].click();
     });
-  }
-
-  async renderResponse(response) {
-    const { target } = this;
-    const text = await response.text();
-    target.innerHTML = markup.raw(text, response.url);
-    this.initTabs();
-    this.watchLinks();
-  }
-
-  // display the markup and attach some logic
-  async renderEntity() {
-    const { entity, target } = this;
-    target.innerHTML = markup.ship(entity);
-
-    // Sub-Entities
-    const parent = target.querySelector('.entity-entities');
-    entity.entities.forEach((e) => {
-      const card = _html(markup.card(e));
-      parent.appendChild(card);
-      // toggle body visibility when head is clicked
-      const body = card.querySelector('.body');
-      const head = card.querySelector('.head');
-      if (head && body) {
-        head.onclick = () => body.style.display = body.style.display === 'none' ? '' : 'none';
-      }
-    });
-    this.initTabs();
-    this.watchLinks();
   }
 }
