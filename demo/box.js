@@ -53,9 +53,19 @@ export default {
         { name: 'label', title: 'Label', type: 'text', required: true },
         { name: 'public', title: 'Public', type: 'checkbox', checked: true },
         {
+          name: 'material',
+          title: 'Material',
+          type: 'text',
+          value: '',
+          options: [
+            { value: 'cardboard' },
+            { value: 'wood' },
+            { value: 'metal' },
+          ],
+        },
+        {
           name: 'level',
           title: 'Level',
-          description: 'Describes how full the box is.',
           type: 'radio',
           value: [
             { title: 'Full', value: 'full' },
@@ -68,10 +78,10 @@ export default {
           name: 'colour',
           title: 'Colour',
           type: 'select',
-          value: [
-            { title: 'Select a colour', value: '' },
+          value: 'red',
+          options: [
             { value: 'blue' },
-            { value: 'green', selected: true },
+            { value: 'green' },
             { value: 'red' },
             { value: 'purple' },
           ],
