@@ -118,9 +118,6 @@ const markup = {
   },
 
   selectOptions(field) {
-    // if (!(field.value instanceof Array)) {
-    //   return '';
-    // }
     return field.options.map((opt) => `
       <option
         value="${opt.value || opt.title}"
