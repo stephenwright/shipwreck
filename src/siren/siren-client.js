@@ -5,6 +5,18 @@ import { SirenAction } from './siren-action.js';
  * Client for fetching entities from a Siren API
  */
 export class SirenClient {
+  constructor({ headers }) {
+    this._options = { headers };
+  }
+
+  jwt(token) {
+    if (token) {
+      this._options.headers.set('authorization', `Bearer ${token}`);
+    } else {
+      this._options.headers.delete('authorization');
+    }
+  }
+
   /**
    * performs a request using the supplied action
    * @param {SirenAction} action
@@ -15,7 +27,10 @@ export class SirenClient {
   async submit(action, options = {}) {
     const { body, headers, method, url } = this.parseAction(action);
 
-    Object.entries(options.headers).forEach(([key, value]) => headers.set(key, value));
+    Object.entries({
+      ...this._options.headers,
+      ...options.headers,
+    }).forEach(([key, value]) => headers.set(key, value));
 
     const response = await fetch(url, {
       body,
