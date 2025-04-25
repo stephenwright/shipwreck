@@ -45,13 +45,17 @@ export class Shipwreck {
 
     this._watchLinks();
     this._watchForms();
-
   }
 
   _updateStore() {
-    const headers = {};
-    this._token && (headers.Authorization = `Bearer ${this._token}`);
-    this._store.addTarget({ href: this.baseUri, options: { headers } });
+    this._store.addTarget({
+      href: this.baseUri,
+      options: {
+        headers: {
+          ...this._token && { Authorization: `Bearer ${this._token}` },
+        }
+      },
+    });
   }
 
   // ===== properties
@@ -64,6 +68,7 @@ export class Shipwreck {
     this._entity = entity;
     this._raise('update', { message: 'Updated entity', entity });
   }
+
   get baseUri() {
     return this._baseUri;
   }
