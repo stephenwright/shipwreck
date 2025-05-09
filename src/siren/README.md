@@ -12,7 +12,7 @@ client.jwt(token);
 const { entity } = client.get({ href: 'https://api.example.com/entity' });
 const action = entity.getAction('update');
 actions.getField('name').value = 'New Name';
-const { entity, response } = await client.submit(action);
+const { entity, response } = await client.submit({ action });
 ```
 
 ## SirenStore

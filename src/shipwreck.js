@@ -28,31 +28,39 @@ const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
  *  complete - fetch complete (calls wether it was successful or not)
  */
 export class Shipwreck {
+  #target;
+  #eventListeners;
+  #baseUri;
+  #token;
+  #store;
+  #entity;
+  #interceptor;
+
   constructor(target) {
-    this._target = target;
-    this._eventListeners = new Map();
+    this.#target = target;
+    this.#eventListeners = new Map();
 
-    this._baseUri = sessionStorage.getItem('ship-baseUri') || '';
-    this._token = sessionStorage.getItem('ship-authToken') || '';
+    this.#baseUri = sessionStorage.getItem('ship-baseUri') || '';
+    this.#token = sessionStorage.getItem('ship-authToken') || '';
 
-    this._store = new SirenStore();
-    this._store.addEventListener('error', e => {
+    this.#store = new SirenStore();
+    this.#store.addEventListener('error', e => {
       const { message, response } = e.detail;
-      this._raise('error', { message, response });
+      this.#raise('error', { message, response });
     });
-    this._store.addEventListener('inflight', e => this._raise('inflight', { count: e.detail.count }));
-    this._updateStore();
+    this.#store.addEventListener('inflight', e => this.#raise('inflight', { count: e.detail.count }));
+    this.#updateStore();
 
-    this._watchLinks();
-    this._watchForms();
+    this.#watchLinks();
+    this.#watchForms();
   }
 
-  _updateStore() {
-    this._store.addTarget({
+  #updateStore() {
+    this.#store.addTarget({
       href: this.baseUri,
       options: {
         headers: {
-          ...this._token && { Authorization: `Bearer ${this._token}` },
+          ...this.#token && { Authorization: `Bearer ${this.#token}` },
         }
       },
     });
@@ -61,27 +69,27 @@ export class Shipwreck {
   // ===== properties
 
   get entity() {
-    return this._entity;
+    return this.#entity;
   }
 
   set entity(entity) {
-    this._entity = entity;
-    this._raise('update', { message: 'Updated entity', entity });
+    this.#entity = entity;
+    this.#raise('update', { message: 'Updated entity', entity });
   }
 
   get baseUri() {
-    return this._baseUri;
+    return this.#baseUri;
   }
 
   set baseUri(uri) {
     uri = uri || undefined; // falsy = undefined
-    if (uri === this._baseUri) {
+    if (uri === this.#baseUri) {
       return;
     }
-    this._baseUri = uri;
+    this.#baseUri = uri;
 
-    this._updateStore();
-    this._watchLinks();
+    this.#updateStore();
+    this.#watchLinks();
 
     if (uri) {
       sessionStorage.setItem('ship-baseUri', uri);
@@ -91,56 +99,56 @@ export class Shipwreck {
   }
 
   get token() {
-    return this._token;
+    return this.#token;
   }
 
   set token(newToken) {
     newToken = newToken || undefined; // falsy = undefined
-    if (newToken === this._token) {
+    if (newToken === this.#token) {
       return;
     }
-    this._token = newToken;
+    this.#token = newToken;
     if (newToken) {
       sessionStorage.setItem('ship-authToken', newToken);
     } else {
       sessionStorage.removeItem('ship-authToken');
     }
-    this._updateStore();
+    this.#updateStore();
   }
 
   // ===== watchers
 
-  _watchLinks() {
-    this._interceptor?.remove();
-    this._interceptor = this._baseUri ? intercept(this._baseUri, href => this.fetch(href)) : undefined;
+  #watchLinks() {
+    this.#interceptor?.remove();
+    this.#interceptor = this.#baseUri ? intercept(this.#baseUri, href => this.fetch(href)) : undefined;
   }
 
-  _watchForms() {
-    this._target.addEventListener('submit', e => {
+  #watchForms() {
+    this.#target.addEventListener('submit', e => {
       e.preventDefault();
-      this._submitForm(e.target);
+      this.#submitForm(e.target);
     });
   }
 
   // ===== events
 
-  _getEventListeners(event) {
-    if (!this._eventListeners.has(event)) {
-      this._eventListeners.set(event, []);
+  #getEventListeners(event) {
+    if (!this.#eventListeners.has(event)) {
+      this.#eventListeners.set(event, []);
     }
-    return this._eventListeners.get(event);
+    return this.#eventListeners.get(event);
   }
 
-  _raise(event, detail = {}) {
-    this._getEventListeners(event).forEach(fn => fn({ detail }));
+  #raise(event, detail = {}) {
+    this.#getEventListeners(event).forEach(fn => fn({ detail }));
   }
 
   on(event, callback) {
-    this._getEventListeners(event).push(callback);
+    this.#getEventListeners(event).push(callback);
   }
 
   off(event, callback) {
-    const listeners = this._getEventListeners(event);
+    const listeners = this.#getEventListeners(event);
     const i = listeners.indexOf(callback);
     if (i !== -1) {
       listeners.splice(i, 1);
@@ -181,7 +189,7 @@ export class Shipwreck {
    * renders the results if response is a siren entity
    * @param {HTMLFormElement} form
    */
-  async _submitForm(form) {
+  async #submitForm(form) {
     // convert html form to siren action
     const fields = [];
     let method = form.getAttribute('method');
@@ -215,16 +223,16 @@ export class Shipwreck {
 
     // submit the action and render the response
     try {
-      this._raise('fetch', {});
-      const { entity, response } = await this._store.submit({ action });
+      this.#raise('fetch', {});
+      const { entity, response } = await this.#store.submit({ action });
       this.entity = entity;
       await this.render({ entity, response });
-      this._raise('success', { message: 'Action submitted.' });
+      this.#raise('success', { message: 'Action submitted.' });
     } catch (err) {
-      this._raise('error', { message: err.message });
+      this.#raise('error', { message: err.message });
     }
 
-    this._raise('complete', {});
+    this.#raise('complete', {});
   }
 
   /**
@@ -232,18 +240,18 @@ export class Shipwreck {
    * @params {string} path - path to fetch
    */
   async fetch(path) {
-    this._raise('fetch', {});
+    this.#raise('fetch', {});
     try {
       const { href } = this.buildUrl({ path });
-      const { entity, response } = await this._store.get({ href, noCache: true });
+      const { entity, response } = await this.#store.get({ href, noCache: true });
       this.entity = entity;
       this.render({ entity, response });
-      this._raise('success', { message: 'Request success', href });
+      this.#raise('success', { message: 'Request success', href });
     } catch (err) {
       console.warn(err);
-      this._raise('error', { message: err.message, error: err });
+      this.#raise('error', { message: err.message, error: err });
     }
-    this._raise('complete', { message: 'Fetch complete.' });
+    this.#raise('complete', { message: 'Fetch complete.' });
   }
 
   /**
@@ -253,18 +261,18 @@ export class Shipwreck {
    */
   async render({ entity, response }) {
     if (entity) {
-      this._target.innerHTML = markup.ship(entity);
-      this._raise('update', { message: 'Updated entity', entity });
+      this.#target.innerHTML = markup.ship(entity);
+      this.#raise('update', { message: 'Updated entity', entity });
     } else if (response) {
       const text = await response.text();
-      this._target.innerHTML = markup.raw(text, response.url);
+      this.#target.innerHTML = markup.raw(text, response.url);
     }
     // wire up tabbed content, in the following structure:
     //  div.tabbed
     //   div.tabs
     //     a[name=<name>]
     //   div.content.<name>
-    this._target.querySelectorAll('.tabbed').forEach(el => {
+    this.#target.querySelectorAll('.tabbed').forEach(el => {
       const tabs = el.querySelectorAll(':scope > .tabs > a');
       const contents = el.querySelectorAll(':scope > .content');
       tabs.forEach(tab => {

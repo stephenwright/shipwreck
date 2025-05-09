@@ -1,19 +1,22 @@
 import { SirenEntity } from './siren-entity.js';
 import { SirenAction } from './siren-action.js';
+import { SirenField } from './siren-field.js';
 
 /**
  * Client for fetching entities from a Siren API
  */
 export class SirenClient {
-  constructor({ headers }) {
-    this._options = { headers };
+  #options;
+
+  constructor({ headers } = {}) {
+    this.#options = { headers };
   }
 
   jwt(token) {
     if (token) {
-      this._options.headers.set('authorization', `Bearer ${token}`);
+      this.#options.headers.set('authorization', `Bearer ${token}`);
     } else {
-      this._options.headers.delete('authorization');
+      this.#options.headers.delete('authorization');
     }
   }
 
@@ -24,11 +27,15 @@ export class SirenClient {
    * @param {object} options.headers - headers to include in the request
    * @returns {Promise<{ entity: SirenEntity, response: Response }>}
    */
-  async submit(action, options = {}) {
-    const { body, headers, method, url } = this.parseAction(action);
+  async submit({ action, options = {}, fields = {} }) {
+    const formFields = this.objectToFields(fields);
+    const { body, headers, method, url } = this.parseAction({
+      ...action,
+      fields: this.combineFields(action.fields, formFields),
+    });
 
     Object.entries({
-      ...this._options.headers,
+      ...this.#options.headers,
       ...options.headers,
     }).forEach(([key, value]) => headers.set(key, value));
 
@@ -130,7 +137,7 @@ export class SirenClient {
   /**
   * Parse a response and returns a SirenEntity
   * @param {Response} response
-  * @returns {Promise<SirenEntity>} siren entity
+  * @returns {Promise<SirenEntity | null>} siren entity
   */
   async parseResponse(response) {
     if (![200, 201, 203, 205, 206].includes(response.status)) {
@@ -142,5 +149,58 @@ export class SirenClient {
     }
     const json = await response.clone().json();
     return new SirenEntity(json);
+  }
+
+  /**
+   * take an object and convert it to a flat array of fields using bracket notation.
+   * for example:
+   * {
+   *   prop: 1,
+   *   object: {
+   *    a: 1,
+   *    b: 2,
+   *   },
+   *   array: [1, 2],
+   * }
+   * becomes:
+   * [
+   *   { name: 'prop', value: 1 },
+   *   { name: 'object[a]', value: 1 },
+   *   { name: 'object[b]', value: 2 },
+   *   { name: 'array', value: 1 },
+   *   { name: 'array', value: 2 },
+   * ]
+   */
+  objectToFields(obj) {
+    const toField = (key, value, parent) => {
+      const name = parent ?  `${parent}[${key}]` : key;
+      if (Array.isArray(value)) {
+        return value.flatMap((v, i) => toField(`${name}[${i}]`, v));
+      } else if (typeof value === 'object') {
+        return Object.entries(value).flatMap(([k, v]) => toField(k, v, name));
+      } else {
+        return [new SirenField({ name, value })];
+      }
+    }
+    return Object.entries(obj).flatMap(([key, value]) => toField(key, value));
+  }
+
+  /**
+   * merge two arrays of fields, replacing the old fields with the new ones
+   */
+  combineFields(oldFields, newFields) {
+    // keep the order of the original fields
+    const fields = [];
+    for (const old of oldFields) {
+      const replacements = newFields.filter(n => n.name === old.name);
+      if (replacements.length) {
+        fields.push(...replacements.map(r => new SirenField({ ...old.json, ...r.value })));
+      } else {
+        fields.push(old);
+      }
+    }
+    // append new fields to the end
+    fields.push(...newFields.filter(n => !oldFields.find(o => o.name === n.name)));
+    return fields;
   }
 }

@@ -29,27 +29,35 @@ function getMaxAge(response) {
  * - complete - fetch complete (calls wether it was successful or not)
  */
 export class SirenStore {
+  #inflight;
+  #targets;
+  #entityListeners;
+  #eventListeners;
+  #requests;
+  #cache;
+  #client;
+
   constructor() {
-    this._inflight = 0;
-    this._targets = new Map();
-    this._entityListeners = new Map();
-    this._eventListeners = new Map();
-    this._requests = new Map();
-    this._cache = new Map();
-    this._client = new SirenClient();
+    this.#inflight = 0;
+    this.#targets = new Map();
+    this.#entityListeners = new Map();
+    this.#eventListeners = new Map();
+    this.#requests = new Map();
+    this.#cache = new Map();
+    this.#client = new SirenClient();
   }
 
   // ----- events
 
-  _getEventListeners(event) {
-    if (!this._eventListeners.has(event)) {
-      this._eventListeners.set(event, []);
+  #getEventListeners(event) {
+    if (!this.#eventListeners.has(event)) {
+      this.#eventListeners.set(event, []);
     }
-    return this._eventListeners.get(event);
+    return this.#eventListeners.get(event);
   }
 
-  _raise(event, detail = {}) {
-    this._getEventListeners(event).forEach(fn => fn({ detail }));
+  #raise(event, detail = {}) {
+    this.#getEventListeners(event).forEach(fn => fn({ detail }));
   }
 
   /**
@@ -57,7 +65,7 @@ export class SirenStore {
    * @params {function} callback
    */
   addEventListener(event, callback) {
-    this._getEventListeners(event).push(callback);
+    this.#getEventListeners(event).push(callback);
   }
 
   /**
@@ -65,7 +73,7 @@ export class SirenStore {
    * @params {function} callback
    */
   removeEventListener(event, callback) {
-    const listeners = this._getEventListeners(event);
+    const listeners = this.#getEventListeners(event);
     const i = listeners.indexOf(callback);
     if (i !== -1) {
       listeners.splice(i, 1);
@@ -75,7 +83,7 @@ export class SirenStore {
   // ----- target specific settings
 
   addTarget({ href, options = {} }) {
-    this._targets.set(href, options);
+    this.#targets.set(href, options);
     this.clearCache();
     this.unload();
   }
@@ -83,9 +91,9 @@ export class SirenStore {
   getOptions({ href }) {
     let options = {};
 
-    [...this._targets.keys()].forEach((key) => {
+    [...this.#targets.keys()].forEach((key) => {
       if (href.startsWith(key)) {
-        options = this._targets.get(key);
+        options = this.#targets.get(key);
       }
     });
 
@@ -94,54 +102,54 @@ export class SirenStore {
 
   // ----- caching
 
-  _update({ href, entity, response }) {
+  #update({ href, entity, response }) {
     let expires = getMaxAge(response);
     const now = new Date().getTime();
     if (expires <= now) {
       expires = now + 5000;
     }
-    this._cache.set(href, { entity, expires });
-    this._notify({ href, entity, response });
+    this.#cache.set(href, { entity, expires });
+    this.#notify({ href, entity, response });
   }
 
   clearCache() {
-    this._cache.clear();
+    this.#cache.clear();
   }
 
   clearExpired() {
     const now = new Date().getTime();
-    for (const [href, item] of this._cache) {
+    for (const [href, item] of this.#cache) {
       if (item?.expires < now) {
-        this._cache.delete(href);
+        this.#cache.delete(href);
       }
     }
   }
 
   reload() {
-    if (!this._entityListeners) return;
-    for (const [href] of this._entityListeners) {
+    if (!this.#entityListeners) return;
+    for (const [href] of this.#entityListeners) {
       this.get({ href, noCache: true });
     }
   }
 
   unload() {
-    if (!this._entityListeners) return;
-    for (const [href] of this._entityListeners) {
-      this._notify({ href });
+    if (!this.#entityListeners) return;
+    for (const [href] of this.#entityListeners) {
+      this.#notify({ href });
     }
   }
 
   // ----- entity listeners
 
-  _getEntityListeners(href) {
-    if (!this._entityListeners.has(href)) {
-      this._entityListeners.set(href, new Set());
+  #getEntityListeners(href) {
+    if (!this.#entityListeners.has(href)) {
+      this.#entityListeners.set(href, new Set());
     }
-    return this._entityListeners.get(href);
+    return this.#entityListeners.get(href);
   }
 
-  _notify({ href, entity, response, error, status }) {
-    this._getEntityListeners(href).forEach(fn => {
+  #notify({ href, entity, response, error, status }) {
+    this.#getEntityListeners(href).forEach(fn => {
       try {
         fn({ entity, response, error, status });
       } catch {
@@ -154,7 +162,7 @@ export class SirenStore {
     if (!href || typeof callback !== 'function') {
       return;
     }
-    this._getEntityListeners(href).add(callback);
+    this.#getEntityListeners(href).add(callback);
     return () => this.removeEntityListener(href, callback);
   }
 
@@ -162,49 +170,39 @@ export class SirenStore {
     if (!href || typeof callback !== 'function') {
       return;
     }
-    this._getEntityListeners(href).delete(callback);
+    this.#getEntityListeners(href).delete(callback);
   }
 
   // ----- actions
 
   // performs a request using the supplied action
   async submit({ action, fields = {} }) {
-    for (const name of Object.keys(fields)) {
-      const field = action.getField(name);
-      const value = fields[name];
-      if (field) {
-        field.value = value;
-      } else {
-        action.fields.push({ name, value });
-      }
-    }
-
-    this._raise('fetch');
-    this._raise('inflight', { count: ++this._inflight });
+    this.#raise('fetch');
+    this.#raise('inflight', { count: ++this.#inflight });
 
     const options = this.getOptions({ href: action.href });
-    return this._client.submit(action, options)
+    return this.#client.submit({ action, options, fields })
       .catch(err => {
-        this._raise('error', {
+        this.#raise('error', {
           message: err.message,
           response: err.response,
         });
       })
       .finally(() => {
-        this._raise('inflight', { count: --this._inflight });
-        this._raise('complete');
+        this.#raise('inflight', { count: --this.#inflight });
+        this.#raise('complete');
       });
   }
 
   // ----- entity fetching
 
-  async _getRequest({ href }) {
+  async #getRequest({ href }) {
     // if there's already a request for this href inflight, don't start a new one
-    let request = this._requests.get(href);
+    let request = this.#requests.get(href);
     if (!request) {
       const action = new SirenAction({ href });
-      request = this.submit({ action }).finally(() => this._requests.delete(href));
-      this._requests.set(href, request);
+      request = this.submit({ action }).finally(() => this.#requests.delete(href));
+      this.#requests.set(href, request);
     }
     return request;
   }
@@ -213,11 +211,11 @@ export class SirenStore {
     if (!href || typeof href !== 'string') {
       throw new Error('Invalid HREF');
     }
-    const cached = this._cache.get(href);
+    const cached = this.#cache.get(href);
     const expired = cached && cached.expires < new Date().getTime();
     if (!cached || expired || noCache) {
-      const { entity, response } = await this._getRequest({ href })
-      this._update({ href, entity, response });
+      const { entity, response } = await this.#getRequest({ href });
+      this.#update({ href, entity, response });
       return { entity, response };
     }
     return cached
