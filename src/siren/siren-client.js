@@ -105,14 +105,7 @@ export class SirenClient {
             data.append(name, file, file.name);
           }
         } else {
-          if (Array.isArray(value)) {
-            // handle arrays
-          } else if (typeof value === 'object') {
-            // handle objects
-          } else {
-            // handle primitives
-            data.append(name, value || '');
-          }
+          data.append(name, value || '');
         }
       }
 
