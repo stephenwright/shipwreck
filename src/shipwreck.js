@@ -9,13 +9,6 @@ import { intercept } from './router.js';
 
 import markup from './markup.js';
 
-/** Convert a string to a DOM node */
-export const _html = (str) => {
-  const template = document.createElement('template');
-  template.innerHTML = str.trim();
-  return template.content.firstChild;
-};
-
 const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
 
 /**

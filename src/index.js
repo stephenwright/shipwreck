@@ -1,10 +1,16 @@
-import { Shipwreck, _html } from './shipwreck.js';
+import { Shipwreck } from './shipwreck.js';
 
 // notifications
 const flash = {
   box: document.getElementById('flash'),
   clear: () => flash.box.innerHTML = '',
-  add: (msg, type) => flash.box.appendChild(_html(`<div class="banner ${type}">${msg}</div>`)),
+  add: (msg, type) => {
+    const div = document.createElement('div');
+    div.className = 'banner';
+    div.classList.add(type);
+    div.innerHTML = msg;
+    flash.box.appendChild(div);
+  },
 };
 
 // handles to key elements
