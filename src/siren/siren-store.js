@@ -56,7 +56,7 @@ export class SirenStore {
     return this.#eventListeners.get(event);
   }
 
-  #raise(event, detail = {}) {
+  #emit(event, detail = {}) {
     this.#getEventListeners(event).forEach(fn => fn({ detail }));
   }
 
@@ -64,7 +64,7 @@ export class SirenStore {
    * @params {StoreEvent} event
    * @params {function} callback
    */
-  addEventListener(event, callback) {
+  on(event, callback) {
     this.#getEventListeners(event).push(callback);
   }
 
@@ -72,7 +72,7 @@ export class SirenStore {
    * @params {StoreEvent} event
    * @params {function} callback
    */
-  removeEventListener(event, callback) {
+  off(event, callback) {
     const listeners = this.#getEventListeners(event);
     const i = listeners.indexOf(callback);
     if (i !== -1) {
@@ -82,21 +82,20 @@ export class SirenStore {
 
   // ----- target specific settings
 
+  /**
+   * Specify options to be used when fetching entities from a specific target
+   * @param {string} href - URI prefix to match
+   * @param {object} options - options to be used when fetching entities from this target
+   */
   addTarget({ href, options = {} }) {
     this.#targets.set(href, options);
     this.clearCache();
     this.unload();
   }
 
-  getOptions({ href }) {
+  #getOptions({ href }) {
     let options = {};
-
-    [...this.#targets.keys()].forEach((key) => {
-      if (href.startsWith(key)) {
-        options = this.#targets.get(key);
-      }
-    });
-
+    this.#targets.forEach((value, key) => href.startsWith(key) && (options = { ...options, ...value }));
     return options
   }
 
@@ -109,7 +108,7 @@ export class SirenStore {
       expires = now + 5000;
     }
     this.#cache.set(href, { entity, expires });
-    this.#notify({ href, entity, response });
+    this.#emit(`set:${href}`, { entity, response });
   }
 
   clearCache() {
@@ -135,62 +134,28 @@ export class SirenStore {
   unload() {
     if (!this.#entityListeners) return;
     for (const [href] of this.#entityListeners) {
-      this.#notify({ href });
+      this.#emit(`set:${href}`, {});
     }
-  }
-
-  // ----- entity listeners
-
-  #getEntityListeners(href) {
-    if (!this.#entityListeners.has(href)) {
-      this.#entityListeners.set(href, new Set());
-    }
-    return this.#entityListeners.get(href);
-  }
-
-  #notify({ href, entity, response, error, status }) {
-    this.#getEntityListeners(href).forEach(fn => {
-      try {
-        fn({ entity, response, error, status });
-      } catch {
-        /* shrug */
-      }
-    });
-  }
-
-  addEntityListener(href, callback) {
-    if (!href || typeof callback !== 'function') {
-      return;
-    }
-    this.#getEntityListeners(href).add(callback);
-    return () => this.removeEntityListener(href, callback);
-  }
-
-  removeEntityListener(href, callback) {
-    if (!href || typeof callback !== 'function') {
-      return;
-    }
-    this.#getEntityListeners(href).delete(callback);
   }
 
   // ----- actions
 
   // performs a request using the supplied action
   async submit({ action, fields = {} }) {
-    this.#raise('fetch');
-    this.#raise('inflight', { count: ++this.#inflight });
+    this.#emit('fetch');
+    this.#emit('inflight', { count: ++this.#inflight });
 
-    const options = this.getOptions({ href: action.href });
+    const options = this.#getOptions({ href: action.href });
     return this.#client.submit({ action, options, fields })
       .catch(err => {
-        this.#raise('error', {
+        this.#emit('error', {
           message: err.message,
           response: err.response,
         });
       })
       .finally(() => {
-        this.#raise('inflight', { count: --this.#inflight });
-        this.#raise('complete');
+        this.#emit('inflight', { count: --this.#inflight });
+        this.#emit('complete');
       });
   }
 

@@ -29,11 +29,11 @@ store.addTarget({
   },
 });
 
-store.addEventListener('error', ({ message, response }) => {
+store.on('error', ({ message, response }) => {
   console.error(message, response.status);
 });
 
-store.addEntityListener('https://api.example.com/entity', ({ entity, response, error, status }) => {
+store.on('set:https://api.example.com/entity', ({ entity, response }) => {
   console.info('entity updated', entity);
 });
 

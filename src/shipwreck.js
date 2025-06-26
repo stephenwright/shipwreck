@@ -37,11 +37,11 @@ export class Shipwreck {
     this.#token = sessionStorage.getItem('ship-authToken') || '';
 
     this.#store = new SirenStore();
-    this.#store.addEventListener('error', e => {
+    this.#store.on('error', e => {
       const { message, response } = e.detail;
-      this.#raise('error', { message, response });
+      this.#emit('error', { message, response });
     });
-    this.#store.addEventListener('inflight', e => this.#raise('inflight', { count: e.detail.count }));
+    this.#store.on('inflight', e => this.#emit('inflight', { count: e.detail.count }));
     this.#updateStore();
 
     this.#watchLinks();
@@ -67,7 +67,7 @@ export class Shipwreck {
 
   set entity(entity) {
     this.#entity = entity;
-    this.#raise('update', { message: 'Updated entity', entity });
+    this.#emit('update', { message: 'Updated entity', entity });
   }
 
   get baseUri() {
@@ -127,25 +127,23 @@ export class Shipwreck {
 
   #getEventListeners(event) {
     if (!this.#eventListeners.has(event)) {
-      this.#eventListeners.set(event, []);
+      this.#eventListeners.set(event, new Set());
     }
     return this.#eventListeners.get(event);
   }
 
-  #raise(event, detail = {}) {
-    this.#getEventListeners(event).forEach(fn => fn({ detail }));
+  #emit(event, detail = {}) {
+    for (const fn of this.#getEventListeners(event)) {
+      fn({ detail });
+    }
   }
 
   on(event, callback) {
-    this.#getEventListeners(event).push(callback);
+    this.#getEventListeners(event).add(callback);
   }
 
   off(event, callback) {
-    const listeners = this.#getEventListeners(event);
-    const i = listeners.indexOf(callback);
-    if (i !== -1) {
-      listeners.splice(i, 1);
-    }
+    this.#getEventListeners(event).delete(callback);
   }
 
   // =====
@@ -216,16 +214,16 @@ export class Shipwreck {
 
     // submit the action and render the response
     try {
-      this.#raise('fetch', {});
+      this.#emit('fetch', {});
       const { entity, response } = await this.#store.submit({ action });
       this.entity = entity;
       await this.render({ entity, response });
-      this.#raise('success', { message: 'Action submitted.' });
+      this.#emit('success', { message: 'Action submitted.' });
     } catch (err) {
-      this.#raise('error', { message: err.message });
+      this.#emit('error', { message: err.message });
     }
 
-    this.#raise('complete', {});
+    this.#emit('complete', {});
   }
 
   /**
@@ -233,18 +231,18 @@ export class Shipwreck {
    * @params {string} path - path to fetch
    */
   async fetch(path) {
-    this.#raise('fetch', {});
+    this.#emit('fetch', {});
     try {
       const { href } = this.buildUrl({ path });
       const { entity, response } = await this.#store.get({ href, noCache: true });
       this.entity = entity;
       this.render({ entity, response });
-      this.#raise('success', { message: 'Request success', href });
+      this.#emit('success', { message: 'Request success', href });
     } catch (err) {
       console.warn(err);
-      this.#raise('error', { message: err.message, error: err });
+      this.#emit('error', { message: err.message, error: err });
     }
-    this.#raise('complete', { message: 'Fetch complete.' });
+    this.#emit('complete', { message: 'Fetch complete.' });
   }
 
   /**
@@ -255,7 +253,7 @@ export class Shipwreck {
   async render({ entity, response }) {
     if (entity) {
       this.#target.innerHTML = markup.ship(entity);
-      this.#raise('update', { message: 'Updated entity', entity });
+      this.#emit('update', { message: 'Updated entity', entity });
     } else if (response) {
       const text = await response.text();
       this.#target.innerHTML = markup.raw(text, response.url);
