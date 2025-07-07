@@ -114,7 +114,7 @@ export class SirenEntity extends SirenBase {
       if (e.rel === undefined) {
         this._error('rel', 'Required.');
       }
-      if (!(e.rel instanceof Array) || rel.length === 0) {
+      if (!(e.rel instanceof Array) || e.rel.length === 0) {
         this._error('rel', 'MUST be a non-empty array of strings.');
       }
     });

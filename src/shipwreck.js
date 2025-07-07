@@ -5,17 +5,9 @@
  */
 
 import { SirenStore } from './siren/siren-store.js';
+import { intercept } from './router.js';
 
 import markup from './markup.js';
-
-const store = new SirenStore();
-
-/** Convert a string to a DOM node */
-export const _html = (str) => {
-  const template = document.createElement('template');
-  template.innerHTML = str.trim();
-  return template.content.firstChild;
-};
 
 const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
 
@@ -29,110 +21,167 @@ const ABSOLUTE_URL_REGEX = new RegExp('^(?:[a-z]+:)?//', 'i');
  *  complete - fetch complete (calls wether it was successful or not)
  */
 export class Shipwreck {
+  #target;
+  #eventListeners;
+  #baseUri;
+  #token;
+  #store;
+  #entity;
+  #interceptor;
+
   constructor(target) {
-    this.target = target;
-    this._entity = undefined;
-    this._eventListeners = new Map();
+    this.#target = target;
+    this.#eventListeners = new Map();
 
-    this._baseUri = sessionStorage.getItem('ship-baseUri') || '';
-    this._token = sessionStorage.getItem('ship-authToken') || '';
-    this.updateStore();
+    this.#baseUri = sessionStorage.getItem('ship-baseUri') || '';
+    this.#token = sessionStorage.getItem('ship-authToken') || '';
 
-    store.addEventListener('error', e => {
+    this.#store = new SirenStore();
+    this.#store.on('error', e => {
       const { message, response } = e.detail;
-      this._raise('error', { message, response });
+      this.#emit('error', { message, response });
     });
+    this.#store.on('inflight', e => this.#emit('inflight', { count: e.detail.count }));
+    this.#updateStore();
 
-    store.addEventListener('inflight', e => this._raise('inflight', { count: e.detail.count }));
+    this.#watchLinks();
+    this.#watchForms();
+  }
 
-    document.body.addEventListener('submit', async (e) => {
-      if (!this.target?.contains(e.target)) {
-        return;
-      }
-      e.preventDefault();
-      this.formSubmit(e.target);
+  #updateStore() {
+    this.#store.addTarget({
+      href: this.baseUri,
+      options: {
+        headers: {
+          ...this.#token && { Authorization: `Bearer ${this.#token}` },
+        }
+      },
     });
   }
 
+  // ===== properties
+
   get entity() {
-    return this._entity;
+    return this.#entity;
   }
 
   set entity(entity) {
-    this._entity = entity;
-    this._raise('update', { message: 'Updated entity', entity });
+    this.#entity = entity;
+    this.#emit('update', { message: 'Updated entity', entity });
   }
 
   get baseUri() {
-    return this._baseUri;
+    return this.#baseUri;
   }
 
   set baseUri(uri) {
     uri = uri || undefined; // falsy = undefined
-    if (uri === this._baseUri) {
+    if (uri === this.#baseUri) {
       return;
     }
-    this._baseUri = uri;
+    this.#baseUri = uri;
+
+    this.#updateStore();
+    this.#watchLinks();
+
     if (uri) {
       sessionStorage.setItem('ship-baseUri', uri);
     } else {
       sessionStorage.removeItem('ship-baseUri');
     }
-    this.updateStore();
   }
 
   get token() {
-    return this._token;
+    return this.#token;
   }
 
   set token(newToken) {
     newToken = newToken || undefined; // falsy = undefined
-    if (newToken === this._token) {
+    if (newToken === this.#token) {
       return;
     }
-    this._token = newToken;
+    this.#token = newToken;
     if (newToken) {
       sessionStorage.setItem('ship-authToken', newToken);
     } else {
       sessionStorage.removeItem('ship-authToken');
     }
-    this.updateStore();
+    this.#updateStore();
   }
 
-  updateStore() {
-    const headers = {};
-    this._token && (headers.Authorization = `Bearer ${this._token}`);
-    store.addTarget({ href: this.baseUri, options: { headers } });
+  // ===== watchers
+
+  #watchLinks() {
+    this.#interceptor?.remove();
+    this.#interceptor = this.#baseUri ? intercept(this.#baseUri, href => this.fetch(href)) : undefined;
+  }
+
+  #watchForms() {
+    this.#target.addEventListener('submit', e => {
+      e.preventDefault();
+      this.#submitForm(e.target);
+    });
   }
 
   // ===== events
 
-  _getEventListeners(event) {
-    if (!this._eventListeners.has(event)) {
-      this._eventListeners.set(event, []);
+  #getEventListeners(event) {
+    if (!this.#eventListeners.has(event)) {
+      this.#eventListeners.set(event, new Set());
     }
-    return this._eventListeners.get(event);
+    return this.#eventListeners.get(event);
   }
 
-  _raise(event, detail = {}) {
-    this._getEventListeners(event).forEach(fn => fn({ detail }));
+  #emit(event, detail = {}) {
+    for (const fn of this.#getEventListeners(event)) {
+      fn({ detail });
+    }
   }
 
   on(event, callback) {
-    this._getEventListeners(event).push(callback);
+    this.#getEventListeners(event).add(callback);
   }
 
   off(event, callback) {
-    const listeners = this._getEventListeners(event);
-    const i = listeners.indexOf(callback);
-    if (i !== -1) {
-      listeners.splice(i, 1);
-    }
+    this.#getEventListeners(event).delete(callback);
   }
 
   // =====
 
-  async formSubmit(form) {
+  /**
+   * Construct a URL from a base, path, and query
+   * @param {string} base - base URL, defaults to this.baseUri
+   * @param {string} path - path to fetch
+   * @param {object} query - query parameters
+   * @returns {URL}
+   */
+  buildUrl({ base, path, query }) {
+    if (ABSOLUTE_URL_REGEX.test(path)) {
+      return new URL(path);
+    }
+    const root = new URL(base || this.baseUri);
+    path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+    const url = new URL(path, root);
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        Array.isArray(value)
+          ? value.forEach(v => url.searchParams.append(key, v))
+          : url.searchParams.set(key, value);
+      }
+    }
+    return url;
+  }
+
+  // =====
+
+  /**
+   * Convert a form into a siren action and submit the action
+   * requests confirmation for DELETE actions
+   * renders the results if response is a siren entity
+   * @param {HTMLFormElement} form
+   */
+  async #submitForm(form) {
+    // convert html form to siren action
     const fields = [];
     let method = form.getAttribute('method');
 
@@ -150,10 +199,6 @@ export class Shipwreck {
       name && fields.push({ name, value, files });
     }
 
-    if (method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) { // eslint-disable-line
-      return;
-    }
-
     const action = {
       name: form.name,
       type: form.enctype,
@@ -162,140 +207,73 @@ export class Shipwreck {
       fields,
     };
 
-    this._raise('fetch', {});
+    // confirm destructive actions
+    if (action.method === 'DELETE' && !confirm('You are performing a DELETE. This action is potentially destructive.')) {
+      return;
+    }
 
+    // submit the action and render the response
     try {
-      const actionUrl = new URL(action.href);
-      const baseUrl = new URL(this.baseUri);
-      const token = actionUrl.hostname.endsWith(baseUrl.hostname) ? this._token : undefined;
-      const { entity } = await store.submit({ action, token });
-      if (entity) {
-        this.entity = entity;
-        await this.renderEntity();
-        this._raise('success', { message: 'Action submitted.' });
-      }
+      this.#emit('fetch', {});
+      const { entity, response } = await this.#store.submit({ action });
+      this.entity = entity;
+      await this.render({ entity, response });
+      this.#emit('success', { message: 'Action submitted.' });
     } catch (err) {
-      this._raise('error', { message: err.message });
+      this.#emit('error', { message: err.message });
     }
 
-    this._raise('complete', {});
+    this.#emit('complete', {});
   }
 
-  buildUrl({ base, path, query }) {
-    if (ABSOLUTE_URL_REGEX.test(path)) {
-      return new URL(path);
-    }
-    const root = new URL(base || this.baseUri);
-    path = root.pathname.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
-    const url = new URL(path, root);
-    if (query) {
-      for (const [key, value] of Object.entries(query)) {
-        if (Array.isArray(value)) {
-          value.forEach(v => url.searchParams.append(key, v));
-        } else {
-          url.searchParams.set(key, value);
-        }
-      }
-    }
-    return url;
-  }
-
-  // submit a request and display the response
+  /**
+   * Fetch an entity and render the results
+   * @params {string} path - path to fetch
+   */
   async fetch(path) {
-    this._raise('fetch', {});
+    this.#emit('fetch', {});
     try {
       const { href } = this.buildUrl({ path });
-      const { entity, response } = await store.get({ href, token: this._token, noCache: true });
-      if (entity) {
-        this.entity = entity;
-        await this.renderEntity();
-      } else if (response) {
-        await this.renderResponse(response);
-        this._raise('update', { message: 'Displaying raw response', href: response.url });
-      } else {
-        throw new Error('invalid response');
-      }
-      this._raise('success', { message: 'Request success', href });
+      const { entity, response } = await this.#store.get({ href, noCache: true });
+      this.entity = entity;
+      this.render({ entity, response });
+      this.#emit('success', { message: 'Request success', href });
     } catch (err) {
-      console.warn(err); // eslint-disable-line no-console
-      this._raise('error', { message: err.message, error: err });
+      console.warn(err);
+      this.#emit('error', { message: err.message, error: err });
     }
-    this._raise('complete', { message: 'Fetch complete.' });
+    this.#emit('complete', { message: 'Fetch complete.' });
   }
 
-  // ===== render
-
-  async watchLinks() {
-    const { target } = this;
-    // Links (do this after sub entities are added)
-    target.querySelectorAll('.current-path a, .current-path-params a, #content-entity a:not(.direct-link)')
-      .forEach((a) => a.addEventListener('click', (e) => {
-        const anchor = e.target;
-        if (!anchor || anchor.target || anchor.getAttribute('rel') === 'external' || !anchor.href) {
-          return;
-        }
-        e.preventDefault();
-        this.fetch(anchor.href);
-      }));
-  }
-
-  async initTabs() {
-    const { target } = this;
-    // Main tabs
-    const contents = target.querySelectorAll('.shipwreck > .content');
-    const tabs = target.querySelectorAll('.shipwreck > .tabs > a');
-    tabs.forEach((tab) => {
-      tab.onclick = () => {
-        tabs.forEach((t) => t.classList.remove('active'));
-        tab.classList.add('active');
-        contents.forEach((c) => c.style.display = c.id === tab.name ? 'block' : 'none');
-      };
-    });
-    tabs[0].click();
-
-    // Body tabs
-    const tabbed = target.querySelectorAll('.shipwreck .tabbed');
-    tabbed.forEach((group) => {
-      const groupContents = group.querySelectorAll(':scope > .tab-content');
-      groupContents.forEach((c) => c.style.display = 'none');
-      const groupTabs = group.querySelectorAll(':scope > .tabs a');
-      groupTabs.forEach((tab) => {
+  /**
+   *
+   * @param {SirenEntity}} entity - the entity to display
+   * @param {Response} response - the response to display if no siren entity is available
+   */
+  async render({ entity, response }) {
+    if (entity) {
+      this.#target.innerHTML = markup.ship(entity);
+      this.#emit('update', { message: 'Updated entity', entity });
+    } else if (response) {
+      const text = await response.text();
+      this.#target.innerHTML = markup.raw(text, response.url);
+    }
+    // wire up tabbed content, in the following structure:
+    //  div.tabbed
+    //   div.tabs
+    //     a[name=<name>]
+    //   div.content.<name>
+    this.#target.querySelectorAll('.tabbed').forEach(el => {
+      const tabs = el.querySelectorAll(':scope > .tabs > a');
+      const contents = el.querySelectorAll(':scope > .content');
+      tabs.forEach(tab => {
         tab.onclick = () => {
-          groupTabs.forEach((t) => t.classList.remove('active'));
+          tabs.forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
-          groupContents.forEach((c) => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
+          contents.forEach(c => c.style.display = c.className.includes(tab.name) ? 'block' : 'none');
         };
       });
-      groupTabs.length && groupTabs[0].click();
+      tabs.length && tabs[0].click();
     });
-  }
-
-  async renderResponse(response) {
-    const { target } = this;
-    const text = await response.text();
-    target.innerHTML = markup.raw(text, response.url);
-    this.initTabs();
-    this.watchLinks();
-  }
-
-  // display the markup and attach some logic
-  async renderEntity() {
-    const { entity, target } = this;
-    target.innerHTML = markup.ship(entity);
-
-    // Sub-Entities
-    const parent = target.querySelector('.entity-entities');
-    entity.entities.forEach((e) => {
-      const card = _html(markup.card(e));
-      parent.appendChild(card);
-      // toggle body visibility when head is clicked
-      const body = card.querySelector('.body');
-      const head = card.querySelector('.head');
-      if (head && body) {
-        head.onclick = () => body.style.display = body.style.display === 'none' ? '' : 'none';
-      }
-    });
-    this.initTabs();
-    this.watchLinks();
   }
 }

@@ -18,8 +18,10 @@ export class SirenField extends SirenBase {
     // NON-SPEC
     if (this.value instanceof Array) {
       this.options = this.value.map(optionsMapping);
+      this.value = this.options.find((o) => o.checked || o.selected)?.value || '';
     } else if (this._json['options'] instanceof Array) {
       this.options = this._json['options'].map(optionsMapping);
+      this.value ||= this.options.find((o) => o.checked || o.selected)?.value || '';
     }
     this.checked = this._json['checked'];
   }

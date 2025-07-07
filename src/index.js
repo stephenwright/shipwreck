@@ -1,10 +1,16 @@
-import { Shipwreck, _html } from './shipwreck.js';
+import { Shipwreck } from './shipwreck.js';
 
 // notifications
 const flash = {
   box: document.getElementById('flash'),
   clear: () => flash.box.innerHTML = '',
-  add: (msg, type) => flash.box.appendChild(_html(`<div class="banner ${type}">${msg}</div>`)),
+  add: (msg, type) => {
+    const div = document.createElement('div');
+    div.className = 'banner';
+    div.classList.add(type);
+    div.innerHTML = msg;
+    flash.box.appendChild(div);
+  },
 };
 
 // handles to key elements
@@ -61,7 +67,7 @@ shipToken.addEventListener('change', (e) => ship.token = e.target.value);
 
 // submit API request
 let active = false;
-const _setSail = async function () {
+const setSail = async function () {
   // one request at a time
   if (active) {
     return;
@@ -77,9 +83,9 @@ const _setSail = async function () {
     }
     await ship.fetch(shipPath.value);
   } catch (err) {
-    console.error(err); // eslint-disable-line no-console
+    console.error(err);
   } finally {
-    active = false; // eslint-disable-line require-atomic-updates
+    active = false;
   }
 };
 
@@ -88,7 +94,7 @@ const clearToken = async function () {
   flash.clear();
   shipToken.value = '';
   ship.token = null;
-  _setSail();
+  setSail();
 };
 document.getElementById('clear-token-button').addEventListener('click', clearToken);
 
@@ -100,7 +106,7 @@ const pullToken = async function () {
     flash.add('There is currently no entity loaded.', 'warning');
     return;
   }
-  const token = entity.properties && entity.properties.token;
+  const token = entity.properties?.token;
   if (!token) {
     flash.add('No token property was found in the current entity.', 'warning');
   } else if (token === shipToken.value) {
@@ -108,7 +114,7 @@ const pullToken = async function () {
   } else {
     shipToken.value = token;
     ship.token = token;
-    _setSail();
+    setSail();
     flash.add('Token updated.', 'success');
   }
 };
@@ -117,19 +123,19 @@ document.getElementById('pull-token-button').addEventListener('click', pullToken
 // submit form
 const submitRequest = function (e) {
   e.preventDefault();
-  _setSail();
+  setSail();
 };
 document.getElementById('main-form').addEventListener('submit', submitRequest);
 
 // sync the location hash with the api href input field
-const _checkHash = function () {
+const checkHash = function () {
   const hash = window.location.hash.slice(1);
   if (shipPath.value === hash) {
     return;
   }
   shipPath.value = hash;
-  _setSail();
+  setSail();
 };
 
-window.onhashchange = _checkHash;
-window.onload = _checkHash;
+window.onhashchange = checkHash;
+window.onload = checkHash;
