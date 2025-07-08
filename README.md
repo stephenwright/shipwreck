@@ -95,7 +95,7 @@ Shipwreck supports text fields having a `multiline` class to render as a textare
 }
 ```
 
-Text fields will automatically render as a textarea if the value contain newline characters.
+Text fields will automatically render as a textarea if the value contains a newline character.
 
 ```
 {
