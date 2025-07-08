@@ -155,7 +155,10 @@ const markup = {
     // if the value contains new lines, use a textarea
     const lineCount = (field.value || "").split('\n').length;
     if (lineCount > 1 || field.class?.includes('multiline')) {
-      input = `<textarea name="${field.name}" rows="${Math.max(lineCount, 2)}">${field.value}</textarea>`;
+      const min = 2;
+      const max = 10;
+      const rows = Math.min(Math.max(lineCount, min), max);
+      input = `<textarea name="${field.name}" rows="${rows}">${field.value}</textarea>`;
     } else if (field.options) {
       const id = `datalist-${++datalistId}`;
       input = `
