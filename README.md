@@ -88,8 +88,7 @@ Shipwreck supports text fields having a `multiline` class to render as a textare
 
 ```
 {
-  "title": "Description",
-  "name": "description",
+  "name": "example-one",
   "type": "text",
   "class": ["multiline"],
   "value": "Enter a detailed description here..."
@@ -97,3 +96,11 @@ Shipwreck supports text fields having a `multiline` class to render as a textare
 ```
 
 Text fields will automatically render as a textarea if the value contain newline characters.
+
+```
+{
+  "name": "example-two",
+  "type": "text",
+  "value": "Enter a detailed description here...\n\nThis is a second line.\n\nThis is a third line."
+}
+```
