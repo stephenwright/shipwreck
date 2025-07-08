@@ -2,6 +2,7 @@ export default {
   class: ['box'],
   properties: {
     label: 'My box of stuff',
+    description: 'This is a box of stuff.\nIt contains a lot of things.\nSome of which are useful.\nSome of which are not.',
     public: true,
     meta: {
       tags: [
@@ -41,7 +42,7 @@ export default {
       href: 'http://api.example.com/boxes/1',
       fields: [
         { name: 'name', type: 'text' },
-        { name: 'description', type: 'text' },
+        { name: 'description', type: 'text', class: ['multiline'] },
       ],
     },
     {
@@ -52,6 +53,13 @@ export default {
       fields: [
         { name: 'label', title: 'Label', type: 'text', required: true },
         { name: 'public', title: 'Public', type: 'checkbox', checked: true },
+        {
+          name: 'description',
+          title: 'Description',
+          type: 'text',
+          class: ['multiline'],
+          value: 'This is a box of stuff.\nIt contains a lot of things.\nSome of which are useful.\nSome of which are not.',
+        },
         {
           name: 'material',
           title: 'Material',

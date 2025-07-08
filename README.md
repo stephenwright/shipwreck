@@ -81,3 +81,19 @@ as per [this proposal](https://groups.google.com/forum/#!msg/siren-hypermedia/8m
   ]
 }
 ```
+
+### Multiline text fields
+
+Shipwreck supports text fields having a `multiline` class to render as a textarea instead of input[type=text].
+
+```
+{
+  "title": "Description",
+  "name": "description",
+  "type": "text",
+  "class": ["multiline"],
+  "value": "Enter a detailed description here..."
+}
+```
+
+Text fields will automatically render as a textarea if the value contain newline characters.

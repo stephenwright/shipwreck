@@ -1,6 +1,6 @@
 {
   "name": "shipwreck",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Generic web based UI for browsing any Siren Hypermedia API",
   "main": "index.html",
   "type": "module",
