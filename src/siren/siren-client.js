@@ -187,7 +187,7 @@ export class SirenClient {
     for (const old of oldFields) {
       const replacements = newFields.filter(n => n.name === old.name);
       if (replacements.length) {
-        fields.push(...replacements.map(r => new SirenField({ ...old.json, ...r.value })));
+        fields.push(...replacements.map(r => new SirenField({ ...old.json, value: r.value })));
       } else {
         fields.push(old);
       }

@@ -18,6 +18,12 @@ const action = new SirenAction({
       type: 'number',
       value: 4, // will be replaced
     },
+    {
+      title: 'Foo',
+      name: 'foo',
+      value: 'bar',
+      type: 'text',
+    },
   ],
 });
 
@@ -30,7 +36,7 @@ const data = {
     },
   },
   levels: [1,2,3],
-  foo: 'bar',
+  foo: 'baz',
   weee: [
     'wham',
     { whoa: 1 },
