@@ -5,6 +5,15 @@ let datalistId = 0;
 /** helpers for generating HTML markup */
 const markup = {
 
+  htmlEscape(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
   json(json) {
     return `<pre><code>${JSON.stringify(json, null, 2)}</code></pre>`;
   },
@@ -24,7 +33,7 @@ const markup = {
     return !entity.title ? '' : `
       <div>
         <label>title:</label>
-        <span class='title'>${entity.title}</span>
+        <span class='title'>${markup.htmlEscape(entity.title)}</span>
       </div>
     `;
   },
@@ -69,10 +78,10 @@ const markup = {
   linkAnchor(link) {
     const notSiren = link.type && link.type.search(/application\/(vnd.siren\+)?json/) === -1;
     const external = notSiren ? 'rel="external"' : '';
-    const rels = link.rel.map((rel) => `<a href="${link.href}" ${external}>${rel}</a>`).join(', ');
+    const rels = link.rel.map((rel) => `<a href="${markup.htmlEscape(link.href)}" ${external}>${markup.htmlEscape(rel)}</a>`).join(', ');
     const parts = [`[ ${rels} ]`];
     if (link.title) {
-      parts.push(`<a href="${link.href}" ${external}>${link.title}</a>`);
+      parts.push(`<a href="${markup.htmlEscape(link.href)}" ${external}>${markup.htmlEscape(link.title)}</a>`);
     }
     return parts.join(' ');
   },
@@ -85,7 +94,7 @@ const markup = {
           ${markup.title(link)}
           <div><label>class:</label> [ ${link.class.join(', ')} ]</div>
           <div><label>rel:</label> [ ${link.rel.join(', ')} ]</div>
-          <div><label>href:</label> <a href="${link.href}">${link.href}</a></div>
+          <div><label>href:</label> <a href="${markup.htmlEscape(link.href)}">${markup.htmlEscape(link.href)}</a></div>
         </div>
       </div>
     `;
@@ -96,14 +105,14 @@ const markup = {
   actionForm(action) {
     return `
       <form
-        name="${action.name}"
-        enctype="${action.type}"
-        action="${action.href}"
-        method="${action.method}">
-        <input type="hidden" name="_method" value="${action.method}">
+        name="${markup.htmlEscape(action.name)}"
+        enctype="${markup.htmlEscape(action.type)}"
+        action="${markup.htmlEscape(action.href)}"
+        method="${markup.htmlEscape(action.method)}">
+        <input type="hidden" name="_method" value="${markup.htmlEscape(action.method)}">
         <h3>
-          <span class="title">${action.title}</span>
-          <span class="name">${action.name}</span>
+          <span class="title">${markup.htmlEscape(action.title)}</span>
+          <span class="name">${markup.htmlEscape(action.name)}</span>
         </h3>
         ${action.class.length ? `<div><label>class:</label> [ ${action.class.join(', ')} ]</div>` : ''}
         <div class="form-fields">
@@ -112,7 +121,7 @@ const markup = {
         <div class="form-actions">
           <input type="submit" value="Submit">
         </div>
-        <p class="entity-action-href">${action.method} ${action.href}</p>
+        <p class="entity-action-href">${markup.htmlEscape(action.method)} ${markup.htmlEscape(action.href)}</p>
       </form>
     `;
   },
@@ -120,10 +129,10 @@ const markup = {
   selectOptions(field) {
     return field.options.map((opt) => `
       <option
-        value="${opt.value || opt.title}"
+        value="${markup.htmlEscape(opt.value || opt.title)}"
         ${(field.selected || field.value === opt.value) ? 'selected' : ''}
       >
-        ${opt.title || opt.value}
+        ${markup.htmlEscape(opt.title || opt.value)}
       </option>
     `).join('\n');
   },
@@ -132,8 +141,8 @@ const markup = {
     return `
       <div class="form-field">
         <label>
-          <span class="title">${field.title}</span>
-          <span class="name">${field.name}</span>
+          <span class="title">${markup.htmlEscape(field.title)}</span>
+          <span class="name">${markup.htmlEscape(field.name)}</span>
           ${input}
         </label>
       </div>
@@ -142,9 +151,9 @@ const markup = {
 
   datalist(field, id) {
     return `
-      <datalist id="${id}">
+      <datalist id="${markup.htmlEscape(id)}">
         ${field.options.map((o) => `
-        <option>${o.value}</option>
+        <option>${markup.htmlEscape(o.value)}</option>
         `).join('')}
       </datalist>
     `;
@@ -158,15 +167,15 @@ const markup = {
       const min = 2;
       const max = 10;
       const rows = Math.min(Math.max(lineCount, min), max);
-      input = `<textarea name="${field.name}" rows="${rows}">${field.value}</textarea>`;
+      input = `<textarea name="${markup.htmlEscape(field.name)}" rows="${rows}">${markup.htmlEscape(field.value)}</textarea>`;
     } else if (field.options) {
       const id = `datalist-${++datalistId}`;
       input = `
-        <input type="${field.type}" value="${field.value}" name="${field.name}" list="${id}" />
+        <input type="${markup.htmlEscape(field.type)}" value="${markup.htmlEscape(field.value)}" name="${markup.htmlEscape(field.name)}" list="${markup.htmlEscape(id)}" />
         ${markup.datalist(field, id)}
       `;
     } else {
-      input = `<input type="${field.type}" value="${field.value}" name="${field.name}" />`;
+      input = `<input type="${markup.htmlEscape(field.type)}" value="${markup.htmlEscape(field.value)}" name="${markup.htmlEscape(field.name)}" />`;
     }
     return markup.inputWrapper(field, input);
   },
@@ -176,15 +185,15 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
+            <span class="title">${markup.htmlEscape(field.title)}</span>
+            <span class="name">${markup.htmlEscape(field.name)}</span>
           </label>
           ${field.options.map((option) => `
           <div class="radio-option">
             <label>
-              <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
-              <span class="title">${option.title}</span>
-              <span class="value">"${option.value}"</span>
+              <input type="${markup.htmlEscape(field.type)}" name="${markup.htmlEscape(field.name)}" value="${markup.htmlEscape(option.value || '')}" ${option.checked ? 'checked' : ''} />
+              <span class="title">${markup.htmlEscape(option.title)}</span>
+              <span class="value">"${markup.htmlEscape(option.value)}"</span>
             </label>
           </div>
           `).join('')}
@@ -194,9 +203,9 @@ const markup = {
     return `
       <div class="form-field">
         <label>
-          <input type="${field.type}" name="${field.name}" value="${field.value}" ${field.checked ? 'checked' : ''} />
-          <span class="title">${field.title}</span>
-          <span class="name">${field.name}</span>
+          <input type="${markup.htmlEscape(field.type)}" name="${markup.htmlEscape(field.name)}" value="${markup.htmlEscape(field.value)}" ${field.checked ? 'checked' : ''} />
+          <span class="title">${markup.htmlEscape(field.title)}</span>
+          <span class="name">${markup.htmlEscape(field.name)}</span>
         </label>
       </div>
       `;
@@ -207,35 +216,35 @@ const markup = {
       return `
         <div class="form-field">
           <label>
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
+            <span class="title">${markup.htmlEscape(field.title)}</span>
+            <span class="name">${markup.htmlEscape(field.name)}</span>
           </label>
           ${field.options.map((option) => `
           <div class="radio-option">
             <label>
-              <input type="${field.type}" name="${field.name}" value="${option.value || ''}" ${option.checked ? 'checked' : ''} />
-              <span class="title">${option.title}</span>
-              <span class="value">"${option.value}"</span>
+              <input type="${markup.htmlEscape(field.type)}" name="${markup.htmlEscape(field.name)}" value="${markup.htmlEscape(option.value || '')}" ${option.checked ? 'checked' : ''} />
+              <span class="title">${markup.htmlEscape(option.title)}</span>
+              <span class="value">"${markup.htmlEscape(option.value)}"</span>
             </label>
           </div>
           `).join('')}
         </div>
       `;
     }
-    return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="${field.type}" ${field.checked ? 'checked' : ''} />`);
+    return markup.inputWrapper(field, `<input name="${markup.htmlEscape(field.name)}" value="${markup.htmlEscape(field.value)}" type="${markup.htmlEscape(field.type)}" ${field.checked ? 'checked' : ''} />`);
   },
 
   fieldForm(field) {
     switch (field.type.toLowerCase()) {
     case 'hidden':
       return `
-        <input type="${field.type}" value="${field.value}" name="${field.name}">
+        <input type="${markup.htmlEscape(field.type)}" value="${markup.htmlEscape(field.value)}" name="${markup.htmlEscape(field.name)}">
         <div class="form-field hidden">
           <span class="type-tag">Hidden</span>
           <label>
-            <span class="title">${field.title}</span>
-            <span class="name">${field.name}</span>
-            <span class="hidden-field">${field.value}</span>
+            <span class="title">${markup.htmlEscape(field.title)}</span>
+            <span class="name">${markup.htmlEscape(field.name)}</span>
+            <span class="hidden-field">${markup.htmlEscape(field.value)}</span>
           </label>
         </div>
         `;
@@ -244,13 +253,13 @@ const markup = {
     // case 'datetime':
     // case 'datetime-local':
     case 'number':
-      return markup.inputWrapper(field, `<input name="${field.name}" value="${field.value}" type="${field.type}" step="any" />`);
+      return markup.inputWrapper(field, `<input name="${markup.htmlEscape(field.name)}" value="${markup.htmlEscape(field.value)}" type="${markup.htmlEscape(field.type)}" step="any" />`);
 
     case 'checkbox':
       return markup.checkbox(field);
 
     case 'select':
-      return markup.inputWrapper(field, `<select name="${field.name}">${markup.selectOptions(field)}</select>`);
+      return markup.inputWrapper(field, `<select name="${markup.htmlEscape(field.name)}">${markup.selectOptions(field)}</select>`);
 
     case 'radio':
       return markup.radio(field);
@@ -259,7 +268,7 @@ const markup = {
       return markup.text(field);
 
     default:
-      return markup.inputWrapper(field, `<input type="${field.type}" value="${field.value}" name="${field.name}" />`);
+      return markup.inputWrapper(field, `<input type="${markup.htmlEscape(field.type)}" value="${markup.htmlEscape(field.value)}" name="${markup.htmlEscape(field.name)}" />`);
     }
   },
 
@@ -276,10 +285,10 @@ const markup = {
       .keys(entity.properties)
       .map((key) => {
         let val = entity.properties[key];
-        val = typeof val === 'object' ? markup.json(val) : `<code>${val}</code>`;
+        val = typeof val === 'object' ? markup.json(val) : `<code>${markup.htmlEscape(val)}</code>`;
         return `
           <tr>
-            <td class="key">${key}:</td>
+            <td class="key">${markup.htmlEscape(key)}:</td>
             <td class="value">${val}</td>
           </tr>`;
       })
@@ -292,9 +301,9 @@ const markup = {
     const path = `${url.pathname}${url.search}`
       .split('/')
       .filter((i) => i)
-      .map((part) => `<a href="${href = `${href}/${part}`}">${part.indexOf('?') < 0 ? part : part.substring(0, part.indexOf('?'))}</a>`)
+      .map((part) => `<a href="${markup.htmlEscape(href = `${href}/${part}`)}">${markup.htmlEscape(part.indexOf('?') < 0 ? part : part.substring(0, part.indexOf('?')))}</a>`)
       .join(' / ');
-    return `<a href="${url.origin}/">${url.origin}</a> / ${path}`;
+    return `<a href="${markup.htmlEscape(url.origin)}/">${markup.htmlEscape(url.origin)}</a> / ${path}`;
   },
 
   uriParams(uri) {
@@ -303,11 +312,12 @@ const markup = {
     for (const p of url.searchParams.entries()) {
       let [key, val] = p;
       try {
-        val = `<a href="${new URL(val).href}">${val}</a>`;
+        val = `<a href="${markup.htmlEscape(new URL(val).href)}">${markup.htmlEscape(val)}</a>`;
       } catch (err) { // eslint-disable-line no-unused-vars
         // not a valid url. meh.
+        val = markup.htmlEscape(val);
       }
-      params.push(`<li>${key} = ${val}</li>`);
+      params.push(`<li>${markup.htmlEscape(key)} = ${val}</li>`);
     }
     return params.length === 0 ? '' : `
       <strong>Query Params:</strong>
@@ -329,7 +339,7 @@ const markup = {
 
   entity(entity) {
     return `
-      ${entity.title ? `<div class="entity-title"><h1>${entity.title}</h1></div>` : ''}
+      ${entity.title ? `<div class="entity-title"><h1>${markup.htmlEscape(entity.title)}</h1></div>` : ''}
       <div class="flex-parent">
         <div class="flex-1">
 
