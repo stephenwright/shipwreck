@@ -1,9 +1,14 @@
 {
   "name": "shipwreck",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "Generic web based UI for browsing any Siren Hypermedia API",
-  "main": "index.html",
   "type": "module",
+  "exports": {
+    "./siren": "./src/siren/index.js"
+  },
+  "files": [
+    "src/siren/"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stephenwright/shipwreck.git"
