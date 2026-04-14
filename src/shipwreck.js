@@ -186,6 +186,7 @@ export class Shipwreck {
     let method = form.getAttribute('method');
 
     for (const { name, value, type, checked, files } of form.elements) {
+      let submitValue = value;
       if (name === '_method') {
         method = value;
         continue;
@@ -193,10 +194,10 @@ export class Shipwreck {
       if (type === 'radio' && !checked) {
         continue;
       }
-      if (type === 'checkbox' && !checked) {
-        continue;
+      if (type === 'checkbox') {
+        submitValue = String(checked)
       }
-      name && fields.push({ name, value, files });
+      name && fields.push({ name, value: submitValue, files });
     }
 
     const action = {
