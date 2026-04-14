@@ -10,6 +10,16 @@ You can access [Shipwreck hosted on github.io](https://stephenwright.github.io/s
 
 Or download the npm package and use it as a base for building your own UI.
 
+## Siren Client
+
+Shipwreck includes a standalone [Siren client library](./src/siren/) for working with Siren APIs programmatically.
+
+```js
+import { SirenClient, SirenStore } from 'shipwreck/siren';
+```
+
+See the [siren module documentation](./src/siren/README.md) for usage details.
+
 ## Note
 
 Shipwreck includes the following extension that are not part of the default spec.
