@@ -9,7 +9,7 @@ export class SirenClient {
   #options;
 
   constructor({ headers } = {}) {
-    this.#options = { headers };
+    this.#options = { headers: new Headers(headers) };
   }
 
   jwt(token) {
@@ -34,10 +34,13 @@ export class SirenClient {
       fields: this.combineFields(action.fields, formFields),
     });
 
-    Object.entries({
-      ...this.#options.headers,
-      ...options.headers,
-    }).forEach(([key, value]) => headers.set(key, value));
+    const mergeHeaders = (src) => {
+      if (!src) return;
+      if (src instanceof Headers) src.forEach((value, key) => headers.set(key, value));
+      else Object.entries(src).forEach(([key, value]) => headers.set(key, value));
+    };
+    mergeHeaders(this.#options.headers);
+    mergeHeaders(options.headers);
 
     const response = await fetch(url, {
       body,
