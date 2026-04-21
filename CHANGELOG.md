@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.0.0 - 2026-04-21
+
+### Breaking Changes
+ - `SirenClient.get` now takes an options object `{ href }` instead of a positional string, matching `SirenClient.submit` and `SirenStore.get`
+
+### Bug Fixes
+ - `SirenClient.get` previously passed a bare `SirenAction` to `submit`, which expects `{ action, options, fields }` — the call now wraps the action correctly
+
 ## 4.0.1 - 2025-07-08
 
  - Add support for `multiline` field class to force textarea rendering for text fields.

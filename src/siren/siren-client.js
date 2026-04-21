@@ -59,14 +59,15 @@ export class SirenClient {
 
   /**
    * performs a GET request to the specified href
-   * @param {string} href
+   * @param {object} options
+   * @param {string} options.href
    * @returns {Promise<{ entity: SirenEntity, response: Response }>}
    */
-  async get(href) {
+  async get({ href }) {
     if (!href || typeof href !== 'string') {
       throw new Error('Invalid HREF');
     }
-    return this.submit(new SirenAction({ href }));
+    return this.submit({ action: new SirenAction({ href }) });
   }
 
   /**

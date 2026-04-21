@@ -12,7 +12,7 @@ A client for fetching and submitting siren entities.
 
 ```js
 const client = new SirenClient();
-const { entity } = await client.get('https://api.example.com/entity');
+const { entity } = await client.get({ href: 'https://api.example.com/entity' });
 const action = entity.getAction('update');
 action.getField('name').value = 'New Name';
 const { entity, response } = await client.submit({ action });
