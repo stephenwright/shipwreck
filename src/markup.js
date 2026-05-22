@@ -418,7 +418,7 @@ const markup = {
     return markup.main({
       path: markup.uriCrumbs(url),
       params: markup.uriParams(url),
-      raw: `<pre>${content}</pre>`,
+      raw: `<pre>${markup.htmlEscape(content)}</pre>`,
     });
   },
 

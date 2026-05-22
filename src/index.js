@@ -8,7 +8,7 @@ const flash = {
     const div = document.createElement('div');
     div.className = 'banner';
     div.classList.add(type);
-    div.innerHTML = msg;
+    div.textContent = msg;
     flash.box.appendChild(div);
   },
 };
