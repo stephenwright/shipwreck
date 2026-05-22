@@ -94,7 +94,7 @@ const clearToken = async function () {
   flash.clear();
   shipToken.value = '';
   ship.token = null;
-  setSail();
+  await setSail();
 };
 document.getElementById('clear-token-button').addEventListener('click', clearToken);
 

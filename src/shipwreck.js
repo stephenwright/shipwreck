@@ -219,11 +219,9 @@ export class Shipwreck {
       this.entity = entity;
       await this.render({ entity, response });
       this.#emit('success', { message: 'Action submitted.' });
-    } catch (err) {
-      this.#emit('error', { message: err.message });
+    } finally {
+      this.#emit('complete', { message: 'Submission complete.' });
     }
-
-    this.#emit('complete', {});
   }
 
   /**
@@ -236,13 +234,11 @@ export class Shipwreck {
       const { href } = this.buildUrl({ path });
       const { entity, response } = await this.#store.get({ href, noCache: true });
       this.entity = entity;
-      this.render({ entity, response });
+      await this.render({ entity, response });
       this.#emit('success', { message: 'Request success', href });
-    } catch (err) {
-      console.warn(err);
-      this.#emit('error', { message: err.message, error: err });
+    } finally {
+      this.#emit('complete', { message: 'Fetch complete.' });
     }
-    this.#emit('complete', { message: 'Fetch complete.' });
   }
 
   /**
@@ -253,7 +249,6 @@ export class Shipwreck {
   async render({ entity, response }) {
     if (entity) {
       this.#target.innerHTML = markup.ship(entity);
-      this.#emit('update', { message: 'Updated entity', entity });
     } else if (response) {
       const text = await response.text();
       this.#target.innerHTML = markup.raw(text, response.url);

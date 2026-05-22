@@ -83,7 +83,7 @@ export class SirenClient {
   *  body: FormData | URLSearchParams | string,
   * }
   */
-  parseAction({ href, fields, type, method = 'GET' }) {
+    parseAction({ href, fields, type = 'application/x-www-form-urlencoded', method = 'GET' }) {
     const url = new URL(href);
 
     const headers = new Headers();
@@ -140,7 +140,7 @@ export class SirenClient {
     if (![200, 201, 203, 205, 206].includes(response.status)) {
       return;
     }
-    const contentType = response.headers.get('content-type');
+    const contentType = response.headers.get('content-type') || '';
     if (contentType.search(/application\/(vnd.siren\+)?json/) === -1) {
       return;
     }

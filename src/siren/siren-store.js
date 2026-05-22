@@ -9,7 +9,7 @@ import { SirenAction } from './siren-action.js';
 import { SirenClient } from './siren-client.js';
 
 function getMaxAge(response) {
-  const matches = response.headers.get('cache-control')?.match(/max-age=(\d+)/g);
+  const matches = response.headers.get('cache-control')?.match(/max-age=(\d+)/);
   return matches ? parseInt(matches[1], 10) : -1;
 }
 
@@ -152,6 +152,7 @@ export class SirenStore {
           message: err.message,
           response: err.response,
         });
+        throw err;
       })
       .finally(() => {
         this.#emit('inflight', { count: --this.#inflight });

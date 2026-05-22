@@ -1,5 +1,19 @@
 # Change Log
 
+## 5.0.2 - 2026-05-22
+
+### Bug Fixes
+ - `SirenStore.submit` now rejects on error instead of silently resolving to `undefined`. Callers awaiting `store.get`/`store.submit` previously crashed with a destructure `TypeError` on any failed request.
+ - `SirenStore` cache TTL — `cache-control: max-age=N` was parsed with a global regex that returned the full match instead of the digit group, leaving every cache entry with `expires: NaN`.
+ - `SirenClient.parseResponse` no longer throws when the response has no `content-type` header.
+ - `SirenClient.parseAction` defaults `type` to `application/x-www-form-urlencoded` when none is supplied, instead of crashing on `undefined.includes`.
+ - `Shipwreck`: `error` event no longer fires twice per failure, `complete` now fires on error paths (loading bar resets correctly), and `update` no longer double-emits on each successful fetch.
+
+## 5.0.1
+
+ - XSS fix in raw response rendering
+ - Header handling fix in `SirenClient.submit`
+
 ## 5.0.0 - 2026-04-21
 
 ### Breaking Changes
